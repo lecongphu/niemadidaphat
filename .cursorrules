@@ -1,0 +1,21 @@
+# Project Configuration
+
+## Database Schema chính:
+
+- **products**: Sản phẩm audio Phật pháp
+- **chapters**: Các tập của sản phẩm  
+- **feedback**: Góp ý từ người dùng
+- **followers**: Người theo dõi sản phẩm
+- **product_views**: Lượt xem sản phẩm
+- **user_sessions**: Phiên làm việc của người dùng
+- **user_profiles**: Thông tin profile người dùng
+- **user_roles**: Vai trò và quyền hạn
+
+## Environment Variables:
+
+- **NEXT_PUBLIC_SUPABASE_URL**: Supabase project URL
+- **NEXT_PUBLIC_SUPABASE_ANON_KEY**: Supabase anon key
+- **SUPABASE_SERVICE_ROLE_KEY**: Supabase service role key
+- **NEXT_PUBLIC_BUNNY_CDN_URL**: CDN URL for serving files
+- **BUNNY_STORAGE_ZONE_NAME**: Storage zone name
+- **BUNNY_ACCESS_KEY**: Storage access key
