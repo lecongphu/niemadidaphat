@@ -3,7 +3,7 @@
 import Script from 'next/script'
 import { supabase } from '@/lib/supabase'
 import { SupabaseAuth } from '@/lib/supabaseAuth'
-import type { CredentialResponse } from 'google-one-tap'
+import type { CredentialResponse, IdConfiguration } from 'google-one-tap'
 import { useRouter } from 'next/navigation'
 
 declare global {
@@ -11,7 +11,7 @@ declare global {
     google?: {
       accounts: {
         id: {
-          initialize: (config: any) => void
+          initialize: (config: IdConfiguration) => void
           prompt: () => void
           cancel: () => void
         }
@@ -34,7 +34,7 @@ const generateNonce = async (): Promise<[string, string]> => {
 
 interface GoogleOneTapProps {
   onSuccess?: () => void
-  onError?: (error: any) => void
+  onError?: (error: Error | string) => void
 }
 
 const GoogleOneTap = ({ onSuccess, onError }: GoogleOneTapProps) => {
@@ -102,7 +102,7 @@ const GoogleOneTap = ({ onSuccess, onError }: GoogleOneTapProps) => {
             
           } catch (error) {
             console.error('Lỗi khi đăng nhập với Google One Tap:', error)
-            onError?.(error)
+            onError?.(error instanceof Error ? error : String(error))
           }
         },
         nonce: hashedNonce,
@@ -117,7 +117,7 @@ const GoogleOneTap = ({ onSuccess, onError }: GoogleOneTapProps) => {
       
     } catch (error) {
       console.error('Lỗi khởi tạo Google One Tap:', error)
-      onError?.(error)
+      onError?.(error instanceof Error ? error : String(error))
     }
   }
 
