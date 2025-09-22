@@ -1,0 +1,16 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["sin1"],
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
+    "NEXT_PUBLIC_BUNNY_CDN_URL": "@next_public_bunny_cdn_url",
+    "BUNNY_STORAGE_ZONE_NAME": "@bunny_storage_zone_name",
+    "BUNNY_ACCESS_KEY": "@bunny_access_key",
+    "NEXT_PUBLIC_GOOGLE_CLIENT_ID": "@next_public_google_client_id"
+  }
+}
