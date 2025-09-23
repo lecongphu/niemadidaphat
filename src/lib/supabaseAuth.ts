@@ -47,10 +47,33 @@ export class SupabaseAuth {
         throw new Error(error.message || 'Có lỗi xảy ra khi đăng nhập với Google.');
       }
 
+      if(data.user) {
+        await SupabaseAuth.createUserProfile(data.user)
+      }
+
       return data;
     } catch (error: unknown) {
       console.error('Google ID Token sign-in error:', error);
       throw error;
+    }
+  }
+
+  static async createUserProfile(user: User) {
+    const { error } = await supabase
+      .from('user_profiles')
+      .insert({
+        id: user.id,
+        email: user.email || '',
+        full_name: user.user_metadata?.full_name || 'Người dùng mới',
+        provider: 'email',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        last_active: new Date().toISOString()
+      })
+  
+    if (error) {
+      console.error('Error creating user profile:', error)
+      throw error
     }
   }
 

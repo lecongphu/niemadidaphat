@@ -1,30 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SupabaseService } from '@/lib/supabaseService';
+import { supabase } from '@/lib/supabase';
 import { ChapterCreateInput } from '@/lib/types';
-import { withOptionalAuth, withAuth } from '@/lib/authMiddleware';
 
 // GET /api/chapters - Lấy danh sách chapters
 export async function GET(request: NextRequest) {
-  return withOptionalAuth(request, async (req) => {
   try {
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = parseInt(searchParams.get('offset') || '0');
 
-    if (productId) {
-      // Get chapters for specific product
-      const chapters = await SupabaseService.getChaptersByProductId(productId);
-      
-      return NextResponse.json({
-        success: true,
-        data: chapters,
-        count: chapters.length
-      });
-    } else {
+    if (!supabase) {
       return NextResponse.json(
-        { error: 'Product ID là bắt buộc' },
-        { status: 400 }
+        { error: 'Supabase không được cấu hình' },
+        { status: 500 }
       );
     }
+
+    // Build query
+    let query = supabase
+      .from('chapters')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .range(offset, offset + limit - 1);
+
+    // Apply product filter if provided
+    if (productId) {
+      query = query.eq('product_id', productId);
+    }
+
+    const { data: chapters, error: chaptersError, count } = await query;
+
+    if (chaptersError) {
+      console.error('Chapters query error:', chaptersError);
+      return NextResponse.json(
+        { error: 'Lỗi lấy danh sách chapters' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: chapters || [],
+      count: chapters?.length || 0,
+      total: count || 0
+    });
 
   } catch (error) {
     console.error('Get chapters error:', error);
@@ -36,12 +56,10 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-  });
 }
 
-// POST /api/chapters - Tạo chapter mới (Cần authentication)
+// POST /api/chapters - Tạo chapter mới
 export async function POST(request: NextRequest) {
-  return withAuth(request, async (req) => {
   try {
     const chapterData: ChapterCreateInput = await request.json();
 
@@ -53,8 +71,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create chapter using SupabaseService
-    const newChapter = await SupabaseService.createChapter(chapterData);
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Supabase không được cấu hình' },
+        { status: 500 }
+      );
+    }
+
+    // Kiểm tra product tồn tại
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select('id')
+      .eq('id', chapterData.product_id)
+      .single();
+
+    if (productError || !product) {
+      return NextResponse.json(
+        { error: 'Không tìm thấy product' },
+        { status: 404 }
+      );
+    }
+
+    // Lấy sort_order tiếp theo
+    const { data: lastChapter, error: lastChapterError } = await supabase
+      .from('chapters')
+      .select('sort_order')
+      .eq('product_id', chapterData.product_id)
+      .order('sort_order', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (lastChapterError && lastChapterError.code !== 'PGRST116') {
+      console.error('Last chapter query error:', lastChapterError);
+    }
+
+    const nextSortOrder = (lastChapter?.sort_order || 0) + 1;
+
+    // Tạo chapter
+    const { data: newChapter, error: createError } = await supabase
+      .from('chapters')
+      .insert({
+        product_id: chapterData.product_id,
+        title: chapterData.title,
+        audio_url: chapterData.audio_url || null,
+        duration_seconds: chapterData.duration_seconds || null,
+        sort_order: nextSortOrder,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (createError || !newChapter) {
+      console.error('Create chapter error:', createError);
+      return NextResponse.json(
+        { error: 'Lỗi tạo chapter' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -72,5 +146,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-  });
 }

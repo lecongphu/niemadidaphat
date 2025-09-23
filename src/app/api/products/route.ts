@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SupabaseService } from '@/lib/supabaseService';
 import { ProductCreateInput } from '@/lib/types';
-import { withOptionalAuth, withAuth } from '@/lib/authMiddleware';
 
 // GET /api/products - Lấy danh sách products
 export async function GET(request: NextRequest) {
-  return withOptionalAuth(request, async (req) => {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -69,12 +67,10 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-  });
 }
 
-// POST /api/products - Tạo product mới (Cần authentication)
+// POST /api/products - Tạo product mới
 export async function POST(request: NextRequest) {
-  return withAuth(request, async (req) => {
   try {
     const productData: ProductCreateInput = await request.json();
 
@@ -121,5 +117,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-  });
 }
