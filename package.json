@@ -10,9 +10,7 @@
     "deploy": "npm run build && netlify deploy --prod --dir=.next",
     "preview": "npm run build && npm run start",
     "mcp": "node mcp-supabase.cjs",
-    "mcp-mongodb": "node mcp-mongodb-firestore.cjs",
-    "postinstall": "node scripts/copy-pdf-worker.js",
-    "test-r2": "node scripts/test-r2-connection.js"
+    "mcp-mongodb": "node mcp-mongodb-firestore.cjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.896.0",
