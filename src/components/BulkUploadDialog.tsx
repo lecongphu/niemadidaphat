@@ -355,7 +355,7 @@ export default function BulkUploadDialog({ files, currentChapterCount, slug, pro
               <div className="text-center py-8 text-gray-500">
                 <div className="text-4xl mb-2">📂</div>
                 <div className="text-sm">Chưa có files cục bộ nào được chọn</div>
-                <div className="text-xs mt-1">Sử dụng button "📂 Chọn Files Cục Bộ" để chọn files từ máy tính</div>
+                <div className="text-xs mt-1">Sử dụng button &ldquo;📂 Chọn Files Cục Bộ&rdquo; để chọn files từ máy tính</div>
               </div>
             ) : (
             fileMappings.map((mapping, index) => {
@@ -439,7 +439,7 @@ export default function BulkUploadDialog({ files, currentChapterCount, slug, pro
               <div className="text-center py-8 text-gray-500">
                 <div className="text-4xl mb-2">☁️</div>
                 <div className="text-sm">Chưa quét R2 files</div>
-                <div className="text-xs mt-1">Click "🔍 Quét R2 Files" để tìm audio files trên R2 storage</div>
+                <div className="text-xs mt-1">Click &ldquo;🔍 Quét R2 Files&rdquo; để tìm audio files trên R2 storage</div>
               </div>
             ) : (
             r2Mappings.map((mapping, index) => {
