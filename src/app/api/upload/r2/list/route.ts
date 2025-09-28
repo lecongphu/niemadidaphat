@@ -1,7 +1,7 @@
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { r2Storage } from '@/lib/r2Storage';
+import { r2StorageEdge } from '@/lib/r2StorageEdge';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     // List files from R2 with prefix
-    const files = await r2Storage.listFiles(prefix);
+    const files = await r2StorageEdge.listFiles(prefix);
 
     return NextResponse.json({
       success: true,

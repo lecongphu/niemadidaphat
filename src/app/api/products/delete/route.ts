@@ -1,8 +1,8 @@
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { r2Storage } from '@/lib/r2Storage';
+import { r2StorageEdge } from '@/lib/r2StorageEdge';
 
 // Supabase Admin is already initialized in the import
 
@@ -47,7 +47,7 @@ export async function DELETE(request: NextRequest) {
         const url = new URL(product.pdf_url);
         const filePath = url.pathname.substring(1); // Remove leading slash
         
-        const deleteResult = await r2Storage.deleteFile(filePath);
+        const deleteResult = await r2StorageEdge.deleteFile(filePath);
         if (deleteResult.success) {
           deletedFiles.push(`PDF: ${filePath}`);
           console.log(`✅ Đã xóa PDF file: ${filePath}`);
@@ -66,7 +66,7 @@ export async function DELETE(request: NextRequest) {
         const url = new URL(product.cover_url);
         const filePath = url.pathname.substring(1); // Remove leading slash
         
-        const deleteResult = await r2Storage.deleteFile(filePath);
+        const deleteResult = await r2StorageEdge.deleteFile(filePath);
         if (deleteResult.success) {
           deletedFiles.push(`Cover: ${filePath}`);
           console.log(`✅ Đã xóa cover image: ${filePath}`);
@@ -92,7 +92,7 @@ export async function DELETE(request: NextRequest) {
             const url = new URL(chapter.audio_url);
             const filePath = url.pathname.substring(1); // Remove leading slash
             
-            const deleteResult = await r2Storage.deleteFile(filePath);
+            const deleteResult = await r2StorageEdge.deleteFile(filePath);
             if (deleteResult.success) {
               deletedFiles.push(`Audio: ${filePath}`);
               console.log(`✅ Đã xóa audio file: ${filePath}`);

@@ -1,7 +1,7 @@
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { r2Storage } from '@/lib/r2Storage';
+import { r2StorageEdge } from '@/lib/r2StorageEdge';
 
 export const config = {
   api: {
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const filePath = folder ? `${folder}/${fileName}` : fileName;
 
     // Upload to Cloudflare R2
-    const result = await r2Storage.uploadFromFormData(formData, filePath);
+    const result = await r2StorageEdge.uploadFile(filePath, Buffer.from(await file.arrayBuffer()), file.type);
 
     if (!result.success) {
       return NextResponse.json({ 

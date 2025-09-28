@@ -1,8 +1,8 @@
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { r2Storage } from '@/lib/r2Storage';
+import { r2StorageEdge } from '@/lib/r2StorageEdge';
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -43,7 +43,7 @@ export async function DELETE(request: NextRequest) {
         const url = new URL(chapter.audio_url);
         const filePath = url.pathname.substring(1); // Remove leading slash
         
-        const deleteResult = await r2Storage.deleteFile(filePath);
+        const deleteResult = await r2StorageEdge.deleteFile(filePath);
         if (deleteResult.success) {
           console.log(`✅ Đã xóa audio file: ${filePath}`);
         } else {
@@ -62,7 +62,7 @@ export async function DELETE(request: NextRequest) {
         const url = new URL(pdfUrl);
         const filePath = url.pathname.substring(1); // Remove leading slash
         
-        const deleteResult = await r2Storage.deleteFile(filePath);
+        const deleteResult = await r2StorageEdge.deleteFile(filePath);
         if (deleteResult.success) {
           console.log(`✅ Đã xóa PDF file: ${filePath}`);
         } else {

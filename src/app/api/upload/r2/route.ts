@@ -1,7 +1,7 @@
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { r2Storage } from '@/lib/r2Storage';
+import { r2StorageEdge } from '@/lib/r2StorageEdge';
 
 export const config = {
   api: {
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     // Convert file to buffer for R2 upload
     const buffer = Buffer.from(await file.arrayBuffer());
-    const result = await r2Storage.uploadFile(filePath, buffer, file.type);
+    const result = await r2StorageEdge.uploadFile(filePath, buffer, file.type);
 
     if (!result.success) {
       return NextResponse.json({ 
