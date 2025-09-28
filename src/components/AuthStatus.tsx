@@ -119,7 +119,7 @@ export default function AuthStatus() {
     );
   }
 
-  // Show Google One-Tap and fallback options when not logged in
+  // Show Google One-Tap when not logged in
   return (
     <>
       {/* Google One-Tap sẽ tự động hiển thị */}
@@ -135,12 +135,7 @@ export default function AuthStatus() {
       
       <div className="flex items-center space-x-2">
         <div className="text-xs lg:text-sm text-gray-600 bg-white/90 px-2 lg:px-3 py-1 lg:py-2 rounded-lg shadow-sm">
-          <Link 
-            href="/tai-khoan/dang-nhap"
-            className="text-blue-600 hover:text-blue-800 transition-colors font-medium"
-          >
-            Đăng nhập thủ công
-          </Link>
+          <span>Đang tải Google One-Tap...</span>
         </div>
       </div>
     </>
