@@ -11,6 +11,7 @@ import UserManagement from "@/components/UserManagement";
 import { vietnameseToSlug } from "@/lib/slugUtils";
 import { useAdminChapters } from "@/hooks/useAdminChapters";
 import ChapterManager from "@/components/ChapterManager";
+import BuildSizeInfo from "@/components/BuildSizeInfo";
 import { getCurrentUserWithRoles, isAdmin, hasPermission, type UserWithRoles } from "@/lib/authUtils";
 
 // Type definitions - sử dụng types từ @/lib/types
@@ -318,6 +319,11 @@ function AdminPageContent() {
               </div>
             )}
           </div>
+        </div>
+        
+        {/* Build Size Info */}
+        <div className="mb-4">
+          <BuildSizeInfo />
         </div>
         
         {/* Tabs */}

@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:check": "npm run build && npm run check-size",
+    "check-size": "node scripts/check-build-size.js",
     "start": "next start",
     "lint": "eslint",
     "deploy": "npm run build && netlify deploy --prod --dir=.next",
@@ -26,6 +28,7 @@
     "next": "15.5.2",
     "node-fetch": "^3.3.2",
     "pdfjs-dist": "^5.4.149",
+    "pretty-bytes": "^7.1.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-h5-audio-player": "^3.10.1",

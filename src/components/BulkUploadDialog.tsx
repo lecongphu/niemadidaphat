@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import prettyBytes from 'pretty-bytes';
 
 interface BulkUploadDialogProps {
   files: File[];
@@ -371,7 +372,7 @@ export default function BulkUploadDialog({ files, currentChapterCount, slug, pro
                     {mapping.file.name}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {(mapping.file.size / (1024 * 1024)).toFixed(1)} MB
+                    {prettyBytes(mapping.file.size)}
                   </div>
                   
                   {/* Progress Bar */}
@@ -456,7 +457,7 @@ export default function BulkUploadDialog({ files, currentChapterCount, slug, pro
                     {fileName}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {(mapping.file.size / (1024 * 1024)).toFixed(1)} MB • {
+                    {prettyBytes(mapping.file.size)} • {
                       (() => {
                         try {
                           return new Date(mapping.file.lastModified).toLocaleDateString();
