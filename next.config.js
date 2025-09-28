@@ -3,18 +3,22 @@ const nextConfig = {
   // Output configuration for Cloudflare Pages
   output: 'standalone',
   
-  // Disable cache for Cloudflare Pages deployment
+  // Optimize for Cloudflare Pages deployment
   experimental: {
     // Allow larger request body size (default is 1MB)
     serverComponentsExternalPackages: [],
     // Disable cache to reduce build size
     cacheHandler: undefined,
-    // Disable SWC cache
+    // Enable SWC minification for smaller bundles
     swcMinify: true,
-    // Disable turbotrace
+    // Optimize turbo for smaller builds
     turbo: {
       rules: {},
     },
+    // Disable build cache to reduce size
+    buildCache: false,
+    // Optimize CSS
+    optimizeCss: true,
   },
   
   // Generate stable build ID for static assets
@@ -27,28 +31,52 @@ const nextConfig = {
   
   // Webpack configuration for Cloudflare Pages
   webpack: (config, { isServer, dev }) => {
-    // Only disable cache in production for Cloudflare Pages
-    if (!dev && !isServer) {
-      config.cache = false;
-    }
+    // Completely disable cache for Cloudflare Pages
+    config.cache = false;
     
-    // Optimize for Cloudflare Pages - reduce bundle size
+    // Optimize for Cloudflare Pages - aggressive chunk splitting
     if (!isServer) {
-      config.optimization.splitChunks = {
-        chunks: 'all',
-        cacheGroups: {
-          default: {
-            minChunks: 2,
-            priority: -20,
-            reuseExistingChunk: true,
-          },
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            priority: -10,
-            chunks: 'all',
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          minSize: 20000,
+          maxSize: 244000, // Keep chunks under 244KB (25MB/100 chunks)
+          cacheGroups: {
+            default: {
+              minChunks: 2,
+              priority: -20,
+              reuseExistingChunk: true,
+              enforce: true,
+            },
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: -10,
+              chunks: 'all',
+              maxSize: 244000,
+              enforce: true,
+            },
+            // Split large libraries separately
+            supabase: {
+              test: /[\\/]node_modules[\\/]@supabase[\\/]/,
+              name: 'supabase',
+              chunks: 'all',
+              priority: 20,
+              maxSize: 244000,
+            },
+            aws: {
+              test: /[\\/]node_modules[\\/]@aws-sdk[\\/]/,
+              name: 'aws',
+              chunks: 'all',
+              priority: 20,
+              maxSize: 244000,
+            },
           },
         },
+        // Enable tree shaking
+        usedExports: true,
+        sideEffects: false,
       };
     }
 
@@ -147,8 +175,24 @@ const nextConfig = {
 
   // Optimize bundle size
   experimental: {
-    optimizePackageImports: ['react-h5-audio-player'],
+    optimizePackageImports: ['react-h5-audio-player', '@supabase/supabase-js', '@aws-sdk/client-s3'],
+    // Disable static optimization for smaller builds
+    staticGenerationRetryCount: 1,
+    // Optimize server components
+    serverComponentsExternalPackages: ['@aws-sdk/client-s3'],
   },
+  
+  // Compiler optimizations
+  compiler: {
+    // Remove console logs in production
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  
+  // Compression
+  compress: true,
+  
+  // Disable source maps in production for smaller builds
+  productionBrowserSourceMaps: false,
 };
 
 module.exports = nextConfig;

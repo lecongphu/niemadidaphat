@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:clean": "node scripts/clean-build.js",
     "build:check": "npm run build && npm run check-size",
     "check-size": "node scripts/check-build-size.js",
     "start": "next start",
