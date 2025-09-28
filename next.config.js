@@ -1,9 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // API routes configuration for large file uploads
+  // Output configuration for Cloudflare Pages
+  output: 'standalone',
+  
+  // Disable cache for Cloudflare Pages deployment
   experimental: {
     // Allow larger request body size (default is 1MB)
     serverComponentsExternalPackages: [],
+    // Disable cache to reduce build size
+    cacheHandler: undefined,
   },
   // Image optimization for Bunny CDN
   images: {
@@ -66,8 +71,28 @@ const nextConfig = {
     optimizePackageImports: ['react-h5-audio-player'],
   },
 
-  // Webpack optimization for media files
+  // Webpack optimization for media files and Cloudflare Pages
   webpack: (config, { isServer }) => {
+    // Optimize for Cloudflare Pages - reduce bundle size
+    if (!isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          default: {
+            minChunks: 2,
+            priority: -20,
+            reuseExistingChunk: true,
+          },
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            priority: -10,
+            chunks: 'all',
+          },
+        },
+      };
+    }
+
     // Audio file handling
     config.module.rules.push({
       test: /\.(mp3|wav|ogg|m4a|webm|mp4)$/,
