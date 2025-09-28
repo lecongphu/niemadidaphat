@@ -113,7 +113,7 @@ export default function BuildSizeInfo({ className = "" }: BuildSizeInfoProps) {
           <ul className="list-disc list-inside space-y-1 text-xs opacity-75">
             <li>Disable webpack cache in next.config.js</li>
             <li>Add .next/cache/** to .gitignore</li>
-            <li>Use output: "standalone" for smaller builds</li>
+            <li>Use output: &ldquo;standalone&rdquo; for smaller builds</li>
             <li>Run <code className="bg-gray-100 px-1 rounded">npm run check-size</code> to analyze</li>
           </ul>
         </div>
