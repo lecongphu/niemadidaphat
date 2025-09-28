@@ -1,7 +1,9 @@
-import ProductCard from "@/components/ProductCard";
-import { listProducts } from "@/lib/productsRepo";
+export const runtime = 'edge';
 
 export const dynamic = "force-dynamic";
+
+import ProductCard from "@/components/ProductCard";
+import { listProducts } from "@/lib/productsRepo";
 
 export default async function CatalogPage() {
   const products = await listProducts();

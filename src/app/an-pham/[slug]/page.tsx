@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import ChapterPlayerList from "@/components/ChapterPlayerList";
 import { getProductBySlugDb } from "@/lib/productsRepo";
 import { getTimeAgo } from "@/lib/dateUtils";
@@ -7,10 +9,6 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  // Keep it simple for MVP; rely on on-demand rendering otherwise
-  return [] as { slug: string }[];
-}
 
 export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params;

@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { SupabaseService } from '@/lib/supabaseService';
 import { ProductCreateInput } from '@/lib/types';

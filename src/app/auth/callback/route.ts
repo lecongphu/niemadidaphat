@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 
 // OAuth callback route - chỉ để fallback, không sử dụng cho Google One-Tap

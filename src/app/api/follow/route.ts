@@ -1,8 +1,8 @@
+export const runtime = 'edge';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { SupabaseService } from '@/lib/supabaseService';
 import { SupabaseAuth } from '@/lib/supabaseAuth';
-
-export const runtime = 'nodejs';
 
 // POST /api/follow - Follow a product
 export async function POST(request: NextRequest) {
