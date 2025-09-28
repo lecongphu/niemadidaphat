@@ -12,22 +12,34 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const folder = formData.get('folder') as string | null;
+    const slug = formData.get('slug') as string | null;
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // Generate file path
+    // Generate file path with slug-based folder structure
     const timestamp = Date.now();
-    const fileName = `${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const filePath = folder ? `${folder}/${fileName}` : fileName;
+    const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const fileName = `${timestamp}-${cleanFileName}`;
+    
+    // Create folder structure: folder/slug/filename
+    let filePath = fileName;
+    if (folder && slug) {
+      filePath = `${folder}/${slug}/${fileName}`;
+    } else if (folder) {
+      filePath = `${folder}/${fileName}`;
+    } else if (slug) {
+      filePath = `${slug}/${fileName}`;
+    }
 
-    // Upload to Cloudflare R2
-    const result = await r2Storage.uploadFromFormData(formData, filePath);
+    // Convert file to buffer for R2 upload
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const result = await r2Storage.uploadFile(filePath, buffer, file.type);
 
     if (!result.success) {
       return NextResponse.json({ 
-        error: 'Failed to upload file to R2 storage', 
+        error: 'Failed to upload file to R2', 
         details: result.error 
       }, { status: 500 });
     }
@@ -36,6 +48,7 @@ export async function POST(request: NextRequest) {
       success: true,
       url: result.url,
       filePath: filePath,
+      storageUsed: 'r2',
     });
   } catch (error) {
     console.error('R2 storage upload API error:', error);

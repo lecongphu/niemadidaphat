@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { bunnyStorage } from '@/lib/bunnyStorage';
+import { r2Storage } from '@/lib/r2Storage';
 
 // Supabase Admin is already initialized in the import
 
@@ -41,15 +41,16 @@ export async function DELETE(request: NextRequest) {
     // Xóa PDF file nếu có
     if (product.pdf_url) {
       try {
-        const filePath = bunnyStorage.extractFilePath(product.pdf_url);
-        if (filePath) {
-          const deleteResult = await bunnyStorage.deleteFile(filePath);
-          if (deleteResult.success) {
-            deletedFiles.push(`PDF: ${filePath}`);
-            console.log(`✅ Đã xóa PDF file: ${filePath}`);
-          } else {
-            console.error('❌ Lỗi xóa PDF file:', deleteResult.error);
-          }
+        // Extract file path from URL (assuming R2 URL format)
+        const url = new URL(product.pdf_url);
+        const filePath = url.pathname.substring(1); // Remove leading slash
+        
+        const deleteResult = await r2Storage.deleteFile(filePath);
+        if (deleteResult.success) {
+          deletedFiles.push(`PDF: ${filePath}`);
+          console.log(`✅ Đã xóa PDF file: ${filePath}`);
+        } else {
+          console.error('❌ Lỗi xóa PDF file:', deleteResult.error);
         }
       } catch (error) {
         console.error('❌ Lỗi xóa PDF file:', error);
@@ -59,15 +60,16 @@ export async function DELETE(request: NextRequest) {
     // Xóa cover image nếu có
     if (product.cover_url) {
       try {
-        const filePath = bunnyStorage.extractFilePath(product.cover_url);
-        if (filePath) {
-          const deleteResult = await bunnyStorage.deleteFile(filePath);
-          if (deleteResult.success) {
-            deletedFiles.push(`Cover: ${filePath}`);
-            console.log(`✅ Đã xóa cover image: ${filePath}`);
-          } else {
-            console.error('❌ Lỗi xóa cover image:', deleteResult.error);
-          }
+        // Extract file path from URL (assuming R2 URL format)
+        const url = new URL(product.cover_url);
+        const filePath = url.pathname.substring(1); // Remove leading slash
+        
+        const deleteResult = await r2Storage.deleteFile(filePath);
+        if (deleteResult.success) {
+          deletedFiles.push(`Cover: ${filePath}`);
+          console.log(`✅ Đã xóa cover image: ${filePath}`);
+        } else {
+          console.error('❌ Lỗi xóa cover image:', deleteResult.error);
         }
       } catch (error) {
         console.error('❌ Lỗi xóa cover image:', error);
@@ -84,15 +86,16 @@ export async function DELETE(request: NextRequest) {
       for (const chapter of chapters) {
         if (chapter.audio_url) {
           try {
-            const filePath = bunnyStorage.extractFilePath(chapter.audio_url);
-            if (filePath) {
-              const deleteResult = await bunnyStorage.deleteFile(filePath);
-              if (deleteResult.success) {
-                deletedFiles.push(`Audio: ${filePath}`);
-                console.log(`✅ Đã xóa audio file: ${filePath}`);
-              } else {
-                console.error('❌ Lỗi xóa audio file:', deleteResult.error);
-              }
+            // Extract file path from URL (assuming R2 URL format)
+            const url = new URL(chapter.audio_url);
+            const filePath = url.pathname.substring(1); // Remove leading slash
+            
+            const deleteResult = await r2Storage.deleteFile(filePath);
+            if (deleteResult.success) {
+              deletedFiles.push(`Audio: ${filePath}`);
+              console.log(`✅ Đã xóa audio file: ${filePath}`);
+            } else {
+              console.error('❌ Lỗi xóa audio file:', deleteResult.error);
             }
           } catch (error) {
             console.error('❌ Lỗi xóa audio file:', error);

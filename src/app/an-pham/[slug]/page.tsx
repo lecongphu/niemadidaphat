@@ -1,5 +1,4 @@
 import ChapterPlayerList from "@/components/ChapterPlayerList";
-import ProductViewTracker from "@/components/ProductViewTracker";
 import { getProductBySlugDb } from "@/lib/productsRepo";
 import { getTimeAgo } from "@/lib/dateUtils";
 import { notFound } from "next/navigation";
@@ -19,8 +18,7 @@ export default async function ProductDetailPage({ params }: Props) {
   if (!product) return notFound();
 
   return (
-    <ProductViewTracker productId={product.id}>
-      <div className="space-y-8 sm:space-y-12">
+    <div className="space-y-8 sm:space-y-12">
       <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
         <div className="lg:w-1/3">
           <div className="w-full aspect-[3/2] bg-gradient-to-br from-amber-50 to-orange-100 rounded-lg border border-amber-200 flex items-center justify-center shadow-sm">
@@ -72,7 +70,6 @@ export default async function ProductDetailPage({ params }: Props) {
         <ChapterPlayerList product={product} showTitle={false} />
       </section>
     </div>
-    </ProductViewTracker>
   );
 }
 

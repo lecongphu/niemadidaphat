@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import GlobalPlayer from "@/components/GlobalPlayer";
-import PDFReader from "@/components/PDFReader";
 import type { Product } from "@/lib/types";
 import { getOptimizedAudioUrl, useAdaptiveAudioQuality } from "@/lib/audioOptimization";
 import { useAudio } from "@/contexts/AudioContext";
@@ -16,7 +15,6 @@ interface ChapterPlayerListProps {
 export default function ChapterPlayerList({ product, showTitle = true }: ChapterPlayerListProps) {
   const adaptiveQuality = useAdaptiveAudioQuality();
   const [expandedChapter, setExpandedChapter] = useState<number | null>(null);
-  const [showPDF, setShowPDF] = useState(false);
   const { currentTime, currentTrack } = useAudio();
   
   // Sử dụng hook để lấy chapters
@@ -99,21 +97,6 @@ export default function ChapterPlayerList({ product, showTitle = true }: Chapter
           </p>
           {product.narrator && (
             <p className="text-sm text-gray-500">Giọng đọc: {product.narrator}</p>
-          )}
-          {product.pdf_url && (
-            <div className="flex items-center justify-center gap-2 mt-3">
-              <button
-                onClick={() => setShowPDF(!showPDF)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  showPDF 
-                    ? 'lotus-gradient text-white shadow-lg' 
-                    : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                }`}
-              >
-                {showPDF ? '📖 Ẩn sách' : '📖 Hiển thị sách'}
-              </button>
-              <span className="text-xs text-amber-600">Đồng bộ với audio</span>
-            </div>
           )}
         </div>
       )}
@@ -242,23 +225,6 @@ export default function ChapterPlayerList({ product, showTitle = true }: Chapter
         </div>
       )}
 
-      {/* PDF Reader */}
-      {product.pdf_url && showPDF && (
-        <div className="mt-6 sm:mt-8">
-          <PDFReader
-            pdfUrl={product.pdf_url}
-            title={product.title}
-            currentTime={
-              currentTrack && currentTrack.src.includes(product.slug) 
-                ? currentTime 
-                : 0
-            }
-            onPageChange={(page) => {
-              console.log(`PDF page changed to: ${page}`);
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 }

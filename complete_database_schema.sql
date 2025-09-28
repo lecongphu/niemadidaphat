@@ -15,7 +15,7 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 -- User Profiles Table
 -- Stores user information from OAuth and manual registration
 CREATE TABLE IF NOT EXISTS user_profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE ON UPDATE CASCADE,
     email TEXT UNIQUE,
     full_name TEXT NOT NULL,
     avatar_url TEXT,                        -- Profile picture from OAuth provider
@@ -48,8 +48,7 @@ CREATE TABLE IF NOT EXISTS roles (
 -- User Roles Table
 -- Manages user permissions and access levels
 CREATE TABLE IF NOT EXISTS user_roles (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY REFERENCES user_profiles(id) ON DELETE CASCADE,
     role TEXT NOT NULL DEFAULT 'user', -- Backward compatibility
     role_id UUID REFERENCES roles(id) ON DELETE SET NULL, -- New foreign key
     permissions JSONB DEFAULT '[]'::jsonb,
@@ -61,15 +60,14 @@ CREATE TABLE IF NOT EXISTS user_roles (
     assigned_by UUID REFERENCES user_profiles(id),
     
     CONSTRAINT valid_role CHECK (role IN ('admin', 'moderator', 'user', 'guest')),
-    UNIQUE(user_id, role),
-    UNIQUE(user_id, role_id)
+    UNIQUE(id, role),
+    UNIQUE(id, role_id)
 );
 
 -- User Sessions Table
 -- Tracks user activity and session management
 CREATE TABLE IF NOT EXISTS user_sessions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY REFERENCES user_profiles(id) ON DELETE CASCADE,
     session_token TEXT NOT NULL UNIQUE,
     ip_address INET,
     user_agent TEXT,
@@ -101,7 +99,6 @@ CREATE TABLE IF NOT EXISTS products (
     duration_seconds INTEGER,              -- Storage format: total seconds
     description TEXT NOT NULL,
     cover_url TEXT,                        -- Cover image URL
-    pdf_url TEXT,                          -- PDF file URL for reading
     category TEXT,                         -- Content category
     followers_count INTEGER DEFAULT 0,     -- Number of followers
     total_views INTEGER DEFAULT 0,         -- Total view count
@@ -153,9 +150,11 @@ CREATE TABLE IF NOT EXISTS product_views (
     user_id UUID REFERENCES user_profiles(id) ON DELETE SET NULL,
     ip_address INET,                       -- For anonymous tracking
     user_agent TEXT,
+    referrer TEXT,
     view_duration INTEGER DEFAULT 0,       -- Time spent viewing (seconds)
     chapter_progress JSONB DEFAULT '{}'::jsonb, -- Progress through chapters
     created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    viewed_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     session_id UUID REFERENCES user_sessions(id) ON DELETE SET NULL,
     
     CONSTRAINT positive_duration CHECK (view_duration >= 0)
@@ -345,12 +344,15 @@ JOIN products p ON c.product_id = p.id;
 
 -- Function to update timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+language plpgsql
+set search_path = ''
+AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$;
 
 -- Triggers for updated_at
 CREATE TRIGGER update_user_profiles_updated_at 
@@ -379,14 +381,17 @@ CREATE TRIGGER update_feedback_updated_at
 
 -- Function to update user last_active
 CREATE OR REPLACE FUNCTION update_user_last_active()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+language plpgsql
+set search_path = ''
+AS $$
 BEGIN
     UPDATE user_profiles 
     SET last_active = NOW()
     WHERE id = NEW.user_id;
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$;
 
 -- Trigger for user activity tracking
 CREATE TRIGGER update_user_activity_on_view 
@@ -395,7 +400,10 @@ CREATE TRIGGER update_user_activity_on_view
 
 -- Function to update product followers count
 CREATE OR REPLACE FUNCTION update_product_followers_count()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+language plpgsql
+set search_path = ''
+AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
         UPDATE products 
@@ -414,7 +422,7 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$$ language 'plpgsql';
+$$;
 
 -- Triggers for followers count
 CREATE TRIGGER update_followers_count_on_insert 
@@ -658,7 +666,10 @@ $$ LANGUAGE plpgsql;
 
 -- Function to update product statistics
 CREATE OR REPLACE FUNCTION update_product_statistics()
-RETURNS VOID AS $$
+RETURNS VOID 
+language plpgsql
+set search_path = ''
+AS $$
 BEGIN
     UPDATE products SET
         total_views = COALESCE((
@@ -678,7 +689,7 @@ BEGIN
             WHERE product_id = products.id
         );
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- ================================================
 -- SCHEMA COMPLETE

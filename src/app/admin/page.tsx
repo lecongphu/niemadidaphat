@@ -5,14 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { SupabaseAuth } from "@/lib/supabaseAuth";
 import { SupabaseService } from "@/lib/supabaseService";
 import type { Product, ProductCreateInput, ProductUpdateInput } from "@/lib/types";
-import ImageUploader from "@/components/ImageUploader";
-import PDFUploader from "@/components/PDFUploader";
-import DurationInput from "@/components/DurationInput";
-import AdminAnalytics from "@/components/AdminAnalytics";
+import ImageUploaderR2 from "@/components/ImageUploaderR2";
 import FeedbackManager from "@/components/FeedbackManager";
 import UserManagement from "@/components/UserManagement";
 import { vietnameseToSlug } from "@/lib/slugUtils";
 import { useAdminChapters } from "@/hooks/useAdminChapters";
+import ChapterManager from "@/components/ChapterManager";
 import { getCurrentUserWithRoles, isAdmin, hasPermission, type UserWithRoles } from "@/lib/authUtils";
 
 // Type definitions - sử dụng types từ @/lib/types
@@ -59,7 +57,6 @@ const emptyForm = {
   duration_seconds: 0,
   description: "",
   cover_url: "",
-  pdf_url: "",
   category: "",
 };
 
@@ -71,13 +68,11 @@ function AdminPageContent() {
   const [userWithRoles, setUserWithRoles] = useState<UserWithRoles | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'products' | 'analytics' | 'feedback' | 'users'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'feedback' | 'users'>('products');
   const [permissions, setPermissions] = useState<{
-    analytics: boolean;
     feedback: boolean;
     users: boolean;
   }>({
-    analytics: false,
     feedback: false,
     users: false
   });
@@ -121,14 +116,12 @@ function AdminPageContent() {
         }
 
         // Check specific permissions
-        const [analytics, feedback, users] = await Promise.all([
-          hasPermission('analytics.read'),
+        const [feedback, users] = await Promise.all([
           hasPermission('feedback.read'),
           hasPermission('users.read')
         ]);
 
         setPermissions({
-          analytics,
           feedback,
           users
         });
@@ -145,6 +138,15 @@ function AdminPageContent() {
       setPage(1);
       setLoadingList(false);
 
+      // Check for edit parameter in URL
+      const editSlug = searchParams.get('edit');
+      if (editSlug) {
+        const productToEdit = res.items.find(p => p.slug === editSlug);
+        if (productToEdit) {
+          handleEditProduct(productToEdit);
+        }
+      }
+
       // Listen for auth state changes
       const { data: { subscription } } = SupabaseAuth.onAuthStateChange(async (event, session) => {
         if (!session?.user) {
@@ -157,7 +159,7 @@ function AdminPageContent() {
       return () => subscription?.unsubscribe();
     };
     void init();
-  }, [router]);
+  }, [router, searchParams]);
 
   async function fetchList(nextPage: number, q: string) {
     setLoadingList(true);
@@ -166,6 +168,31 @@ function AdminPageContent() {
     setTotal(res.total);
     setPage(nextPage);
     setLoadingList(false);
+  }
+
+  function handleEditProduct(product: Product) {
+    setForm({
+      title: product.title,
+      slug: product.slug,
+      author: product.author || "",
+      translator: product.translator || "",
+      interpreter: product.interpreter || "",
+      speaker: product.speaker || "",
+      narrator: product.narrator || "",
+      lecture_date: product.lecture_date || "",
+      duration: product.duration || "",
+      duration_seconds: product.duration_seconds || 0,
+      description: product.description || "",
+      cover_url: product.cover_url || "",
+      category: product.category || "",
+    });
+    setEditingId(product.id);
+    setErrors({});
+
+    // Update URL with edit parameter
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set('edit', product.slug);
+    window.history.pushState({}, '', newUrl.toString());
   }
 
   if (loading) return <p className="text-gray-600">Đang tải...</p>;
@@ -204,14 +231,16 @@ function AdminPageContent() {
           duration_seconds: form.duration_seconds || null,
           description: form.description,
           cover_url: form.cover_url || null,
-          pdf_url: form.pdf_url || null,
           category: form.category || null,
         });
         
         setProducts((prev) => prev.map((p) => (p.id === editingId ? updated : p)));
         setEditingId(null);
         setForm({ ...emptyForm });
-        router.replace('/admin');
+        // Clear edit parameter from URL
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('edit');
+        window.history.pushState({}, '', newUrl.toString());
         
         alert('✅ Đã lưu sản phẩm thành công!');
       } else {
@@ -229,7 +258,6 @@ function AdminPageContent() {
           duration_seconds: form.duration_seconds || null,
           description: form.description,
           cover_url: form.cover_url || null,
-          pdf_url: form.pdf_url || null,
           category: form.category || null,
         });
         
@@ -245,24 +273,7 @@ function AdminPageContent() {
   }
 
   function startEdit(p: Product) {
-    setEditingId(p.id);
-    const productForm = {
-      title: p.title,
-      slug: p.slug,
-      author: p.author,
-      translator: p.translator || "",
-      interpreter: p.interpreter || "",
-      speaker: p.speaker || "",
-      narrator: p.narrator || "",
-      lecture_date: p.lecture_date || "",
-      duration: p.duration,
-      duration_seconds: p.duration_seconds || 0,
-      description: p.description,
-      cover_url: p.cover_url || "",
-      pdf_url: p.pdf_url || "",
-      category: p.category || "",
-    };
-    setForm(productForm);
+    handleEditProduct(p);
   }
 
   async function remove(id: string) {
@@ -321,18 +332,6 @@ function AdminPageContent() {
           >
             🎵 Quản lý sản phẩm
           </button>
-          {permissions.analytics && (
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                activeTab === 'analytics'
-                  ? 'lotus-gradient text-white shadow-lg'
-                  : 'bg-amber-200/50 text-amber-800 hover:bg-amber-300/50'
-              }`}
-            >
-              📊 Thống kê Analytics
-            </button>
-          )}
           {permissions.feedback && (
             <button
               onClick={() => setActiveTab('feedback')}
@@ -473,19 +472,7 @@ function AdminPageContent() {
                 />
                 <div className="text-xs text-gray-500 mt-1">Ngày giảng pháp thoại hoặc tụng kinh</div>
               </div>
-              <div>
-                <DurationInput
-                  value={form.duration}
-                  onChange={(duration, seconds) => setForm({ 
-                    ...form, 
-                    duration, 
-                    duration_seconds: seconds 
-                  })}
-                  chapterAudioUrls={chapters.map(ch => ch.audio_url || '').filter(url => url)}
-                  placeholder="Ví dụ: 2h 30m, 90m, 1:30:45"
-                />
-                {errors.duration && <p className="text-xs text-red-600 mt-1">{errors.duration}</p>}
-              </div>
+              
               <div>
                 <select className="border rounded px-3 py-2 w-full" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
                   <option value="">-- Chọn danh mục --</option>
@@ -520,37 +507,32 @@ function AdminPageContent() {
                     value={form.cover_url} 
                     onChange={(e) => setForm({ ...form, cover_url: e.target.value })} 
                   />
-                  <ImageUploader
+                  <ImageUploaderR2
                     label="Upload Cover"
-                    currentUrl={form.cover_url}
-                    category={form.category || 'general'}
                     slug={form.slug || vietnameseToSlug(form.title)}
-                    onUploadComplete={(url) => setForm({ ...form, cover_url: url })}
+                    onUploadSuccess={(url, filePath) => {
+                      console.log('Cover upload success:', { url, filePath });
+                      setForm({ ...form, cover_url: url });
+                    }}
+                    onUploadError={(error) => {
+                      console.error('Cover upload error:', error);
+                      alert('❌ Lỗi upload cover: ' + error);
+                    }}
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  PDF Sách Điện Tử
-                </label>
-                <div className="space-y-2">
-                  <input 
-                    className="border rounded px-3 py-2 w-full" 
-                    placeholder="PDF URL (hoặc upload file)" 
-                    value={form.pdf_url} 
-                    onChange={(e) => setForm({ ...form, pdf_url: e.target.value })} 
-                  />
-                  <PDFUploader
-                    label="Upload PDF"
-                    currentUrl={form.pdf_url}
-                    slug={form.slug || vietnameseToSlug(form.title)}
-                    onUploadComplete={(url) => setForm({ ...form, pdf_url: url })}
-                  />
-                </div>
-              </div>
             </div>
           </section>
+
+          {/* Chapters Management Section - Only show when editing a product */}
+          {editingId && (
+            <ChapterManager
+              productId={editingId}
+              productTitle={form.title}
+              productSlug={form.slug || vietnameseToSlug(form.title)}
+            />
+          )}
 
           <div className="flex items-center gap-3">
             <button className="px-4 py-2 rounded bg-black text-white" onClick={handleSave}>
@@ -563,7 +545,10 @@ function AdminPageContent() {
                   if (confirm("Bạn có chắc muốn tạo sản phẩm mới? Thay đổi hiện tại sẽ bị mất.")) {
                     setEditingId(null);
                     setForm({ ...emptyForm });
-                    router.replace('/admin');
+                    // Clear edit parameter from URL
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.delete('edit');
+                    window.history.pushState({}, '', newUrl.toString());
                   }
                 }}
               >
@@ -579,12 +564,18 @@ function AdminPageContent() {
                     if (confirm("Bạn có thay đổi chưa lưu. Bạn có chắc muốn hủy?")) {
                       setEditingId(null);
                       setForm({ ...emptyForm });
-                      router.replace('/admin');
+                      // Clear edit parameter from URL
+                      const newUrl = new URL(window.location.href);
+                      newUrl.searchParams.delete('edit');
+                      window.history.pushState({}, '', newUrl.toString());
                     }
                   } else {
                     setEditingId(null);
                     setForm({ ...emptyForm });
-                    router.replace('/admin');
+                    // Clear edit parameter from URL
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.delete('edit');
+                    window.history.pushState({}, '', newUrl.toString());
                   }
                 }}
               >
@@ -630,10 +621,7 @@ function AdminPageContent() {
         </div>
       )}
 
-      {/* Analytics Tab */}
-      {activeTab === 'analytics' && (
-        <AdminAnalytics />
-      )}
+      {/* Analytics Tab - Removed */}
       
       {activeTab === 'feedback' && (
         <FeedbackManager />

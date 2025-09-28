@@ -1,116 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
+// Simple in-memory cache for roles (roles don't change frequently)
+let rolesCache: {
+  data: unknown[] | null;
+  timestamp: number;
+} = {
+  data: null,
+  timestamp: 0
+};
+
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+
+// GET /api/roles - Lấy danh sách roles với caching
 export async function GET() {
   try {
-    if (!supabase) {
-      return NextResponse.json(
-        { error: 'Supabase không được cấu hình' },
-        { status: 500 }
-      );
+    const now = Date.now();
+    
+    // Check if cache is still valid
+    if (rolesCache.data && (now - rolesCache.timestamp) < CACHE_DURATION) {
+      return NextResponse.json({
+        roles: rolesCache.data,
+        cached: true
+      });
     }
 
-    // Get all roles from Supabase
-    const { data: roles, error: rolesError } = await supabase
+    // Fetch fresh data from Supabase
+    const { data: rolesData, error } = await supabase
       .from('roles')
       .select('*')
-      .order('created_at', { ascending: true });
+      .order('name');
 
-    if (rolesError) {
-      console.error('Roles query error:', rolesError);
+    if (error) {
+      console.error('Roles query error:', error);
       return NextResponse.json(
-        { error: 'Lỗi lấy danh sách roles' },
+        { error: 'Failed to fetch roles' },
         { status: 500 }
       );
     }
-    
+
+    // Update cache
+    rolesCache = {
+      data: rolesData || [],
+      timestamp: now
+    };
+
     return NextResponse.json({
-      success: true,
-      data: roles || []
+      roles: rolesData || [],
+      cached: false
     });
 
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Error fetching roles:', error);
     return NextResponse.json(
-      { error: 'Lỗi lấy danh sách roles' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { name, display_name, description, permissions } = body;
-
-    if (!name || !display_name) {
-      return NextResponse.json(
-        { error: 'Tên và tên hiển thị là bắt buộc' },
-        { status: 400 }
-      );
-    }
-
-    if (!supabase) {
-      return NextResponse.json(
-        { error: 'Supabase không được cấu hình' },
-        { status: 500 }
-      );
-    }
-
-    // Check if role already exists
-    const { data: existingRole, error: checkError } = await supabase
-      .from('roles')
-      .select('id')
-      .eq('name', name)
-      .single();
-
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('Role check error:', checkError);
-      return NextResponse.json(
-        { error: 'Lỗi kiểm tra role' },
-        { status: 500 }
-      );
-    }
-
-    if (existingRole) {
-      return NextResponse.json(
-        { error: 'Role đã tồn tại' },
-        { status: 409 }
-      );
-    }
-
-    // Create new role
-    const { data: newRole, error: createError } = await supabase
-      .from('roles')
-      .insert({
-        name,
-        display_name,
-        description: description || '',
-        permissions: permissions || [],
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .select()
-      .single();
-
-    if (createError || !newRole) {
-      console.error('Role creation error:', createError);
-      return NextResponse.json(
-        { error: 'Lỗi tạo role' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: newRole
-    });
-
-  } catch (error: unknown) {
-    console.error('Error creating role:', error);
-    return NextResponse.json(
-      { error: 'Lỗi tạo role' },
+      { error: 'Failed to fetch roles' },
       { status: 500 }
     );
   }

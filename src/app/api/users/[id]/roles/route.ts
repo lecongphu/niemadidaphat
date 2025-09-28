@@ -29,7 +29,7 @@ export async function POST(
     const { data: existingRole, error: existingRoleError } = await supabase
       .from('user_roles')
       .select('*')
-      .eq('user_id', id)
+      .eq('id', id)
       .eq('role_id', role_id)
       .single();
 
@@ -52,7 +52,7 @@ export async function POST(
       const { error: insertError } = await supabase
         .from('user_roles')
         .insert({
-          user_id: id,
+          id: id,
           role_id,
           expires_at,
           is_active: true,
@@ -109,7 +109,7 @@ export async function DELETE(
         is_active: false,
         updated_at: new Date().toISOString()
       })
-      .eq('user_id', id)
+      .eq('id', id)
       .eq('role_id', roleId);
 
     if (updateError) {

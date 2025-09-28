@@ -11,8 +11,14 @@ if (!supabaseUrl || !supabaseKey) {
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
+    autoRefreshToken: false, // Tắt auto refresh để tránh treo web
+    detectSessionInUrl: true,
+    flowType: 'pkce' // Sử dụng PKCE flow thay vì implicit
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'supabase-js-web'
+    }
   }
 });
 

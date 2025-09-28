@@ -46,7 +46,7 @@ export default function FeedbackPage() {
         .from('feedback')
         .insert({
           message: formData.message.trim(),
-          user_id: user?.id || null,
+          id: user?.id || null,
           user_type: user ? 'registered' : 'anonymous',
           status: 'pending',
           priority: 'medium',

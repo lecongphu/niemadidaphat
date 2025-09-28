@@ -1,33 +1,34 @@
 "use client";
 
 import React from 'react';
-import BunnyUploader from './BunnyUploader';
+import R2Uploader from './R2Uploader';
 
-interface PDFUploaderBunnyProps {
+interface ImageUploaderR2Props {
   onUploadSuccess: (url: string, filePath: string) => void;
   onUploadError?: (error: string) => void;
   onUploadStart?: () => void;
   label?: string;
-  folder?: string;
+  slug?: string; // Product slug for organizing files
 }
 
-const PDFUploaderBunny: React.FC<PDFUploaderBunnyProps> = ({
+const ImageUploaderR2: React.FC<ImageUploaderR2Props> = ({
   onUploadSuccess,
   onUploadError,
   onUploadStart,
-  label = "Upload PDF File",
-  folder = "pdfs",
+  label = "Upload Image File",
+  slug,
 }) => {
   return (
-    <BunnyUploader
+    <R2Uploader
       onUploadSuccess={onUploadSuccess}
       onUploadError={onUploadError}
       onUploadStart={onUploadStart}
       label={label}
-      accept="application/pdf"
-      folder={folder}
+      accept="image/*"
+      folder="images"
+      slug={slug}
     />
   );
 };
 
-export default PDFUploaderBunny;
+export default ImageUploaderR2;

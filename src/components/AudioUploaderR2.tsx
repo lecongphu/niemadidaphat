@@ -1,33 +1,34 @@
 "use client";
 
 import React from 'react';
-import BunnyUploader from './BunnyUploader';
+import R2Uploader from './R2Uploader';
 
-interface ImageUploaderBunnyProps {
+interface AudioUploaderR2Props {
   onUploadSuccess: (url: string, filePath: string) => void;
   onUploadError?: (error: string) => void;
   onUploadStart?: () => void;
   label?: string;
-  folder?: string;
+  slug?: string; // Product slug for organizing files
 }
 
-const ImageUploaderBunny: React.FC<ImageUploaderBunnyProps> = ({
+const AudioUploaderR2: React.FC<AudioUploaderR2Props> = ({
   onUploadSuccess,
   onUploadError,
   onUploadStart,
-  label = "Upload Image File",
-  folder = "images",
+  label = "Upload Audio File",
+  slug,
 }) => {
   return (
-    <BunnyUploader
+    <R2Uploader
       onUploadSuccess={onUploadSuccess}
       onUploadError={onUploadError}
       onUploadStart={onUploadStart}
       label={label}
-      accept="image/*"
-      folder={folder}
+      accept="audio/*"
+      folder="audio"
+      slug={slug}
     />
   );
 };
 
-export default ImageUploaderBunny;
+export default AudioUploaderR2;

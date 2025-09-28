@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { bunnyStorage } from '@/lib/bunnyStorage';
+import { r2Storage } from '@/lib/r2Storage';
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -34,17 +34,18 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Xóa file audio trên Bunny CDN nếu có
+    // Xóa file audio trên R2 nếu có
     if (chapter.audio_url) {
       try {
-        const filePath = bunnyStorage.extractFilePath(chapter.audio_url);
-        if (filePath) {
-          const deleteResult = await bunnyStorage.deleteFile(filePath);
-          if (deleteResult.success) {
-            console.log(`✅ Đã xóa audio file: ${filePath}`);
-          } else {
-            console.error('❌ Lỗi xóa audio file:', deleteResult.error);
-          }
+        // Extract file path from URL (assuming R2 URL format)
+        const url = new URL(chapter.audio_url);
+        const filePath = url.pathname.substring(1); // Remove leading slash
+        
+        const deleteResult = await r2Storage.deleteFile(filePath);
+        if (deleteResult.success) {
+          console.log(`✅ Đã xóa audio file: ${filePath}`);
+        } else {
+          console.error('❌ Lỗi xóa audio file:', deleteResult.error);
         }
       } catch (error) {
         console.error('❌ Lỗi xóa audio file:', error);
@@ -52,17 +53,18 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    // Xóa file PDF trên Bunny CDN nếu có (từ product level)
+    // Xóa file PDF trên R2 nếu có (từ product level)
     if (pdfUrl) {
       try {
-        const filePath = bunnyStorage.extractFilePath(pdfUrl);
-        if (filePath) {
-          const deleteResult = await bunnyStorage.deleteFile(filePath);
-          if (deleteResult.success) {
-            console.log(`✅ Đã xóa PDF file: ${filePath}`);
-          } else {
-            console.error('❌ Lỗi xóa PDF file:', deleteResult.error);
-          }
+        // Extract file path from URL (assuming R2 URL format)
+        const url = new URL(pdfUrl);
+        const filePath = url.pathname.substring(1); // Remove leading slash
+        
+        const deleteResult = await r2Storage.deleteFile(filePath);
+        if (deleteResult.success) {
+          console.log(`✅ Đã xóa PDF file: ${filePath}`);
+        } else {
+          console.error('❌ Lỗi xóa PDF file:', deleteResult.error);
         }
       } catch (error) {
         console.error('❌ Lỗi xóa PDF file:', error);

@@ -2,22 +2,24 @@
 
 import React, { useState, ChangeEvent } from 'react';
 
-interface BunnyUploaderProps {
+interface R2UploaderProps {
   onUploadSuccess: (url: string, filePath: string) => void;
   onUploadError?: (error: string) => void;
   onUploadStart?: () => void;
   label?: string;
   accept?: string; // e.g., "audio/*", "application/pdf", "image/*"
-  folder?: string; // Optional folder path in Bunny CDN
+  folder?: string; // Optional folder path in R2 storage
+  slug?: string; // Product slug for organizing files
 }
 
-const BunnyUploader: React.FC<BunnyUploaderProps> = ({
+const R2Uploader: React.FC<R2UploaderProps> = ({
   onUploadSuccess,
   onUploadError,
   onUploadStart,
-  label = "Upload File to Bunny CDN",
+  label = "Upload File to R2 Storage",
   accept,
   folder,
+  slug,
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -49,9 +51,12 @@ const BunnyUploader: React.FC<BunnyUploaderProps> = ({
     if (folder) {
       formData.append('folder', folder);
     }
+    if (slug) {
+      formData.append('slug', slug);
+    }
 
     try {
-      const response = await fetch('/api/upload/bunny', {
+      const response = await fetch('/api/upload/r2', {
         method: 'POST',
         body: formData,
       });
@@ -111,4 +116,4 @@ const BunnyUploader: React.FC<BunnyUploaderProps> = ({
   );
 };
 
-export default BunnyUploader;
+export default R2Uploader;

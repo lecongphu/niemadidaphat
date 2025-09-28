@@ -1,7 +1,6 @@
 "use client";
 
 import { useAudio } from '@/contexts/AudioContext';
-import { secondsToHumanReadable } from '@/lib/durationUtils';
 
 export default function PersistentPlayer() {
   const {
@@ -100,11 +99,7 @@ export default function PersistentPlayer() {
 
           {/* Time & Volume */}
           <div className="flex items-center gap-4 min-w-0 flex-1 justify-end">
-            {/* Time Display */}
-            <div className="text-sm text-amber-700 font-mono whitespace-nowrap">
-              {secondsToHumanReadable(currentTime)} / {secondsToHumanReadable(duration)}
-            </div>
-
+            
             {/* Volume Control */}
             <div className="flex items-center gap-2">
               <span className="text-amber-700 text-sm">🔊</span>

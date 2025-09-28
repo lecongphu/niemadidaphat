@@ -16,15 +16,21 @@ export default function AuthStatus() {
   useEffect(() => {
     checkAuth();
 
-    // Lắng nghe thay đổi auth state từ Supabase
+    // Lắng nghe thay đổi auth state từ Supabase với error handling
     const { data: { subscription } } = SupabaseAuth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
+      try {
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+        } else if (session?.user) {
+          const profile = await SupabaseAuth.getUserProfile();
+          setUser(profile);
+        }
+      } catch (error) {
+        console.error('Auth state change error:', error);
         setUser(null);
-      } else if (session?.user) {
-        const profile = await SupabaseAuth.getUserProfile();
-        setUser(profile);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription?.unsubscribe();
@@ -37,9 +43,12 @@ export default function AuthStatus() {
       if (currentUser.user) {
         const profile = await SupabaseAuth.getUserProfile();
         setUser(profile);
+      } else {
+        setUser(null);
       }
     } catch (error) {
       console.error('Auth check error:', error);
+      setUser(null);
     } finally {
       setLoading(false);
     }

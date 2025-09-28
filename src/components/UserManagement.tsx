@@ -62,171 +62,133 @@ const UserManagement: React.FC = () => {
 
   const pageSize = 10;
 
-  // Load data
-  const loadUsers = useCallback(async () => {
+  // FIXED: Stable callback with proper dependencies
+  const loadUsersAndStats = useCallback(async (includeStats = true) => {
     try {
       setLoading(true);
       
-      // Load users from Supabase with their roles
-      const { data: usersData, error: usersError } = await supabase
-        .from('user_profiles')
-        .select(`
-          *,
-          user_roles!user_roles_user_id_fkey (
-            id,
-            role,
-            permissions,
-            assigned_at,
-            expires_at,
-            is_active,
-            roles!user_roles_role_id_fkey (
-              name,
-              display_name
-            )
-          )
-        `);
+      // Single API call to get users, roles, and stats
+      const searchParams = new URLSearchParams({
+        page: page.toString(),
+        limit: pageSize.toString(),
+        search: searchTerm,
+        role: selectedRole,
+        status: 'all',
+        includeStats: includeStats.toString()
+      });
 
-      if (usersError) throw usersError;
-
-      // Transform data to match expected format
-      const usersWithRoles = (usersData || []).map(user => ({
-        ...user,
-        user_created_at: user.created_at,
-        profile_active: user.is_active !== false,
-        roles: (user.user_roles || []).map((userRole: {
-          id: string;
-          role: string;
-          permissions: string[];
-          assigned_at: string;
-          expires_at: string | null;
-          is_active: boolean;
-          roles: {
-            name: string;
-            display_name: string;
-          } | null;
-        }) => ({
-          id: userRole.id,
-          name: userRole.roles?.name || userRole.role,
-          display_name: userRole.roles?.display_name || userRole.role,
-          permissions: userRole.permissions || [],
-          assigned_at: userRole.assigned_at,
-          expires_at: userRole.expires_at,
-          is_active: userRole.is_active !== false
-        }))
-      })) as User[];
+      const response = await fetch(`/api/users?${searchParams}`);
+      if (!response.ok) throw new Error('Failed to fetch users');
       
-      setUsers(usersWithRoles);
-      setTotalPages(Math.ceil(usersWithRoles.length / pageSize));
+      const data = await response.json();
+      
+      setUsers(data.users || []);
+      setTotalPages(data.pagination?.totalPages || 1);
+      
+      if (data.stats) {
+        setStats(data.stats);
+      }
 
     } catch (error) {
-      console.error('Error loading users:', error);
+      console.error('Error loading users and stats:', error);
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, searchTerm, selectedRole]); // Removed pageSize as it's constant
 
   const loadRoles = useCallback(async () => {
     try {
-      // Load roles from Supabase
-      const { data: rolesData, error } = await supabase
-        .from('roles')
-        .select('*');
-
-      if (error) throw error;
+      // OPTIMIZED: Load roles from API with caching
+      const response = await fetch('/api/roles');
+      if (!response.ok) throw new Error('Failed to fetch roles');
       
-      setRoles(rolesData || []);
+      const data = await response.json();
+      setRoles(data.roles || []);
     } catch (error) {
       console.error('Error loading roles:', error);
     }
   }, []);
 
-  const loadStats = useCallback(async () => {
-    try {
-      // Load users from Supabase for stats calculation
-      const { data: allUsers, error } = await supabase
-        .from('user_profiles')
-        .select(`
-          *,
-          user_roles!user_roles_user_id_fkey (id)
-        `);
+  // REMOVED: loadStats - now handled by loadUsersAndStats
 
-      if (error) throw error;
-      
-      // Calculate stats
-      const now = new Date();
-      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      
-      const usersWithRoles = (allUsers || []).map(user => ({
-        ...user,
-        user_created_at: user.created_at,
-        profile_active: user.is_active !== false,
-        roles: user.user_roles || []
-      }));
-      
-      const stats: UserStats = {
-        total_users: usersWithRoles.length,
-        new_users_7d: usersWithRoles.filter(user => new Date(user.user_created_at) >= sevenDaysAgo).length,
-        new_users_30d: usersWithRoles.filter(user => new Date(user.user_created_at) >= thirtyDaysAgo).length,
-        active_users: usersWithRoles.filter(user => user.profile_active !== false).length,
-        inactive_users: usersWithRoles.filter(user => user.profile_active === false).length,
-        users_with_roles: usersWithRoles.filter(user => user.roles && user.roles.length > 0).length,
-        users_without_roles: usersWithRoles.filter(user => !user.roles || user.roles.length === 0).length
-      };
-      
-      setStats(stats);
-    } catch (error) {
-      console.error('Error loading stats:', error);
+  // FIXED: Initial load effect - only run once on mount
+  useEffect(() => {
+    let mounted = true;
+    
+    const initializeData = async () => {
+      try {
+        // Load users, stats and roles in parallel
+        await Promise.all([
+          loadUsersAndStats(true), // Include stats in first load
+          loadRoles()
+        ]);
+      } catch (error) {
+        if (mounted) {
+          console.error('Error initializing data:', error);
+        }
+      }
+    };
+
+    initializeData();
+    
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only run once, ignore eslint warning
+
+  // FIXED: Debounced effect for search/filter changes
+  useEffect(() => {
+    // Skip if initial load hasn't completed
+    if (loading && page === 1 && !searchTerm && selectedRole === 'all') {
+      return;
     }
-  }, []);
 
-  useEffect(() => {
-    loadUsers();
-    loadRoles();
-    loadStats();
-  }, [loadUsers, loadRoles, loadStats]);
+    const debounceTimeout = setTimeout(() => {
+      loadUsersAndStats(false);
+    }, 300); // 300ms debounce for search
 
-  // Realtime listener for user updates
+    return () => clearTimeout(debounceTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, selectedRole, page]); // Removed loadUsersAndStats from dependencies to prevent loops
+
+  // FIXED: Realtime listener with proper cleanup and stable references
   useEffect(() => {
+    let reloadTimeout: NodeJS.Timeout;
+    let mounted = true;
+    
+    const debouncedReload = () => {
+      clearTimeout(reloadTimeout);
+      reloadTimeout = setTimeout(() => {
+        if (mounted && !loading) {
+          loadUsersAndStats(false); // Don't reload stats on every change
+        }
+      }, 500); // 500ms debounce
+    };
+
     const channel = supabase
       .channel('user_profiles_changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'user_profiles' },
-        () => {
-          // Only reload if we're not currently loading to avoid conflicts
-          if (!loading) {
-            loadUsers();
-            loadStats();
-          }
-        }
+        debouncedReload
       )
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'user_roles' },
-        () => {
-          // Only reload if we're not currently loading to avoid conflicts
-          if (!loading) {
-            loadUsers();
-          }
-        }
+        debouncedReload
       )
       .subscribe();
 
     return () => {
+      mounted = false;
+      clearTimeout(reloadTimeout);
       supabase.removeChannel(channel);
     };
-  }, [loading, loadUsers, loadStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependencies - stable subscription, ignore eslint warning
 
-  // Filter users
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = !searchTerm || 
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.full_name && user.full_name.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesRole = selectedRole === "all" || 
-      user.roles.some(role => role.name === selectedRole);
-
-    return matchesSearch && matchesRole;
-  });
+  // OPTIMIZED: Remove client-side filtering since API handles it
+  // Users are already filtered by the API based on searchTerm and selectedRole
+  const filteredUsers = users;
 
   // Handle role assignment
   const handleAssignRole = async (userId: string, roleId: string) => {
@@ -248,7 +210,7 @@ const UserManagement: React.FC = () => {
       if (error) throw error;
 
       // Reload users
-      await loadUsers();
+      await loadUsersAndStats(false);
       setShowRoleModal(false);
       setSelectedUserForRole(null);
     } catch (error) {
@@ -267,7 +229,7 @@ const UserManagement: React.FC = () => {
       if (error) throw error;
 
       // Reload users
-      await loadUsers();
+      await loadUsersAndStats(false);
     } catch (error) {
       console.error('Error removing role:', error);
     }
@@ -279,7 +241,7 @@ const UserManagement: React.FC = () => {
       const { error } = await supabase
         .from('user_profiles')
         .update({
-          is_active: !currentStatus,
+          profile_active: !currentStatus,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
@@ -287,7 +249,7 @@ const UserManagement: React.FC = () => {
       if (error) throw error;
 
       // Reload users
-      await loadUsers();
+      await loadUsersAndStats(false);
     } catch (error) {
       console.error('Error toggling user status:', error);
     }
@@ -359,14 +321,20 @@ const UserManagement: React.FC = () => {
               type="text"
               placeholder="Tìm kiếm theo email hoặc tên..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1); // Reset to first page when searching
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div className="sm:w-48">
             <select
               value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
+              onChange={(e) => {
+                setSelectedRole(e.target.value);
+                setPage(1); // Reset to first page when filtering
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Tất cả vai trò</option>

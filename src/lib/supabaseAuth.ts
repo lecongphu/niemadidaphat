@@ -47,9 +47,7 @@ export class SupabaseAuth {
         throw new Error(error.message || 'Có lỗi xảy ra khi đăng nhập với Google.');
       }
 
-      if(data.user) {
-        await SupabaseAuth.createUserProfile(data.user)
-      }
+
 
       return data;
     } catch (error: unknown) {
@@ -58,24 +56,7 @@ export class SupabaseAuth {
     }
   }
 
-  static async createUserProfile(user: User) {
-    const { error } = await supabase
-      .from('user_profiles')
-      .insert({
-        id: user.id,
-        email: user.email || '',
-        full_name: user.user_metadata?.full_name || 'Người dùng mới',
-        provider: 'email',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        last_active: new Date().toISOString()
-      })
-  
-    if (error) {
-      console.error('Error creating user profile:', error)
-      throw error
-    }
-  }
+
 
 
   // Đăng xuất
@@ -99,23 +80,18 @@ export class SupabaseAuth {
     }
   }
 
-  // Lấy user hiện tại
+  // Lấy user hiện tại (bỏ qua getSession)
   static async getCurrentUser(): Promise<{ user: User | null }> {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      // Sử dụng getUser trực tiếp thay vì getSession
+      const { data: { user }, error } = await supabase.auth.getUser();
       
       if (error) {
-        console.error('Session error:', error);
+        console.error('Get user error:', error);
         return { user: null };
       }
 
-      if (!session?.user) {
-        return { user: null };
-      }
-
-      return { 
-        user: session.user
-      };
+      return { user };
     } catch (error: unknown) {
       console.error('Get current user error:', error);
       return { user: null };
@@ -162,16 +138,38 @@ export class SupabaseAuth {
     return supabase.auth.onAuthStateChange(callback);
   }
 
+  // Manual refresh token
+  static async refreshToken(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      
+      if (error) {
+        console.error('Manual refresh error:', error);
+        return { success: false, error: error.message };
+      }
+      
+      if (data.session) {
+        console.log('✅ Token refreshed successfully');
+        return { success: true };
+      }
+      
+      return { success: false, error: 'No session returned' };
+    } catch (error) {
+      console.error('Manual refresh error:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
 
   // Debug auth config
   static async debugAuthConfig() {
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       return {
-        session: session ? { userId: session.user.id, expiresAt: session.expires_at } : null,
-        sessionError: sessionError?.message || null,
         user: user ? { id: user.id, email: user.email } : null,
         userError: userError?.message || null,
         supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,

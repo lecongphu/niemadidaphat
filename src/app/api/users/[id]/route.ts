@@ -233,7 +233,7 @@ export async function DELETE(
         is_active: false,
         updated_at: new Date().toISOString()
       })
-      .eq('user_id', id);
+      .eq('id', id);
 
     if (rolesError) {
       console.error('Roles deactivation error:', rolesError);

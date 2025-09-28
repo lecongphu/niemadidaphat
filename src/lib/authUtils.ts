@@ -57,7 +57,7 @@ export async function getCurrentUserWithRoles(): Promise<UserWithRoles | null> {
           description
         )
       `)
-      .eq('user_id', user.id)
+      .eq('id', user.id)
       .eq('is_active', true);
 
     if (rolesError) {

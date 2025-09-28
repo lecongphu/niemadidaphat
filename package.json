@@ -1,6 +1,6 @@
 {
   "name": "niemadidaphat",
-  "version": "0.1.1",
+  "version": "1.9.7",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -11,9 +11,12 @@
     "preview": "npm run build && npm run start",
     "mcp": "node mcp-supabase.cjs",
     "mcp-mongodb": "node mcp-mongodb-firestore.cjs",
-    "postinstall": "node scripts/copy-pdf-worker.js"
+    "postinstall": "node scripts/copy-pdf-worker.js",
+    "test-r2": "node scripts/test-r2-connection.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.896.0",
+    "@aws-sdk/s3-request-presigner": "^3.896.0",
     "@modelcontextprotocol/sdk": "^1.17.5",
     "@supabase/supabase-js": "^2.57.4",
     "@types/bcryptjs": "^2.4.6",

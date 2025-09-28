@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     const { data: existingRole, error: existingRoleError } = await supabase
       .from('user_roles')
       .select('id')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .eq('role', role)
       .eq('is_active', true)
       .single();
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     const { data: newRole, error: insertError } = await supabase
       .from('user_roles')
       .insert({
-        user_id: userId,
+        id: userId,
         role: role,
         permissions: [], // Default empty permissions
         is_active: true,
@@ -151,7 +151,7 @@ export async function DELETE(request: NextRequest) {
     const { data: existingRole, error: existingRoleError } = await supabase
       .from('user_roles')
       .select('id')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .eq('role', role)
       .eq('is_active', true)
       .single();
@@ -174,7 +174,7 @@ export async function DELETE(request: NextRequest) {
         is_active: false,
         updated_at: new Date().toISOString()
       })
-      .eq('user_id', userId)
+      .eq('id', userId)
       .eq('role', role)
       .eq('is_active', true)
       .select()
