@@ -1,9 +1,19 @@
 const fs = require('fs');
 const path = require('path');
-const prettyBytes = require('pretty-bytes');
 
 // Cloudflare Pages file size limit
 const CLOUDFLARE_LIMIT = 25 * 1024 * 1024; // 25MB in bytes
+
+// Simple pretty bytes function for Node.js script
+function prettyBytes(bytes) {
+  if (bytes === 0) return '0 B';
+  
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
 
 function getFileSize(filePath) {
   try {
