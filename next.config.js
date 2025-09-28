@@ -8,16 +8,12 @@ const nextConfig = {
   
   // Optimize for Cloudflare Pages deployment
   experimental: {
-    // Disable cache to reduce build size
-    cacheHandler: undefined,
     // Enable SWC minification for smaller bundles
     swcMinify: true,
     // Optimize turbo for smaller builds
     turbo: {
       rules: {},
     },
-    // Disable build cache to reduce size
-    buildCache: false,
     // Optimize CSS
     optimizeCss: true,
   },
@@ -30,10 +26,18 @@ const nextConfig = {
   // Asset prefix for Cloudflare Pages
   assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
   
+  // Enable cache for better performance
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
+  
   // Webpack configuration for Cloudflare Pages
   webpack: (config, { isServer, dev }) => {
-    // Completely disable cache for Cloudflare Pages
-    config.cache = false;
+    // Only disable build cache, keep runtime cache for performance
+    if (!dev && process.env.NODE_ENV === 'production') {
+      config.cache = false;
+    }
     
     // Optimize for Cloudflare Pages - aggressive chunk splitting
     if (!isServer) {

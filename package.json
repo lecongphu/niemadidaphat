@@ -6,6 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "build:clean": "node scripts/clean-build.js",
+    "build:clean-cache": "node scripts/clean-large-cache.js",
     "build:check": "npm run build && npm run check-size",
     "check-size": "node scripts/check-build-size.js",
     "start": "next start",

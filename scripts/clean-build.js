@@ -34,7 +34,7 @@ function cleanBuild() {
   console.log('🧹 Cleaning build directories...\n');
   
   const dirsToClean = [
-    '.next',
+    '.next/cache', // Only clean cache, keep build artifacts
     'out',
     'node_modules/.cache',
     '.turbo'
