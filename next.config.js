@@ -10,10 +10,6 @@ const nextConfig = {
   experimental: {
     // Enable SWC minification for smaller bundles
     swcMinify: true,
-    // Optimize turbo for smaller builds
-    turbo: {
-      rules: {},
-    },
     // Optimize CSS
     optimizeCss: true,
   },
@@ -34,48 +30,26 @@ const nextConfig = {
   
   // Webpack configuration for Cloudflare Pages
   webpack: (config, { isServer, dev }) => {
-    // Only disable build cache, keep runtime cache for performance
-    if (!dev && process.env.NODE_ENV === 'production') {
-      config.cache = false;
-    }
+    // Restore normal cache behavior
+    // config.cache = false; // Commented out to restore cache
     
-    // Optimize for Cloudflare Pages - aggressive chunk splitting
+    // Optimize for Cloudflare Pages - moderate chunk splitting
     if (!isServer) {
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
-          minSize: 20000,
-          maxSize: 244000, // Keep chunks under 244KB (25MB/100 chunks)
           cacheGroups: {
             default: {
               minChunks: 2,
               priority: -20,
               reuseExistingChunk: true,
-              enforce: true,
             },
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: 'vendors',
               priority: -10,
               chunks: 'all',
-              maxSize: 244000,
-              enforce: true,
-            },
-            // Split large libraries separately
-            supabase: {
-              test: /[\\/]node_modules[\\/]@supabase[\\/]/,
-              name: 'supabase',
-              chunks: 'all',
-              priority: 20,
-              maxSize: 244000,
-            },
-            aws: {
-              test: /[\\/]node_modules[\\/]@aws-sdk[\\/]/,
-              name: 'aws',
-              chunks: 'all',
-              priority: 20,
-              maxSize: 244000,
             },
           },
         },
@@ -181,8 +155,6 @@ const nextConfig = {
   // Optimize bundle size
   experimental: {
     optimizePackageImports: ['react-h5-audio-player', '@supabase/supabase-js', '@aws-sdk/client-s3'],
-    // Disable static optimization for smaller builds
-    staticGenerationRetryCount: 1,
   },
   
   // Compiler optimizations
