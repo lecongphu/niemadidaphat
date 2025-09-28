@@ -17,15 +17,20 @@ const nextConfig = {
     },
   },
   
-  // Disable all caching
+  // Generate stable build ID for static assets
   generateBuildId: async () => {
-    return 'build-' + Date.now();
+    return 'build-' + process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'static';
   },
   
-  // Disable webpack cache completely
+  // Asset prefix for Cloudflare Pages
+  assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
+  
+  // Webpack configuration for Cloudflare Pages
   webpack: (config, { isServer, dev }) => {
-    // Disable webpack cache for Cloudflare Pages
-    config.cache = false;
+    // Only disable cache in production for Cloudflare Pages
+    if (!dev && !isServer) {
+      config.cache = false;
+    }
     
     // Optimize for Cloudflare Pages - reduce bundle size
     if (!isServer) {
@@ -99,7 +104,7 @@ const nextConfig = {
     ],
   },
 
-  // Headers for audio optimization
+  // Headers for audio optimization and static assets
   async headers() {
     return [
       {
@@ -108,6 +113,15 @@ const nextConfig = {
           {
             key: 'X-DNS-Prefetch-Control',
             value: 'on'
+          },
+        ],
+      },
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
