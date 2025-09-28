@@ -86,15 +86,19 @@ export async function GET(request: NextRequest) {
         last_login_at: user.last_login_at,
         login_count: user.login_count || 0,
         profile_active: user.profile_active,
-        roles: userRoles.map((userRole: any) => ({
-          id: userRole.id,
-          name: userRole.roles?.name || userRole.role,
-          display_name: userRole.roles?.display_name || userRole.role.charAt(0).toUpperCase() + userRole.role.slice(1),
-          permissions: userRole.permissions || [],
-          assigned_at: userRole.assigned_at,
-          expires_at: userRole.expires_at,
-          is_active: userRole.is_active
-        }))
+        roles: userRoles.map((userRole: Record<string, unknown>) => {
+          const role = userRole.role as string;
+          const roles = userRole.roles as Record<string, unknown> | undefined;
+          return {
+            id: userRole.id,
+            name: roles?.name as string || role,
+            display_name: roles?.display_name as string || (role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Unknown'),
+            permissions: userRole.permissions as string[] || [],
+            assigned_at: userRole.assigned_at,
+            expires_at: userRole.expires_at,
+            is_active: userRole.is_active
+          };
+        })
       };
     });
 
