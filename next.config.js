@@ -3,10 +3,11 @@ const nextConfig = {
   // Output configuration for Cloudflare Pages
   output: 'standalone',
   
+  // External packages for server components
+  serverComponentsExternalPackages: ['@aws-sdk/client-s3'],
+  
   // Optimize for Cloudflare Pages deployment
   experimental: {
-    // Allow larger request body size (default is 1MB)
-    serverComponentsExternalPackages: [],
     // Disable cache to reduce build size
     cacheHandler: undefined,
     // Enable SWC minification for smaller bundles
@@ -178,8 +179,6 @@ const nextConfig = {
     optimizePackageImports: ['react-h5-audio-player', '@supabase/supabase-js', '@aws-sdk/client-s3'],
     // Disable static optimization for smaller builds
     staticGenerationRetryCount: 1,
-    // Optimize server components
-    serverComponentsExternalPackages: ['@aws-sdk/client-s3'],
   },
   
   // Compiler optimizations
