@@ -3,17 +3,6 @@ const nextConfig = {
   // Output configuration for Cloudflare Pages
   output: 'standalone',
   
-  // External packages for server components
-  serverComponentsExternalPackages: ['@aws-sdk/client-s3'],
-  
-  // Optimize for Cloudflare Pages deployment
-  experimental: {
-    // Enable SWC minification for smaller bundles
-    swcMinify: true,
-    // Optimize CSS
-    optimizeCss: true,
-  },
-  
   // Generate stable build ID for static assets
   generateBuildId: async () => {
     return 'build-' + process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'static';
