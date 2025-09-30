@@ -99,12 +99,23 @@ export default function SpotifyPlaylist() {
     async function fetchData() {
       try {
         setLoading(true);
+        setError(null);
         
         // Get products
         const data = await listProducts();
-        setProducts(data);
+        
+        // Defensive: Ensure data is always an array
+        if (Array.isArray(data)) {
+          setProducts(data);
+        } else {
+          console.error('Invalid data format from listProducts:', data);
+          setProducts([]);
+          setError('Dữ liệu không hợp lệ');
+        }
       } catch (err) {
+        console.error('Error fetching products:', err);
         setError(err instanceof Error ? err.message : 'Lỗi khi tải dữ liệu');
+        setProducts([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
