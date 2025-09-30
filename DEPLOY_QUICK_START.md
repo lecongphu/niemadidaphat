@@ -79,7 +79,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
 cd /var/www/niemadidaphat/server
 npm install --production
 mkdir logs
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 pm2 save
 
 # Frontend

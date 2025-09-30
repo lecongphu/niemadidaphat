@@ -27,7 +27,7 @@ Nginx (Reverse Proxy + SSL Termination)
 ├── server/                          # Backend Node.js
 │   ├── src/
 │   ├── .env                        # Environment variables
-│   ├── ecosystem.config.js         # PM2 config
+│   ├── ecosystem.config.cjs         # PM2 config
 │   ├── logs/                       # Backend logs
 │   └── package.json
 │
@@ -62,7 +62,7 @@ Nginx (Reverse Proxy + SSL Termination)
 ### 2. Configuration Files
 - ✅ `nginx/niemadidaphat.com.conf` - Nginx config cho frontend
 - ✅ `nginx/api.niemadidaphat.com.conf` - Nginx config cho backend API
-- ✅ `server/ecosystem.config.js` - PM2 config cho backend
+- ✅ `server/ecosystem.config.cjs` - PM2 config cho backend
 - ✅ `ecosystem.frontend.config.js` - PM2 config cho frontend
 
 ### 3. Scripts
@@ -114,7 +114,7 @@ npm run build
 ```bash
 # Backend
 cd /var/www/niemadidaphat/server
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 pm2 save
 
 # Frontend

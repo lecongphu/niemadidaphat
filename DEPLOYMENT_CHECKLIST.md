@@ -70,8 +70,8 @@ certbot --version
 ## PM2 Configuration
 
 ### Backend
-- [ ] `ecosystem.config.js` created in `server/`
-- [ ] Started with PM2: `pm2 start ecosystem.config.js`
+- [ ] `ecosystem.config.cjs` created in `server/`
+- [ ] Started with PM2: `pm2 start ecosystem.config.cjs`
 - [ ] Verify running: `pm2 status`
 - [ ] Check logs: `pm2 logs niemadidaphat-backend`
 - [ ] Save PM2 config: `pm2 save`

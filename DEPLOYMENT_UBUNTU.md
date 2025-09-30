@@ -90,7 +90,7 @@ sudo mkdir -p niemadidaphat
 sudo chown -R deploy:deploy niemadidaphat
 cd niemadidaphat
 
-git clone https://github.com/your-username/niemadidaphat.git .
+git clone https://github.com/lecongphu/niemadidaphat.git .
 # Hoặc upload code bằng SFTP/rsync
 ```
 
@@ -145,7 +145,7 @@ node src/index.js
 ### 3.5. Tạo PM2 config cho backend
 ```bash
 cd /var/www/niemadidaphat/server
-nano ecosystem.config.js
+nano ecosystem.config.cjs
 ```
 
 Nội dung:
@@ -175,7 +175,7 @@ mkdir -p /var/www/niemadidaphat/server/logs
 ### 3.7. Chạy backend với PM2
 ```bash
 cd /var/www/niemadidaphat/server
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 pm2 save
 pm2 startup  # Copy và chạy lệnh hiển thị
 ```
