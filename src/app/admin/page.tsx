@@ -482,8 +482,6 @@ function AdminPageContent() {
               <div>
                 <select className="border rounded px-3 py-2 w-full" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
                   <option value="">-- Chọn danh mục --</option>
-                  <option value="nhan-qua">Nhân Quả</option>
-                  <option value="niem-phat">Niệm Phật</option>
                 </select>
                 {errors.category && <p className="text-xs text-red-600 mt-1">{errors.category}</p>}
               </div>

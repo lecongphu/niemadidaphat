@@ -28,69 +28,11 @@ export default function Home() {
            <span className="block sm:inline"> Nhìn thấu, buông bỏ, tự tại, tùy duyên, niệm Phật.</span>
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 pt-6 sm:pt-8 px-4">
-          <Link className="lotus-button text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 w-full sm:w-auto" href="/nhan-qua">
-            ⚖️ Nhân Quả
-          </Link>
-          <Link className="serene-card px-6 sm:px-8 py-3 sm:py-4 text-amber-800 font-medium hover:bg-white peaceful-transition w-full sm:w-auto text-center" href="/niem-phat">
-            🙏 Niệm Phật
-          </Link>
-        </div>
       </section>
 
       {/* Spotify-style Playlist Section */}
       <section className="px-2">
         <SpotifyPlaylist />
-      </section>
-
-      {/* Wisdom Quotes Section */}
-      <section className="space-y-6 sm:space-y-8 px-2">
-        <div className="text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Trí Tuệ Phật Pháp</h2>
-          <p className="wisdom-text text-base sm:text-lg">Những lời dạy quý báu về nhân quả và niệm Phật</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-          {/* Nhân Quả */}
-          <div className="serene-card p-6 sm:p-8 space-y-4 sm:space-y-6">
-            <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lotus-gradient rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                <span className="text-white text-lg sm:text-xl">⚖️</span>
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold wisdom-text">Nhân Quả</h3>
-            </div>
-            <div className="space-y-3 sm:space-y-4">
-              <blockquote className="text-center italic wisdom-text border-l-4 border-amber-300 pl-3 sm:pl-4 text-sm sm:text-base">
-                &ldquo;Vạn pháp giai không, nhân quả bất không&rdquo;
-              </blockquote>
-              <blockquote className="text-center italic wisdom-text border-l-4 border-amber-300 pl-3 sm:pl-4 text-sm sm:text-base">
-                &ldquo;Phật pháp xuất thế gian cũng không rời khỏi nhân quả&rdquo;
-              </blockquote>
-            </div>
-          </div>
-
-          {/* Niệm Phật */}
-          <div className="serene-card p-6 sm:p-8 space-y-4 sm:space-y-6">
-            <div className="text-center">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 lotus-gradient rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                <span className="text-white text-lg sm:text-xl">🙏</span>
-              </div>
-              <h3 className="text-lg sm:text-xl font-semibold wisdom-text">Niệm Phật</h3>
-            </div>
-            <div className="space-y-3 sm:space-y-4">
-              <blockquote className="text-center italic wisdom-text border-l-4 border-amber-300 pl-3 sm:pl-4 text-sm sm:text-base">
-                &ldquo;Niệm Phật một tiếng, phước tăng vô lượng&rdquo;
-              </blockquote>
-              <blockquote className="text-center italic wisdom-text border-l-4 border-amber-300 pl-3 sm:pl-4 text-sm sm:text-base">
-                &ldquo;Niệm niệm không gián đoạn, tâm tâm thấy Phật&rdquo;
-              </blockquote>
-              <blockquote className="text-center italic wisdom-text border-l-4 border-amber-300 pl-3 sm:pl-4 text-sm sm:text-base">
-                &ldquo;A Di Đà Phật, tiếng gọi từ bi&rdquo;
-              </blockquote>
-            </div>
-          </div>
-        </div>
-
       </section>
 
       {/* Daily Practice Section */}
