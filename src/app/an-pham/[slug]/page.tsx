@@ -1,5 +1,3 @@
-export const runtime = 'edge';
-
 import ChapterPlayerList from "@/components/ChapterPlayerList";
 import { getProductBySlugDb } from "@/lib/productsRepo";
 import { getTimeAgo } from "@/lib/dateUtils";
