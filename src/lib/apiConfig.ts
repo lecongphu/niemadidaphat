@@ -1,5 +1,21 @@
 // API Configuration for backend server
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
+// Automatically select API URL based on environment
+const getApiBaseUrl = () => {
+  // If explicitly set in env, use that
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+  
+  // Otherwise, auto-detect based on NODE_ENV
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://api.niemadidaphat.com/api';
+  }
+  
+  // Default to localhost for development
+  return 'http://localhost:5000/api';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 // Helper function to get auth headers
 export const getAuthHeaders = () => {
