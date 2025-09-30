@@ -27,7 +27,7 @@ export const apiClient = {
     return response.json();
   },
 
-  post: async (endpoint: string, data?: any, options: RequestInit = {}) => {
+  post: async (endpoint: string, data?: unknown, options: RequestInit = {}) => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -43,7 +43,7 @@ export const apiClient = {
     return response.json();
   },
 
-  put: async (endpoint: string, data?: any, options: RequestInit = {}) => {
+  put: async (endpoint: string, data?: unknown, options: RequestInit = {}) => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
