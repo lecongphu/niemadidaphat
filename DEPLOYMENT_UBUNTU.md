@@ -123,11 +123,6 @@ R2_SECRET_ACCESS_KEY=your_secret_access_key
 R2_BUCKET_NAME=your_bucket_name
 R2_PUBLIC_URL=https://your-r2-public-url.com
 
-# Bunny CDN (optional)
-NEXT_PUBLIC_BUNNY_CDN_URL=https://your-cdn.b-cdn.net
-BUNNY_STORAGE_ZONE_NAME=your_zone
-BUNNY_ACCESS_KEY=your_bunny_key
-
 # Frontend URL
 CLIENT_URL=https://niemadidaphat.com
 ```
@@ -206,8 +201,8 @@ NEXT_PUBLIC_API_BASE_URL=https://api.niemadidaphat.com/api
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 
-# Bunny CDN
-NEXT_PUBLIC_BUNNY_CDN_URL=https://your-cdn.b-cdn.net
+# Cloudflare R2 Public URL
+NEXT_PUBLIC_R2_PUBLIC_URL=https://your-r2-public-url.com
 ```
 
 ### 4.2. Build frontend

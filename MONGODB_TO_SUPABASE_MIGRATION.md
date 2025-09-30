@@ -124,20 +124,22 @@ if (error || !result) {
 }
 ```
 
-## 🔧 **BUNNY CDN STORAGE INTEGRATION**
+## 🔧 **FILE STORAGE INTEGRATION**
 
-All file operations now use Bunny CDN:
+> **Note**: Originally used Bunny CDN, now migrated to Cloudflare R2.
+
+All file operations now use R2 storage:
 
 ```typescript
-import { bunnyStorage } from '@/lib/bunnyStorage';
+import { r2Storage } from '@/lib/r2Storage';
 
 // Upload file
-const result = await bunnyStorage.uploadFile(filePath, fileBuffer, mimeType);
+const result = await r2Storage.uploadFile(filePath, fileBuffer, mimeType);
 
 // Delete file
-const filePath = bunnyStorage.extractFilePath(url);
+const filePath = r2Storage.extractFilePath(url);
 if (filePath) {
-  await bunnyStorage.deleteFile(filePath);
+  await r2Storage.deleteFile(filePath);
 }
 ```
 

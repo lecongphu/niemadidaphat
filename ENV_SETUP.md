@@ -12,8 +12,8 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-# Bunny CDN
-NEXT_PUBLIC_BUNNY_CDN_URL=your_bunny_cdn_url
+# Cloudflare R2 Public URL
+NEXT_PUBLIC_R2_PUBLIC_URL=your_r2_public_url
 ```
 
 ## Backend (server/.env)
@@ -35,11 +35,6 @@ R2_ACCESS_KEY_ID=your_r2_access_key_id
 R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
 R2_BUCKET_NAME=your_r2_bucket_name
 R2_PUBLIC_URL=your_r2_public_url
-
-# Bunny CDN (if needed)
-NEXT_PUBLIC_BUNNY_CDN_URL=your_bunny_cdn_url
-BUNNY_STORAGE_ZONE_NAME=your_storage_zone_name
-BUNNY_ACCESS_KEY=your_bunny_access_key
 
 # Client URL
 CLIENT_URL=http://localhost:3000
@@ -101,4 +96,4 @@ Set trên Vercel/Netlify:
 - NEXT_PUBLIC_API_BASE_URL (backend URL)
 - NEXT_PUBLIC_SUPABASE_URL
 - NEXT_PUBLIC_SUPABASE_ANON_KEY
-- NEXT_PUBLIC_BUNNY_CDN_URL
+- NEXT_PUBLIC_R2_PUBLIC_URL

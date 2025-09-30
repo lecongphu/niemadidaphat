@@ -27,7 +27,7 @@ Tạo file `.env.local` ở root directory:
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-NEXT_PUBLIC_BUNNY_CDN_URL=your_bunny_cdn_url
+NEXT_PUBLIC_R2_PUBLIC_URL=your_r2_public_url
 ```
 
 ## Bước 3: Chạy ứng dụng

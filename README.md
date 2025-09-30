@@ -9,8 +9,7 @@ Dự án sử dụng kiến trúc **Full Stack** tách biệt:
 - **Frontend**: Next.js 15 (React 19)
 - **Backend**: Node.js + Express
 - **Database**: Supabase (PostgreSQL)
-- **Storage**: Cloudflare R2
-- **CDN**: Bunny CDN
+- **Storage & CDN**: Cloudflare R2
 
 ## ⚡ Quick Start
 
@@ -70,8 +69,7 @@ node scripts/dev-full.js
 
 ### Database & Storage
 - **Database**: Supabase (PostgreSQL)
-- **File Storage**: Cloudflare R2
-- **CDN**: Bunny CDN
+- **File Storage & CDN**: Cloudflare R2
 - **Authentication**: Supabase Auth + Google One-Tap
 
 ## 📁 Cấu trúc Project
@@ -178,7 +176,7 @@ Xem [`ENV_SETUP.md`](ENV_SETUP.md) để biết chi tiết.
 ### Cần thiết cho Frontend
 - API Base URL
 - Supabase credentials (for auth)
-- Bunny CDN URL
+- R2 Public URL
 
 ## 🤝 Contributing
 

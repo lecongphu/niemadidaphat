@@ -44,7 +44,6 @@
 
 #### ✅ Upload API (`server/src/routes/upload.js`)
 - POST /api/upload/r2 - Upload file lên R2
-- POST /api/upload/bunny - Upload file (hiện dùng R2)
 
 #### ✅ Auth API (`server/src/routes/auth.js`)
 - GET /api/auth/callback - OAuth callback
@@ -139,7 +138,7 @@ npm run dev
 - NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api
 - NEXT_PUBLIC_SUPABASE_URL
 - NEXT_PUBLIC_SUPABASE_ANON_KEY
-- NEXT_PUBLIC_BUNNY_CDN_URL
+- NEXT_PUBLIC_R2_PUBLIC_URL
 
 ## ⚠️ Lưu ý quan trọng
 

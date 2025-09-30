@@ -17,7 +17,6 @@
 ### Credentials Ready
 - [ ] Supabase URL and keys
 - [ ] Cloudflare R2 credentials
-- [ ] Bunny CDN credentials (if used)
 - [ ] Server IP address
 
 ---

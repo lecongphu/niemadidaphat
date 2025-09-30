@@ -14,8 +14,8 @@ R2_ACCESS_KEY_ID=your-access-key-id-here
 R2_SECRET_ACCESS_KEY=your-secret-access-key-here
 ```
 
-## ✅ **Giải pháp tạm thời:**
-Hệ thống đã được cấu hình để **tự động fallback sang Bunny CDN** nếu R2 không hoạt động.
+## ✅ **Giải pháp:**
+Cần setup R2 credentials để upload file hoạt động.
 
 ## 🔧 **Để setup R2 hoàn chỉnh:**
 
@@ -58,28 +58,22 @@ R2_SECRET_ACCESS_KEY=a547eb186133225e2f27524e2c103316dfc3f3798112434636f9df3564f
 npm run test-r2
 ```
 
-## 🔄 **Fallback Mechanism**
-Nếu R2 không hoạt động, hệ thống sẽ tự động:
-1. ✅ Sử dụng Bunny CDN làm fallback
-2. ✅ Upload vẫn hoạt động bình thường
-3. ✅ Không ảnh hưởng đến user experience
+## 📊 **Lợi ích của R2:**
 
-## 📊 **So sánh Storage:**
-
-| Feature | R2 | Bunny CDN |
-|---------|----|-----------| 
-| **Free Storage** | 10GB | 1GB |
-| **Egress Fees** | FREE | $0.01/GB |
-| **CDN** | Cloudflare | Global |
-| **Setup** | Cần credentials | Đã setup |
+| Feature | R2 |
+|---------|----| 
+| **Free Storage** | 10GB |
+| **Egress Fees** | FREE |
+| **CDN** | Cloudflare Global Network |
+| **Performance** | Low latency worldwide |
 
 ## 🎯 **Khuyến nghị:**
-1. **Ngay lập tức**: Hệ thống đã hoạt động với Bunny CDN fallback
-2. **Dài hạn**: Setup R2 để tiết kiệm chi phí và có performance tốt hơn
-3. **Migration**: Có thể migrate files từ Bunny sang R2 sau khi setup xong
+Setup R2 để có:
+- Chi phí thấp (free egress)
+- Performance tốt với Cloudflare CDN
+- Storage dung lượng lớn (10GB free tier)
 
 ## 🆘 **Nếu vẫn gặp lỗi:**
 1. Kiểm tra credentials có đúng không
 2. Kiểm tra bucket có tồn tại không
 3. Kiểm tra API token có đủ quyền không
-4. Sử dụng fallback mechanism (Bunny CDN) tạm thời

@@ -59,7 +59,6 @@ npm start
 
 ### Upload
 - `POST /api/upload/r2` - Upload file lên R2
-- `POST /api/upload/bunny` - Upload file lên Bunny
 
 ### Auth
 - `GET /api/auth/callback` - OAuth callback

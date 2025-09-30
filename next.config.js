@@ -87,18 +87,12 @@ const nextConfig = {
 
     return config;
   },
-  // Image optimization for Bunny CDN
+  // Image optimization for Cloudflare R2
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*.b-cdn.net',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.storage.bunnycdn.com',
+        hostname: '*.r2.cloudflarestorage.com',
         port: '',
         pathname: '/**',
       },

@@ -145,8 +145,8 @@ const publicUrl = r2Storage.getPublicUrl('audio/chapter-1.mp3');
 ```
 
 ### **2. Update Environment Variables**
-- Thay thế các biến `BUNNY_*` bằng `R2_*`
-- Cập nhật `NEXT_PUBLIC_BUNNY_CDN_URL` thành `NEXT_PUBLIC_R2_PUBLIC_DOMAIN`
+- Sử dụng các biến `R2_*` thay vì `BUNNY_*`
+- Sử dụng `NEXT_PUBLIC_R2_PUBLIC_URL` thay vì `NEXT_PUBLIC_BUNNY_CDN_URL`
 
 ### **3. Update Code**
 - Thay `import { bunnyStorage }` thành `import { r2Storage as bunnyStorage }`

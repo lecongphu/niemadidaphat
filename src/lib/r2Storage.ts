@@ -265,7 +265,7 @@ export const r2Storage = new R2StorageService();
 // Export class for testing
 export { R2StorageService };
 
-// Helper functions để tương thích với bunnyStorage API
+// Helper functions
 export function getR2PublicUrl(filePath: string): string {
   return r2Storage.getPublicUrl(filePath);
 }
@@ -277,11 +277,3 @@ export function extractR2FilePath(publicUrl: string): string | null {
 export function isR2Url(url: string): boolean {
   return r2Storage.isR2Url(url);
 }
-
-// Backward compatibility aliases (để dễ migrate từ bunnyStorage)
-export const getBunnyPublicUrl = getR2PublicUrl;
-export const extractBunnyFilePath = extractR2FilePath;
-export const isBunnyUrl = isR2Url;
-
-// Export chính để thay thế bunnyStorage
-export const bunnyStorage = r2Storage;

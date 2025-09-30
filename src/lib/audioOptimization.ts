@@ -1,4 +1,4 @@
-// Audio optimization utilities for Bunny CDN
+// Audio optimization utilities for R2 CDN
 
 // Network connection interface
 interface NetworkInformation extends EventTarget {
@@ -24,7 +24,7 @@ export class AudioOptimizer {
   private cdnUrl: string;
 
   constructor() {
-    this.cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL || '';
+    this.cdnUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '';
   }
 
   /**
@@ -42,33 +42,9 @@ export class AudioOptimizer {
       return audioPath; // Fallback
     }
 
-    let url = `${this.cdnUrl}/${audioPath.replace(/^\//, '')}`;
-    const params = new URLSearchParams();
-
-    // Quality optimization
-    if (options.quality) {
-      switch (options.quality) {
-        case 'low':
-          params.set('quality', '60'); // Lower bitrate for mobile
-          break;
-        case 'medium':
-          params.set('quality', '80'); // Balanced quality
-          break;
-        case 'high':
-          params.set('quality', '95'); // High quality for desktop
-          break;
-      }
-    }
-
-    // Format optimization (if Bunny supports it)
-    if (options.format && options.format !== 'auto') {
-      params.set('format', options.format);
-    }
-
-    if (params.toString()) {
-      url += `?${params.toString()}`;
-    }
-
+    // R2 doesn't support query parameter transformations like Bunny
+    // Return the direct URL from R2
+    const url = `${this.cdnUrl}/${audioPath.replace(/^\//, '')}`;
     return url;
   }
 
