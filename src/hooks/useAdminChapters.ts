@@ -35,7 +35,8 @@ export function useAdminChapters(options: UseAdminChaptersOptions = {}): UseAdmi
       setError(null);
 
       // Query chapters from backend API
-      const chapters = await apiClient.get(`/chapters/product/${options.productId}`);
+      const response = await apiClient.get(`/chapters/product/${options.productId}`);
+      const chapters = response.data || [];
 
       setChapters(chapters);
     } catch (err) {
@@ -88,10 +89,11 @@ export function useAdminChapters(options: UseAdminChaptersOptions = {}): UseAdmi
       if (chapter.id.startsWith('temp-')) {
         // Create new chapter
         const { id, created_at, updated_at, ...chapterData } = chapter;
-        const newChapter = await apiClient.post('/chapters', {
+        const response = await apiClient.post('/chapters', {
           ...chapterData,
           product_id: options.productId!
         });
+        const newChapter = response.data;
         
         // Update local state with real ID
         setChapters(prev => 

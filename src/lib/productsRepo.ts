@@ -2,7 +2,9 @@ import { apiClient } from "@/lib/apiConfig";
 import type { Product, ProductCreateInput, ProductUpdateInput } from "@/lib/types";
 
 export async function listProducts(): Promise<Product[]> {
-  return await apiClient.get('/products');
+  const response = await apiClient.get('/products');
+  // Backend returns { success: true, data: [...], count: ... }
+  return response.data || [];
 }
 
 export async function listProductsPaged(params: {
@@ -16,12 +18,20 @@ export async function listProductsPaged(params: {
   if (params.pageSize) queryParams.set('pageSize', params.pageSize.toString());
   
   const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
-  return await apiClient.get(`/products${query}`);
+  const response = await apiClient.get(`/products${query}`);
+  
+  // Backend returns { success: true, data: [...], count: ... }
+  return {
+    items: response.data || [],
+    total: response.count || 0
+  };
 }
 
 export async function getProductBySlugDb(slug: string): Promise<Product | null> {
   try {
-    return await apiClient.get(`/products/${slug}`);
+    const response = await apiClient.get(`/products/${slug}`);
+    // Backend returns { success: true, data: product }
+    return response.data || null;
   } catch (error) {
     console.error('Error fetching product:', error);
     return null;
@@ -29,17 +39,24 @@ export async function getProductBySlugDb(slug: string): Promise<Product | null> 
 }
 
 export async function createProduct(input: ProductCreateInput): Promise<Product> {
-  return await apiClient.post('/products', input);
+  const response = await apiClient.post('/products', input);
+  // Backend returns { success: true, data: product, message: ... }
+  return response.data;
 }
 
 export async function updateProduct(id: string, input: ProductUpdateInput): Promise<Product> {
-  return await apiClient.put(`/products/${id}`, input);
+  const response = await apiClient.put(`/products/${id}`, input);
+  // Backend returns { success: true, data: product, message: ... }
+  return response.data;
 }
 
 export async function deleteProduct(id: string): Promise<void> {
   await apiClient.delete(`/products/${id}`);
+  // Backend returns { success: true, message: ... }
 }
 
 export async function listProductsByCategory(category: string): Promise<Product[]> {
-  return await apiClient.get(`/products?category=${category}`);
+  const response = await apiClient.get(`/products?category=${category}`);
+  // Backend returns { success: true, data: [...], count: ... }
+  return response.data || [];
 }

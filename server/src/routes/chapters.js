@@ -124,4 +124,104 @@ router.post('/', async (req, res) => {
   }
 });
 
+// GET /api/chapters/product/:productId - Lấy chapters theo product ID
+router.get('/product/:productId', async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    const { data: chapters, error } = await supabase
+      .from('chapters')
+      .select('*')
+      .eq('product_id', productId)
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      console.error('Get chapters error:', error);
+      return res.status(500).json({ error: 'Lỗi lấy chapters' });
+    }
+
+    return res.json({
+      success: true,
+      data: chapters || [],
+      count: chapters?.length || 0
+    });
+
+  } catch (error) {
+    console.error('Get chapters error:', error);
+    return res.status(500).json({ 
+      error: 'Lỗi lấy chapters', 
+      details: error.message 
+    });
+  }
+});
+
+// PUT /api/chapters/:id - Cập nhật chapter
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    // Remove fields that shouldn't be updated
+    delete updateData.id;
+    delete updateData.created_at;
+
+    const { data: updatedChapter, error } = await supabase
+      .from('chapters')
+      .update({
+        ...updateData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error || !updatedChapter) {
+      console.error('Update chapter error:', error);
+      return res.status(500).json({ error: 'Lỗi cập nhật chapter' });
+    }
+
+    return res.json({
+      success: true,
+      data: updatedChapter,
+      message: 'Cập nhật chapter thành công'
+    });
+
+  } catch (error) {
+    console.error('Update chapter error:', error);
+    return res.status(500).json({ 
+      error: 'Lỗi cập nhật chapter', 
+      details: error.message 
+    });
+  }
+});
+
+// DELETE /api/chapters/:id - Xóa chapter
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from('chapters')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Delete chapter error:', error);
+      return res.status(500).json({ error: 'Lỗi xóa chapter' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Xóa chapter thành công'
+    });
+
+  } catch (error) {
+    console.error('Delete chapter error:', error);
+    return res.status(500).json({ 
+      error: 'Lỗi xóa chapter', 
+      details: error.message 
+    });
+  }
+});
+
 export default router;

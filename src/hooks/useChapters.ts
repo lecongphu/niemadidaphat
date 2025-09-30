@@ -30,10 +30,12 @@ export function useChapters(options: UseChaptersOptions = {}): UseChaptersReturn
       let chapters: Chapter[];
       
       if (options.productId) {
-        chapters = await apiClient.get(`/chapters/product/${options.productId}`);
+        const response = await apiClient.get(`/chapters/product/${options.productId}`);
+        chapters = response.data || [];
       } else {
         // Get all chapters
-        chapters = await apiClient.get('/chapters');
+        const response = await apiClient.get('/chapters');
+        chapters = response.data || [];
       }
 
       setChapters(chapters);

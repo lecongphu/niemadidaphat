@@ -136,4 +136,106 @@ router.post('/', async (req, res) => {
   }
 });
 
+// GET /api/products/:slug - Lấy product theo slug
+router.get('/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const { data: product, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+
+    if (error || !product) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Không tìm thấy product' 
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: product
+    });
+
+  } catch (error) {
+    console.error('Get product by slug error:', error);
+    return res.status(500).json({ 
+      error: 'Lỗi lấy product', 
+      details: error.message 
+    });
+  }
+});
+
+// PUT /api/products/:id - Cập nhật product
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    // Remove fields that shouldn't be updated
+    delete updateData.id;
+    delete updateData.created_at;
+
+    const { data: updatedProduct, error } = await supabase
+      .from('products')
+      .update({
+        ...updateData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error || !updatedProduct) {
+      console.error('Update product error:', error);
+      return res.status(500).json({ error: 'Lỗi cập nhật product' });
+    }
+
+    return res.json({
+      success: true,
+      data: updatedProduct,
+      message: 'Cập nhật product thành công'
+    });
+
+  } catch (error) {
+    console.error('Update product error:', error);
+    return res.status(500).json({ 
+      error: 'Lỗi cập nhật product', 
+      details: error.message 
+    });
+  }
+});
+
+// DELETE /api/products/:id - Xóa product
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Delete product (chapters will be cascade deleted if foreign key is set up properly)
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Delete product error:', error);
+      return res.status(500).json({ error: 'Lỗi xóa product' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Xóa product thành công'
+    });
+
+  } catch (error) {
+    console.error('Delete product error:', error);
+    return res.status(500).json({ 
+      error: 'Lỗi xóa product', 
+      details: error.message 
+    });
+  }
+});
+
 export default router;
