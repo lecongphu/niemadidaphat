@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Chapter, ChapterWithProduct, ChapterCreateInput, ChapterUpdateInput } from '@/lib/types';
-import { SupabaseService } from '@/lib/supabaseService';
+import { apiClient } from '@/lib/apiConfig';
 
 interface UseChaptersOptions {
   productId?: string;
@@ -30,10 +30,10 @@ export function useChapters(options: UseChaptersOptions = {}): UseChaptersReturn
       let chapters: Chapter[];
       
       if (options.productId) {
-        chapters = await SupabaseService.getChaptersByProductId(options.productId);
+        chapters = await apiClient.get(`/chapters/product/${options.productId}`);
       } else {
-        // TODO: Implement getAllChapters in SupabaseService if needed
-        chapters = [];
+        // Get all chapters
+        chapters = await apiClient.get('/chapters');
       }
 
       setChapters(chapters);
@@ -47,7 +47,7 @@ export function useChapters(options: UseChaptersOptions = {}): UseChaptersReturn
 
   const createChapter = async (chapterData: ChapterCreateInput) => {
     try {
-      await SupabaseService.createChapter(chapterData);
+      await apiClient.post('/chapters', chapterData);
 
       // Refresh chapters list
       await fetchChapters();
@@ -59,7 +59,7 @@ export function useChapters(options: UseChaptersOptions = {}): UseChaptersReturn
 
   const updateChapter = async (id: string, updateData: ChapterUpdateInput) => {
     try {
-      await SupabaseService.updateChapter(id, updateData);
+      await apiClient.put(`/chapters/${id}`, updateData);
 
       // Update local state
       setChapters(prev => 
@@ -75,7 +75,7 @@ export function useChapters(options: UseChaptersOptions = {}): UseChaptersReturn
 
   const deleteChapter = async (id: string) => {
     try {
-      await SupabaseService.deleteChapter(id);
+      await apiClient.delete(`/chapters/${id}`);
 
       // Remove from local state
       setChapters(prev => prev.filter(chapter => chapter.id !== id));

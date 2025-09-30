@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { supabase } from '@/lib/supabase';
+import { API_BASE_URL } from '@/lib/apiConfig';
 
 // Types
 interface User {
@@ -77,7 +78,7 @@ const UserManagement: React.FC = () => {
         includeStats: includeStats.toString()
       });
 
-      const response = await fetch(`/api/users?${searchParams}`);
+      const response = await fetch(`${API_BASE_URL}/users?${searchParams}`);
       if (!response.ok) throw new Error('Failed to fetch users');
       
       const data = await response.json();
@@ -99,7 +100,7 @@ const UserManagement: React.FC = () => {
   const loadRoles = useCallback(async () => {
     try {
       // OPTIMIZED: Load roles from API with caching
-      const response = await fetch('/api/roles');
+      const response = await fetch(`${API_BASE_URL}/roles`);
       if (!response.ok) throw new Error('Failed to fetch roles');
       
       const data = await response.json();

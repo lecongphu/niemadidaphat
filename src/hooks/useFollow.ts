@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-// Removed Supabase import - using API calls now
+import { API_BASE_URL } from '@/lib/apiConfig';
 
 interface UseFollowProps {
   productId: string;
@@ -36,7 +36,7 @@ export function useFollow({ productId, userId }: UseFollowProps): UseFollowRetur
         }
 
         // Check if user/IP follows this product
-        const response = await fetch(`/api/follow?${params.toString()}`);
+        const response = await fetch(`${API_BASE_URL}/follow?${params.toString()}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -63,7 +63,7 @@ export function useFollow({ productId, userId }: UseFollowProps): UseFollowRetur
       const method = isFollowing ? 'DELETE' : 'POST';
       
       // Send request with userId (can be null for anonymous users)
-      const response = await fetch('/api/follow', {
+      const response = await fetch(`${API_BASE_URL}/follow`, {
         method,
         headers: {
           'Content-Type': 'application/json',

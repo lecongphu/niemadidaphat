@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Chapter } from '@/lib/types';
-import { SupabaseService } from '@/lib/supabaseService';
+import { apiClient } from '@/lib/apiConfig';
 
 interface UseAdminChaptersOptions {
   productId?: string;
@@ -34,8 +34,8 @@ export function useAdminChapters(options: UseAdminChaptersOptions = {}): UseAdmi
       setLoading(true);
       setError(null);
 
-      // Query chapters from Supabase
-      const chapters = await SupabaseService.getChaptersByProductId(options.productId);
+      // Query chapters from backend API
+      const chapters = await apiClient.get(`/chapters/product/${options.productId}`);
 
       setChapters(chapters);
     } catch (err) {
@@ -82,13 +82,13 @@ export function useAdminChapters(options: UseAdminChaptersOptions = {}): UseAdmi
     });
   };
 
-  // Save chapter to Supabase (create or update)
+  // Save chapter via backend API (create or update)
   const saveChapter = async (chapter: Chapter) => {
     try {
       if (chapter.id.startsWith('temp-')) {
         // Create new chapter
         const { id, created_at, updated_at, ...chapterData } = chapter;
-        const newChapter = await SupabaseService.createChapter({
+        const newChapter = await apiClient.post('/chapters', {
           ...chapterData,
           product_id: options.productId!
         });
@@ -100,7 +100,7 @@ export function useAdminChapters(options: UseAdminChaptersOptions = {}): UseAdmi
       } else {
         // Update existing chapter
         const { created_at, updated_at, ...chapterData } = chapter;
-        await SupabaseService.updateChapter(chapter.id, chapterData);
+        await apiClient.put(`/chapters/${chapter.id}`, chapterData);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Lỗi lưu chapter');
@@ -108,11 +108,11 @@ export function useAdminChapters(options: UseAdminChaptersOptions = {}): UseAdmi
     }
   };
 
-  // Delete chapter from Supabase
+  // Delete chapter via backend API
   const deleteChapter = async (chapterId: string) => {
     try {
       if (!chapterId.startsWith('temp-')) {
-        await SupabaseService.deleteChapter(chapterId);
+        await apiClient.delete(`/chapters/${chapterId}`);
       }
       
       // Remove from local state

@@ -1,8 +1,8 @@
-import { SupabaseService } from "@/lib/supabaseService";
+import { apiClient } from "@/lib/apiConfig";
 import type { Product, ProductCreateInput, ProductUpdateInput } from "@/lib/types";
 
 export async function listProducts(): Promise<Product[]> {
-  return await SupabaseService.getProducts();
+  return await apiClient.get('/products');
 }
 
 export async function listProductsPaged(params: {
@@ -10,45 +10,36 @@ export async function listProductsPaged(params: {
   page?: number;
   pageSize?: number;
 }): Promise<{ items: Product[]; total: number }> {
-  const page = Math.max(1, params.page ?? 1);
-  const pageSize = Math.min(100, Math.max(1, params.pageSize ?? 10));
+  const queryParams = new URLSearchParams();
+  if (params.search) queryParams.set('search', params.search);
+  if (params.page) queryParams.set('page', params.page.toString());
+  if (params.pageSize) queryParams.set('pageSize', params.pageSize.toString());
   
-  let allProducts: Product[];
-
-  if (params.search && params.search.trim()) {
-    // Use Supabase search functionality
-    allProducts = await SupabaseService.searchProducts(params.search);
-  } else {
-    // Get all products
-    allProducts = await SupabaseService.getProducts();
-  }
-  
-  const startIndex = (page - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const items = allProducts.slice(startIndex, endIndex);
-  
-  return { items, total: allProducts.length };
+  const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
+  return await apiClient.get(`/products${query}`);
 }
 
 export async function getProductBySlugDb(slug: string): Promise<Product | null> {
-  return await SupabaseService.getProductBySlug(slug);
+  try {
+    return await apiClient.get(`/products/${slug}`);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return null;
+  }
 }
 
 export async function createProduct(input: ProductCreateInput): Promise<Product> {
-  return await SupabaseService.createProduct(input);
+  return await apiClient.post('/products', input);
 }
 
 export async function updateProduct(id: string, input: ProductUpdateInput): Promise<Product> {
-  return await SupabaseService.updateProduct(id, input);
+  return await apiClient.put(`/products/${id}`, input);
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  return await SupabaseService.deleteProduct(id);
+  await apiClient.delete(`/products/${id}`);
 }
 
 export async function listProductsByCategory(category: string): Promise<Product[]> {
-  const allProducts = await SupabaseService.getProducts();
-  return allProducts.filter(product => product.category === category);
+  return await apiClient.get(`/products?category=${category}`);
 }
-
-

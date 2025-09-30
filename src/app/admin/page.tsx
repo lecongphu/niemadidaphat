@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SupabaseAuth } from "@/lib/supabaseAuth";
-import { SupabaseService } from "@/lib/supabaseService";
 import type { Product, ProductCreateInput, ProductUpdateInput } from "@/lib/types";
 import ImageUploaderR2 from "@/components/ImageUploaderR2";
 import FeedbackManager from "@/components/FeedbackManager";
@@ -13,36 +12,24 @@ import { useAdminChapters } from "@/hooks/useAdminChapters";
 import ChapterManager from "@/components/ChapterManager";
 import BuildSizeInfo from "@/components/BuildSizeInfo";
 import { getCurrentUserWithRoles, isAdmin, hasPermission, type UserWithRoles } from "@/lib/authUtils";
+import { 
+  listProductsPaged, 
+  createProduct as createProductRepo, 
+  updateProduct as updateProductRepo,
+  deleteProduct as deleteProductRepo
+} from "@/lib/productsRepo";
 
 // Type definitions - sử dụng types từ @/lib/types
 
 // Removed unused interface
 
-// Helper functions for Supabase operations
-async function listProductsPaged({ page, pageSize, search }: { page: number; pageSize: number; search: string }) {
-  let allProducts: Product[];
-  
-  if (search) {
-    // Use Supabase search functionality
-    allProducts = await SupabaseService.searchProducts(search);
-  } else {
-    // Get all products
-    allProducts = await SupabaseService.getProducts();
-  }
-  
-  const startIndex = (page - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const items = allProducts.slice(startIndex, endIndex);
-  
-  return { items, total: allProducts.length };
-}
-
+// Helper wrapper functions to maintain compatibility
 async function createProduct(productData: ProductCreateInput) {
-  return await SupabaseService.createProduct(productData);
+  return await createProductRepo(productData);
 }
 
 async function updateProduct(id: string, updateData: ProductUpdateInput) {
-  return await SupabaseService.updateProduct(id, updateData);
+  return await updateProductRepo(id, updateData);
 }
 
 const emptyForm = {
@@ -286,8 +273,8 @@ function AdminPageContent() {
     }
 
     try {
-      // Xóa product từ Supabase (sẽ cascade delete chapters nếu có foreign key constraint)
-      await SupabaseService.deleteProduct(id);
+      // Xóa product từ backend API (sẽ cascade delete chapters nếu có foreign key constraint)
+      await deleteProductRepo(id);
       
       // Cập nhật UI
       setProducts((prev) => prev.filter((p) => p.id !== id));
