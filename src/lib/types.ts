@@ -24,7 +24,7 @@ export type Product = {
   duration_seconds?: number | null; // Storage format: total seconds
   description: string;
   cover_url?: string | null;      // Ảnh bìa sản phẩm
-  category?: string | null;       // 'nhan-qua' | 'gioi-luat' | 'niem-phat'
+  category?: string | null;       // 'nhan-qua' | 'niem-phat'
   followers_count?: number;       // Số người follow
   total_views?: number;           // Tổng lượt xem
   unique_views?: number;          // Lượt xem duy nhất

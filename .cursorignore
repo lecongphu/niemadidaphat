@@ -3,9 +3,6 @@
 !.env.local
 
 # Still ignore other sensitive files
-.env
-.env.production
-.env.development
 *.key
 *.pem
 *.p12
