@@ -7,20 +7,21 @@
 - ✅ Tạo database connection pool
 - ✅ Update tất cả routes: products, chapters
 - ✅ Implement JWT authentication
-- ✅ Password hashing với bcrypt
+- ✅ Google One-Tap authentication (chỉ dùng Google, không cần email/password)
 - ✅ Cookie-based sessions
 
 ### 2. Files mới
 ```
 server/src/config/database.js          - PostgreSQL connection
 server/src/middleware/jwtAuth.js       - JWT middleware
-server/src/routes/authNew.js           - Auth routes (login, register, etc.)
+server/src/routes/authGoogle.js        - Google One-Tap auth routes
 server/src/routes/chaptersNew.js       - Chapters routes với PostgreSQL
+migrations/add_google_id_column.sql    - Add google_id column
 ```
 
 ### 3. Files updated
 ```
-server/package.json                    - Thêm pg, bcrypt, jwt, cookie-parser
+server/package.json                    - Thêm pg, google-auth-library, jwt, cookie-parser
 server/src/index.js                    - Sử dụng PostgreSQL
 server/src/routes/products.js          - Dùng PostgreSQL queries
 ```
@@ -31,6 +32,7 @@ POSTGRESQL_SETUP.md                           - Hướng dẫn cài PostgreSQL
 MIGRATION_SUPABASE_TO_POSTGRESQL.md           - Hướng dẫn migration chi tiết
 POSTGRESQL_MIGRATION_COMPLETE.md              - Complete guide
 POSTGRESQL_MIGRATION_SUMMARY.md               - File này
+GOOGLE_ONE_TAP_AUTH.md                        - Google One-Tap authentication guide
 ```
 
 ---
@@ -55,9 +57,8 @@ GRANT ALL ON DATABASE niemadidaphat TO niemadidaphat_user;
 # Import schema
 psql -U niemadidaphat_user -d niemadidaphat -f complete_database_schema.sql
 
-# Thêm password column
-psql -U niemadidaphat_user -d niemadidaphat
-ALTER TABLE user_profiles ADD COLUMN password_hash VARCHAR(255);
+# Thêm google_id column
+psql -U niemadidaphat_user -d niemadidaphat -f migrations/add_google_id_column.sql
 ```
 
 **3. Migrate data từ Supabase**
@@ -79,6 +80,7 @@ DB_NAME=niemadidaphat
 DB_USER=niemadidaphat_user
 DB_PASSWORD=your_password
 
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 JWT_SECRET=your_32_character_random_secret
 JWT_EXPIRES_IN=7d
 ```
@@ -92,10 +94,10 @@ pm2 restart ecosystem.config.cjs
 
 **6. Update Frontend (⏳ CHƯA LÀM)**
 - Remove Supabase auth
-- Implement JWT auth
-- Update login/register flows
+- Implement Google One-Tap authentication
+- Add JWT token management
 
-→ Xem code example: `POSTGRESQL_MIGRATION_COMPLETE.md`
+→ Xem chi tiết: `GOOGLE_ONE_TAP_AUTH.md`
 
 ---
 
@@ -106,8 +108,7 @@ pm2 restart ecosystem.config.cjs
 - [x] JWT authentication
 - [x] Products routes với PostgreSQL
 - [x] Chapters routes với PostgreSQL
-- [x] Auth routes (login, register, logout)
-- [x] Password hashing
+- [x] Google One-Tap auth routes
 - [x] Session cookies
 - [x] Error handling
 
@@ -115,14 +116,12 @@ pm2 restart ecosystem.config.cjs
 - [ ] Cài PostgreSQL trên server
 - [ ] Tạo database và user
 - [ ] Import schema
-- [ ] Add password_hash column
+- [ ] Add google_id column
 - [ ] Migrate data từ Supabase
-- [ ] Reset user passwords
 
 ### Frontend ⏳
-- [ ] Tạo auth service mới (JWT)
-- [ ] Update login form
-- [ ] Update register form
+- [ ] Implement Google One-Tap component
+- [ ] Tạo auth service (JWT token management)
 - [ ] Update API interceptor (add token)
 - [ ] Remove Supabase auth imports
 - [ ] Test authentication flow
@@ -131,29 +130,23 @@ pm2 restart ecosystem.config.cjs
 - [ ] Update production .env
 - [ ] Test backend endpoints
 - [ ] Deploy frontend changes
-- [ ] Notify users về password reset
 - [ ] Monitor logs
 
 ---
 
 ## ⚠️ Lưu ý quan trọng
 
-### Users cần reset password
-Supabase Auth không export được password hashes, nên:
-
-**Option 1:** Set temporary password cho tất cả users
-```sql
-UPDATE user_profiles 
-SET password_hash = '$2b$10$XGmJ9zHrOzXyJYLx2Pvm/uKY.J8vK2pqZ0fQZ3aNLZ8KxE8jZ8xJy';
--- Password: "Welcome@123"
-```
-
-**Option 2:** Gửi email reset password (cần implement)
+### Google One-Tap Only
+- ✅ **KHÔNG CẦN** email/password authentication
+- ✅ **KHÔNG CẦN** reset password
+- ✅ **KHÔNG CẦN** registration form
+- 👤 Users chỉ cần đăng nhập bằng Google account
 
 ### Breaking changes
-- Frontend authentication hoàn toàn khác
-- Users phải đăng nhập lại
+- Frontend authentication hoàn toàn khác (Google One-Tap only)
+- Users phải đăng nhập lại bằng Google
 - Supabase sessions không còn valid
+- Existing users sẽ tự động tạo account mới khi login lần đầu với Google
 
 ---
 

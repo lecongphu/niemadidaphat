@@ -51,6 +51,7 @@ node scripts/dev-full.js
 ### Khác
 - 🗂️ **[STORAGE_FOLDER_STRUCTURE.md](STORAGE_FOLDER_STRUCTURE.md)** - Cấu trúc lưu trữ
 - 🔐 **[GOOGLE_OAUTH_SETUP.md](GOOGLE_OAUTH_SETUP.md)** - Cấu hình Google OAuth
+- 🔐 **[GOOGLE_ONE_TAP_AUTH.md](GOOGLE_ONE_TAP_AUTH.md)** - Google One-Tap Authentication
 - ☁️ **[R2_SETUP_GUIDE.md](R2_SETUP_GUIDE.md)** - Cấu hình Cloudflare R2
 
 ## 🔧 Tech Stack
@@ -70,13 +71,13 @@ node scripts/dev-full.js
 - **Storage**: AWS SDK (for R2)
 - **Security**: Helmet, CORS
 - **Rate Limiting**: express-rate-limit
-- **Authentication**: JWT + bcrypt
+- **Authentication**: JWT + Google One-Tap
 - **Session Management**: cookie-parser
 
 ### Database & Storage
 - **Database**: PostgreSQL (self-hosted)
 - **File Storage & CDN**: Cloudflare R2
-- **Authentication**: JWT + Google One-Tap (optional)
+- **Authentication**: Google One-Tap only
 
 ## 📁 Cấu trúc Project
 

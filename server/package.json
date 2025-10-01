@@ -23,7 +23,7 @@
     "compression": "^1.7.4",
     "express-rate-limit": "^7.1.5",
     "pg": "^8.11.3",
-    "bcrypt": "^5.1.1",
+    "google-auth-library": "^9.0.0",
     "jsonwebtoken": "^9.0.2",
     "cookie-parser": "^1.4.6"
   },

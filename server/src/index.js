@@ -17,7 +17,7 @@ import followRouter from './routes/follow.js';
 import usersRouter from './routes/users.js';
 import rolesRouter from './routes/roles.js';
 import uploadRouter from './routes/upload.js';
-import authRouter from './routes/authNew.js';
+import authRouter from './routes/authGoogle.js';
 
 // Load environment variables
 dotenv.config();
