@@ -3,17 +3,21 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 
+// Import database to test connection
+import pool from './config/database.js';
+
 // Import routes
-import chaptersRouter from './routes/chapters.js';
+import chaptersRouter from './routes/chaptersNew.js';
 import productsRouter from './routes/products.js';
 import feedbackRouter from './routes/feedback.js';
 import followRouter from './routes/follow.js';
 import usersRouter from './routes/users.js';
 import rolesRouter from './routes/roles.js';
 import uploadRouter from './routes/upload.js';
-import authRouter from './routes/auth.js';
+import authRouter from './routes/authNew.js';
 
 // Load environment variables
 dotenv.config();
@@ -55,6 +59,9 @@ app.use(compression());
 // Body parser
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Cookie parser
+app.use(cookieParser());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -98,7 +105,17 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
+// Test database connection
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('❌ Database connection failed:', err.message);
+  } else {
+    console.log('✅ Database connected:', res.rows[0].now);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`);
   console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`💾 Database: PostgreSQL (${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME})`);
 });

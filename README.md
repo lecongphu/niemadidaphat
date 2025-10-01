@@ -8,7 +8,8 @@ Dự án sử dụng kiến trúc **Full Stack** tách biệt:
 
 - **Frontend**: Next.js 15 (React 19)
 - **Backend**: Node.js + Express
-- **Database**: Supabase (PostgreSQL)
+- **Database**: PostgreSQL (self-hosted)
+- **Authentication**: JWT + bcrypt
 - **Storage & CDN**: Cloudflare R2
 
 ## ⚡ Quick Start
@@ -42,6 +43,9 @@ node scripts/dev-full.js
 ### Migration & Technical
 - 🔄 **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** - Chi tiết về migration từ Next.js API Routes sang Node.js
 - 📋 **[BACKEND_MIGRATION_SUMMARY.md](BACKEND_MIGRATION_SUMMARY.md)** - Tóm tắt migration
+- 💾 **[POSTGRESQL_SETUP.md](POSTGRESQL_SETUP.md)** - Setup PostgreSQL trên Ubuntu
+- 🔄 **[MIGRATION_SUPABASE_TO_POSTGRESQL.md](MIGRATION_SUPABASE_TO_POSTGRESQL.md)** - Migration từ Supabase sang PostgreSQL
+- ✅ **[POSTGRESQL_MIGRATION_COMPLETE.md](POSTGRESQL_MIGRATION_COMPLETE.md)** - Tổng quan migration PostgreSQL
 - 📡 **[server/README.md](server/README.md)** - Backend API documentation
 
 ### Khác
@@ -62,15 +66,17 @@ node scripts/dev-full.js
 ### Backend
 - **Runtime**: Node.js
 - **Framework**: Express
-- **Database ORM**: Supabase Client
+- **Database**: PostgreSQL (pg driver)
 - **Storage**: AWS SDK (for R2)
 - **Security**: Helmet, CORS
 - **Rate Limiting**: express-rate-limit
+- **Authentication**: JWT + bcrypt
+- **Session Management**: cookie-parser
 
 ### Database & Storage
-- **Database**: Supabase (PostgreSQL)
+- **Database**: PostgreSQL (self-hosted)
 - **File Storage & CDN**: Cloudflare R2
-- **Authentication**: Supabase Auth + Google One-Tap
+- **Authentication**: JWT + Google One-Tap (optional)
 
 ## 📁 Cấu trúc Project
 
