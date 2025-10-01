@@ -43,6 +43,13 @@ export default function GlobalPlayer({
   }, [storageKey, persistKey]);
 
   const handlePlay = () => {
+    // Validate src before playing
+    if (!src || src.trim() === '') {
+      console.error('GlobalPlayer: Cannot play - src is empty');
+      alert('Không thể phát: Thiếu URL audio');
+      return;
+    }
+    
     // Debug: Log src to check if it's correct
     console.log('DEBUG - GlobalPlayer src:', src);
     console.log('DEBUG - GlobalPlayer persistKey:', persistKey);

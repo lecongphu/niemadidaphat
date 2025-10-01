@@ -199,15 +199,23 @@ export default function ChapterPlayerList({ product, showTitle = true }: Chapter
                 </div>
                 
                 {/* Player Component - Show only when expanded */}
-                {expandedChapter === index && (
+                {expandedChapter === index && chapter.audio_url && (
                   <div className="px-4 pb-3 bg-amber-100/50 border-t border-amber-200/50">
                     <GlobalPlayer
                       title={`${product.title} - ${chapter.title}`}
-                      src={getOptimizedAudioUrl(chapter.audio_url!, { quality: adaptiveQuality })}
+                      src={getOptimizedAudioUrl(chapter.audio_url, { quality: adaptiveQuality })}
                       persistKey={`${product.slug}-chapter-${chapter.id}`}
                       artist={product.author}
                       album={product.title}
                     />
+                  </div>
+                )}
+                {/* Show error message if expanded but no audio */}
+                {expandedChapter === index && !chapter.audio_url && (
+                  <div className="px-4 pb-3 bg-amber-100/50 border-t border-amber-200/50">
+                    <div className="text-center py-4 text-amber-700">
+                      <p className="text-sm">⚠️ Tập này chưa có file audio</p>
+                    </div>
                   </div>
                 )}
               </div>
