@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { jwtAuth } from '@/lib/jwtAuth';
-import type { AuthUser } from '@/lib/jwtAuth';
+import jwtAuth, { type AuthUser } from '@/lib/jwtAuth';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -17,7 +16,7 @@ export default function ProfilePage() {
 
   const checkAuth = async () => {
     try {
-      const currentUser = jwtAuth.getCurrentUser();
+      const currentUser = await jwtAuth.getCurrentUser();
       
       if (!currentUser) {
         router.push('/');

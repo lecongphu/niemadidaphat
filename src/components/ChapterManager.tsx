@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Chapter } from '@/lib/types';
 import { useAdminChapters } from '@/hooks/useAdminChapters';
 import AudioUploaderR2 from './AudioUploaderR2';
-import BulkUploadDialog from './BulkUploadDialog';
 import ChapterInfoTooltip from './ChapterInfoTooltip';
 
 interface ChapterManagerProps {
@@ -35,8 +34,6 @@ const ChapterManager: React.FC<ChapterManagerProps> = ({
   } = useAdminChapters({ productId });
 
   const [editingChapter, setEditingChapter] = useState<EditingChapter | null>(null);
-  const [showBulkUpload, setShowBulkUpload] = useState(false);
-  const [bulkUploadFiles, setBulkUploadFiles] = useState<File[]>([]);
   const [calculatingDuration, setCalculatingDuration] = useState<string | null>(null);
 
 
@@ -105,28 +102,6 @@ const ChapterManager: React.FC<ChapterManagerProps> = ({
     }
   };
 
-  const handleBulkUploadFiles = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    const audioFiles = files.filter(file => file.type.startsWith('audio/'));
-    
-    setBulkUploadFiles(audioFiles);
-    setShowBulkUpload(true);
-    
-    // Reset input để có thể chọn lại files
-    event.target.value = '';
-  };
-
-  const handleOpenBulkUpload = () => {
-    setBulkUploadFiles([]);
-    setShowBulkUpload(true);
-  };
-
-  const handleBulkUploadAllComplete = () => {
-    setShowBulkUpload(false);
-    setBulkUploadFiles([]);
-    // Refresh chapters list after bulk upload
-    window.location.reload();
-  };
 
 
   if (loading) {
@@ -148,25 +123,6 @@ const ChapterManager: React.FC<ChapterManagerProps> = ({
     <section className="space-y-4 border-t pt-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-medium">Quản lý Chapters (Các tập MP3)</h2>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className="px-3 py-1.5 rounded border border-blue-500 text-blue-600 hover:bg-blue-50"
-            onClick={handleOpenBulkUpload}
-          >
-            📁 Upload/Import Files
-          </button>
-          <label className="px-3 py-1.5 rounded border border-green-500 text-green-600 hover:bg-green-50 cursor-pointer">
-            📂 Chọn Files Cục Bộ
-            <input
-              type="file"
-              multiple
-              accept="audio/*"
-              className="hidden"
-              onChange={handleBulkUploadFiles}
-            />
-          </label>
-        </div>
       </div>
 
       {error && (
@@ -332,22 +288,6 @@ const ChapterManager: React.FC<ChapterManagerProps> = ({
           </div>
         )}
       </div>
-
-      {/* Bulk Upload Dialog */}
-      {showBulkUpload && (
-        <BulkUploadDialog
-          files={bulkUploadFiles}
-          currentChapterCount={chapters.length}
-          slug={productSlug}
-          productId={productId}
-          onAllComplete={handleBulkUploadAllComplete}
-          onCancel={() => {
-            setShowBulkUpload(false);
-            setBulkUploadFiles([]);
-          }}
-        />
-      )}
-
     </section>
   );
 };
