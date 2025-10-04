@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import SpotifyPlaylist from "@/components/SpotifyPlaylist";
 import OAuthErrorHandler from "@/components/OAuthErrorHandler";
 
 export default function Home() {
@@ -30,10 +29,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Spotify-style Playlist Section */}
-      <section className="px-2">
-        <SpotifyPlaylist />
-      </section>
+      {/* Products Section - Coming soon */}
+      {/* <section className="px-2">
+        TODO: Add products list here
+      </section> */}
 
       {/* Daily Practice Section */}
       <section className="serene-card p-6 sm:p-12 mx-2">

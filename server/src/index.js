@@ -12,12 +12,8 @@ import pool from './config/database.js';
 // Import routes
 import chaptersRouter from './routes/chaptersNew.js';
 import productsRouter from './routes/products.js';
-import feedbackRouter from './routes/feedback.js';
-import followRouter from './routes/follow.js';
-import usersRouter from './routes/users.js';
-import rolesRouter from './routes/roles.js';
 import uploadRouter from './routes/upload.js';
-import authRouter from './routes/authGoogle.js';
+import authRouter from './routes/authGoogleJWT.js';
 
 // Load environment variables
 dotenv.config();
@@ -84,10 +80,6 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/chapters', chaptersRouter);
 app.use('/api/products', productsRouter);
-app.use('/api/feedback', feedbackRouter);
-app.use('/api/follow', followRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/roles', rolesRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/auth', authRouter);
 

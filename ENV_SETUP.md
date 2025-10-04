@@ -24,7 +24,19 @@ Tạo file `.env` trong thư mục `server/` với nội dung:
 PORT=5000
 NODE_ENV=development
 
-# Supabase
+# PostgreSQL Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=niemadidaphat
+DB_USER=niemadidaphat_user
+DB_PASSWORD=your_secure_password_here
+DB_SSL=false  # Set to 'true' for remote connections with SSL
+
+# JWT Secret
+JWT_SECRET=your_jwt_secret_key_minimum_32_characters
+JWT_EXPIRES_IN=7d
+
+# Supabase (optional - if still using for some features)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
@@ -78,17 +90,29 @@ npm run dev
 ## Production Environment
 
 ### Backend
-Set các biến môi trường trên hosting platform (Railway, Render, etc):
+Set các biến môi trường trên hosting platform (Ubuntu Server, Railway, Render, etc):
 - PORT
 - NODE_ENV=production
-- NEXT_PUBLIC_SUPABASE_URL
-- NEXT_PUBLIC_SUPABASE_ANON_KEY
-- SUPABASE_SERVICE_ROLE_KEY
-- R2_ACCOUNT_ID
-- R2_ACCESS_KEY_ID
-- R2_SECRET_ACCESS_KEY
-- R2_BUCKET_NAME
-- R2_PUBLIC_URL
+- **PostgreSQL**:
+  - DB_HOST (localhost hoặc remote IP)
+  - DB_PORT (default: 5432)
+  - DB_NAME
+  - DB_USER
+  - DB_PASSWORD
+  - DB_SSL (true/false - set `true` nếu remote connection)
+- **JWT**:
+  - JWT_SECRET
+  - JWT_EXPIRES_IN
+- **Supabase** (optional):
+  - NEXT_PUBLIC_SUPABASE_URL
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY
+  - SUPABASE_SERVICE_ROLE_KEY
+- **Cloudflare R2**:
+  - R2_ACCOUNT_ID
+  - R2_ACCESS_KEY_ID
+  - R2_SECRET_ACCESS_KEY
+  - R2_BUCKET_NAME
+  - R2_PUBLIC_URL
 - CLIENT_URL (frontend URL)
 
 ### Frontend

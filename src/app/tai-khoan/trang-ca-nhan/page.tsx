@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { SupabaseAuth, type AuthUser } from '@/lib/supabaseAuth';
-import UserProfile from '@/components/UserProfile';
+import { jwtAuth } from '@/lib/jwtAuth';
+import type { AuthUser } from '@/lib/jwtAuth';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -17,16 +17,14 @@ export default function ProfilePage() {
 
   const checkAuth = async () => {
     try {
-      const currentUser = await SupabaseAuth.getCurrentUser();
+      const currentUser = jwtAuth.getCurrentUser();
       
-      if (!currentUser.user) {
-        // No authenticated user, redirect to home
+      if (!currentUser) {
         router.push('/');
         return;
       }
 
-      const profile = await SupabaseAuth.getUserProfile();
-      setUser(profile);
+      setUser(currentUser);
     } catch (error) {
       console.error('Auth check error:', error);
       router.push('/');
@@ -37,107 +35,84 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-amber-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Đang tải thông tin...</p>
+          <div className="w-16 h-16 lotus-gradient rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <span className="text-white text-2xl">🪷</span>
+          </div>
+          <p className="text-amber-700/80">Đang tải thông tin...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-amber-100 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Trang cá nhân</h1>
-          <p className="mt-2 text-gray-600">
-            Quản lý thông tin tài khoản và cài đặt của bạn
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold wisdom-text">Trang cá nhân</h1>
+          <p className="mt-2 text-amber-700/80">
+            Quản lý thông tin tài khoản của bạn
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* User Profile */}
-          <div className="lg:col-span-1">
-            <UserProfile />
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Thông tin chi tiết
-              </h2>
-
-              <div className="space-y-6">
-                {/* Account Type */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <h3 className="font-medium text-gray-900">Loại tài khoản</h3>
-                    <p className="text-sm text-gray-600">
-                      Tài khoản đăng ký - Có email
-                    </p>
-                  </div>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    📧 Đăng ký
-                  </span>
-                </div>
-
-                {/* Features for Registered Users */}
-                {user?.email && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h3 className="font-medium text-green-900 mb-2">
-                      🌟 Tính năng tài khoản
-                    </h3>
-                    <ul className="text-sm text-green-800 space-y-1">
-                      <li>✅ Nghe nhạc và đọc sách</li>
-                      <li>✅ Theo dõi sản phẩm yêu thích</li>
-                      <li>✅ Gửi phản hồi và góp ý</li>
-                      <li>✅ Đồng bộ dữ liệu trên nhiều thiết bị</li>
-                      <li>✅ Khôi phục tài khoản khi quên mật khẩu</li>
-                      <li>✅ Nhận thông báo qua email</li>
-                      <li>✅ Bảo mật cao</li>
-                    </ul>
-                  </div>
-                )}
-
-                {/* Privacy Note */}
-                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                  <h3 className="font-medium text-gray-900 mb-2">
-                    🔒 Quyền riêng tư
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Chúng tôi chỉ thu thập thông tin cần thiết để cung cấp dịch vụ. Email của bạn sẽ được bảo mật tuyệt đối.
-                  </p>
-                </div>
-
-                {/* Usage Stats (placeholder) */}
-                <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-                  <h3 className="font-medium text-indigo-900 mb-2">
-                    📊 Thống kê sử dụng
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-indigo-600 font-medium">Sản phẩm đã theo dõi</p>
-                      <p className="text-indigo-800">0</p>
-                    </div>
-                    <div>
-                      <p className="text-indigo-600 font-medium">Phản hồi đã gửi</p>
-                      <p className="text-indigo-800">0</p>
-                    </div>
-                    <div>
-                      <p className="text-indigo-600 font-medium">Thời gian nghe</p>
-                      <p className="text-indigo-800">0 phút</p>
-                    </div>
-                    <div>
-                      <p className="text-indigo-600 font-medium">Trang đã xem</p>
-                      <p className="text-indigo-800">0</p>
-                    </div>
-                  </div>
-                </div>
+        {/* User Info Card */}
+        <div className="serene-card p-6 sm:p-8 mb-6">
+          <div className="flex items-center gap-4 mb-6">
+            {user?.avatar_url ? (
+              <img 
+                src={user.avatar_url} 
+                alt={user.full_name}
+                className="w-20 h-20 rounded-full"
+              />
+            ) : (
+              <div className="w-20 h-20 lotus-gradient rounded-full flex items-center justify-center">
+                <span className="text-white text-3xl">🪷</span>
               </div>
+            )}
+            <div>
+              <h2 className="text-2xl font-semibold wisdom-text">{user?.full_name}</h2>
+              <p className="text-amber-700/80">{user?.email}</p>
             </div>
           </div>
+
+          {/* Account Type */}
+          <div className="flex items-center justify-between p-4 bg-amber-50 rounded-lg">
+            <div>
+              <h3 className="font-medium wisdom-text">Loại tài khoản</h3>
+              <p className="text-sm text-amber-700/80">
+                Tài khoản Google - {user?.provider}
+              </p>
+            </div>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              ✅ Đã xác thực
+            </span>
+          </div>
+        </div>
+
+        {/* Features */}
+        <div className="serene-card p-6 sm:p-8">
+          <h3 className="text-xl font-semibold wisdom-text mb-4">
+            🌟 Tính năng tài khoản
+          </h3>
+          <ul className="space-y-2 text-amber-700/80">
+            <li className="flex items-center gap-2">
+              <span className="text-green-600">✅</span>
+              <span>Nghe nhạc và đọc sách</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-green-600">✅</span>
+              <span>Theo dõi sản phẩm yêu thích</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-green-600">✅</span>
+              <span>Gửi phản hồi và góp ý</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-green-600">✅</span>
+              <span>Đồng bộ dữ liệu trên nhiều thiết bị</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

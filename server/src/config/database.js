@@ -15,6 +15,10 @@ const pool = new Pool({
   max: 20, // Maximum pool connections
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
   connectionTimeoutMillis: 2000, // Return error after 2 seconds if can't connect
+  // SSL configuration for remote connections
+  ssl: process.env.DB_SSL === 'true' ? {
+    rejectUnauthorized: false // Set to true in production with valid certificates
+  } : false
 });
 
 // Test connection

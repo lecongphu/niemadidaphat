@@ -1,10 +1,10 @@
 'use client'
 
 import Script from 'next/script'
-import { supabase } from '@/lib/supabase'
-import { SupabaseAuth } from '@/lib/supabaseAuth'
+import JwtAuth from '@/lib/jwtAuth'
 import type { CredentialResponse, IdConfiguration } from 'google-one-tap'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 declare global {
   interface Window {
@@ -32,42 +32,43 @@ const generateNonce = async (): Promise<[string, string]> => {
   return [nonce, hashedNonce]
 }
 
-interface GoogleOneTapProps {
+interface GoogleOneTapJWTProps {
   onSuccess?: () => void
   onError?: (error: Error | string) => void
 }
 
-const GoogleOneTap = ({ onSuccess, onError }: GoogleOneTapProps) => {
+const GoogleOneTapJWT = ({ onSuccess, onError }: GoogleOneTapJWTProps) => {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
 
   const initializeGoogleOneTap = async () => {
     try {
-      console.log('Khởi tạo Google One Tap')
+      console.log('Khởi tạo Google One Tap (JWT Auth)')
       
       // Kiểm tra xem có Google Client ID không
       if (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
         console.error('NEXT_PUBLIC_GOOGLE_CLIENT_ID chưa được cấu hình')
+        onError?.('Google Client ID chưa được cấu hình')
         return
       }
 
-      const [nonce, hashedNonce] = await generateNonce()
-      console.log('Nonce được tạo:', { nonce: nonce.substring(0, 10) + '...', hashedNonce: hashedNonce.substring(0, 10) + '...' })
-
-      // Kiểm tra session hiện tại trước khi hiển thị One-Tap UI
-      const { data, error } = await supabase.auth.getSession()
-      if (error) {
-        console.error('Lỗi khi lấy session:', error)
-      }
-      
-      if (data.session) {
-        console.log('Đã có session, chuyển về trang chủ')
+      // Kiểm tra xem user đã đăng nhập chưa
+      if (JwtAuth.isAuthenticated()) {
+        console.log('Đã đăng nhập, chuyển về trang chủ')
         router.push('/')
         return
       }
 
+      const [nonce, hashedNonce] = await generateNonce()
+      console.log('Nonce được tạo:', { 
+        nonce: nonce.substring(0, 10) + '...', 
+        hashedNonce: hashedNonce.substring(0, 10) + '...' 
+      })
+
       // Kiểm tra xem window.google có sẵn không
       if (!window.google) {
         console.error('Google SDK chưa được tải')
+        onError?.('Google SDK chưa được tải')
         return
       }
 
@@ -76,23 +77,20 @@ const GoogleOneTap = ({ onSuccess, onError }: GoogleOneTapProps) => {
         client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
         callback: async (response: CredentialResponse) => {
           try {
+            setIsLoading(true)
             console.log('Nhận được response từ Google One Tap')
             
-            // Gửi ID token đến Supabase thông qua SupabaseAuth
-            const result = await SupabaseAuth.signInWithGoogleIdToken(
-              response.credential,
-              nonce
-            )
+            // Gửi credential đến backend API thay vì Supabase
+            const result = await JwtAuth.signInWithGoogle(response.credential)
 
-            if (!result || !result.user) {
-              const error = new Error('Không thể đăng nhập với Google One Tap')
+            if (!result.success) {
+              const error = new Error(result.error || 'Không thể đăng nhập với Google One Tap')
               console.error('Lỗi đăng nhập với Google One Tap:', error)
               onError?.(error)
-              throw error
+              return
             }
 
-            console.log('Dữ liệu session:', result)
-            console.log('Đăng nhập thành công với Google One Tap')
+            console.log('Đăng nhập thành công với Google One Tap:', result.data?.user)
 
             // Gọi callback success nếu có
             onSuccess?.()
@@ -103,6 +101,8 @@ const GoogleOneTap = ({ onSuccess, onError }: GoogleOneTapProps) => {
           } catch (error) {
             console.error('Lỗi khi đăng nhập với Google One Tap:', error)
             onError?.(error instanceof Error ? error : String(error))
+          } finally {
+            setIsLoading(false)
           }
         },
         nonce: hashedNonce,
@@ -122,14 +122,27 @@ const GoogleOneTap = ({ onSuccess, onError }: GoogleOneTapProps) => {
   }
 
   return (
-    <Script 
-      onReady={() => {
-        initializeGoogleOneTap().catch(console.error);
-      }} 
-      src="https://accounts.google.com/gsi/client"
-      strategy="lazyOnload"
-    />
+    <>
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="flex items-center space-x-3">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span>Đang đăng nhập...</span>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <Script 
+        onReady={() => {
+          initializeGoogleOneTap().catch(console.error);
+        }} 
+        src="https://accounts.google.com/gsi/client"
+        strategy="lazyOnload"
+      />
+    </>
   )
 }
 
-export default GoogleOneTap
+export default GoogleOneTapJWT

@@ -19,7 +19,7 @@ export const API_BASE_URL = getApiBaseUrl();
 
 // Helper function to get auth headers
 export const getAuthHeaders = () => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('supabase.auth.token') : null;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
   return {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` })
@@ -92,7 +92,7 @@ export const apiClient = {
 
   // For file uploads
   upload: async (endpoint: string, formData: FormData) => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('supabase.auth.token') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     const headers: HeadersInit = {};
     if (token) {
       headers.Authorization = `Bearer ${token}`;

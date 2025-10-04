@@ -39,6 +39,7 @@ sudo apt install -y ufw
 sudo ufw allow OpenSSH
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
+sudo ufw allow 5432/tcp
 sudo ufw enable
 ```
 
@@ -654,6 +655,30 @@ cat /var/www/niemadidaphat/server/.env
 cd /var/www/niemadidaphat/server
 node src/index.js
 ```
+
+### 10.1.1. Lỗi PostgreSQL Connection
+**Lỗi:** `no pg_hba.conf entry for host "X.X.X.X"`
+
+**Giải pháp nhanh:**
+```bash
+# 1. Đảm bảo dùng localhost trong .env
+cd /var/www/niemadidaphat/server
+nano .env
+# DB_HOST=localhost
+
+# 2. Cấu hình pg_hba.conf
+sudo nano /etc/postgresql/16/main/pg_hba.conf
+# Thêm dòng:
+# host    niemadidaphat   niemadidaphat_user      127.0.0.1/32    md5
+
+# 3. Restart PostgreSQL
+sudo systemctl restart postgresql
+
+# 4. Restart backend
+pm2 restart niemadidaphat-backend
+```
+
+**Chi tiết:** Xem file `FIX_POSTGRESQL_CONNECTION.md`
 
 ### 10.2. Frontend không build
 ```bash

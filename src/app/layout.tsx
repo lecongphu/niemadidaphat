@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
-import AuthStatus from "@/components/AuthStatus";
+import AuthStatusJWT from "@/components/AuthStatusJWT";
 import { AudioProvider } from "@/contexts/AudioContext";
 import PersistentPlayer from "@/components/PersistentPlayer";
 import "./globals.css";
@@ -54,7 +54,7 @@ export default function RootLayout({
                   <span className="text-xs text-amber-700/70">Tây Phương Cực Lạc</span>
                 </div>
               </Link>
-              <AuthStatus />
+              <AuthStatusJWT />
             </div>
 
             {/* Desktop Header */}
@@ -82,7 +82,7 @@ export default function RootLayout({
                   </div>
                 </div>
                 <Link href="/gop-y" className="wisdom-text hover:text-amber-600 peaceful-transition">Góp ý</Link>
-                <AuthStatus />
+                <AuthStatusJWT />
               </nav>
             </div>
 
