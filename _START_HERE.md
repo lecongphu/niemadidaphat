@@ -49,7 +49,7 @@ Xem: [`HUONG_DAN_UPLOAD_UBUNTU.md`](./HUONG_DAN_UPLOAD_UBUNTU.md)
 
 #### Bước 2: Chạy trên Ubuntu
 ```bash
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 sudo bash quick-install.sh
 ```
 
@@ -94,7 +94,7 @@ bash run-production.sh     # Chạy app
 ### 1. Trên Ubuntu Server
 ```bash
 # Clone repo
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 git clone https://github.com/burakorkmez/realtime-spotify-clone .
 
 # Cài đặt tự động

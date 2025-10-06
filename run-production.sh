@@ -14,7 +14,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-PROJECT_DIR="/var/www/spotify"
+PROJECT_DIR="/var/www/niemadidaphat"
 
 # Kiểm tra thư mục dự án
 if [ ! -d "$PROJECT_DIR" ]; then
@@ -53,7 +53,7 @@ module.exports = {
   apps: [
     {
       name: 'spotify-backend',
-      cwd: '/var/www/spotify/backend',
+      cwd: '/var/www/niemadidaphat/backend',
       script: 'src/index.js',
       env: {
         NODE_ENV: 'production',

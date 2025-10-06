@@ -28,7 +28,7 @@ Bạn đã có đầy đủ công cụ để deploy Spotify Clone lên Ubuntu se
 #### Cách A: Git (Dễ nhất - Khuyến nghị)
 ```bash
 # Trên Ubuntu server
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 git clone https://github.com/burakorkmez/realtime-spotify-clone .
 chmod +x *.sh
 ```
@@ -36,7 +36,7 @@ chmod +x *.sh
 #### Cách B: SCP từ Windows
 ```powershell
 # Trên Windows PowerShell
-scp *.sh *.md user@server-ip:/var/www/spotify/
+scp *.sh *.md user@server-ip:/var/www/niemadidaphat/
 ```
 
 #### Cách C: WinSCP (GUI)
@@ -57,7 +57,7 @@ scp *.sh *.md user@server-ip:/var/www/spotify/
 ssh user@your-server-ip
 
 # Chạy cài đặt tự động
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 sudo bash quick-install.sh
 ```
 
@@ -175,13 +175,13 @@ https://youtu.be/4sbklcQ0EXc
 
 ```bash
 # 1. Upload scripts (nếu dùng SCP)
-scp *.sh *.md user@server:/var/www/spotify/
+scp *.sh *.md user@server:/var/www/niemadidaphat/
 
 # 2. SSH vào server
 ssh user@server-ip
 
 # 3. Cài đặt tự động
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 chmod +x *.sh
 sudo bash quick-install.sh
 
@@ -268,7 +268,7 @@ git commit -m "Update"
 git push
 
 # Update trên server
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 git pull
 bash run-production.sh
 ```

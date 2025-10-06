@@ -129,7 +129,7 @@ cd ..
 
 ### Backend .env
 ```bash
-cat > /var/www/spotify/backend/.env << 'EOF'
+cat > /var/www/niemadidaphat/backend/.env << 'EOF'
 PORT=5000
 MONGODB_URI=mongodb://spotify_admin:MatKhauManh123!@#@localhost:27017/spotify-clone
 ADMIN_EMAIL=admin@yourdomain.com
@@ -148,7 +148,7 @@ EOF
 
 ### Frontend .env
 ```bash
-cat > /var/www/spotify/frontend/.env << 'EOF'
+cat > /var/www/niemadidaphat/frontend/.env << 'EOF'
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxx
 EOF
 ```
@@ -164,12 +164,12 @@ EOF
 sudo npm install -g pm2
 
 # Tạo file ecosystem cho PM2
-cat > /var/www/spotify/ecosystem.config.js << 'EOF'
+cat > /var/www/niemadidaphat/ecosystem.config.js << 'EOF'
 module.exports = {
   apps: [
     {
       name: 'spotify-backend',
-      cwd: '/var/www/spotify/backend',
+      cwd: '/var/www/niemadidaphat/backend',
       script: 'src/index.js',
       env: {
         NODE_ENV: 'production',
@@ -191,25 +191,25 @@ EOF
 ### Phương án A: Chạy Development (cho test)
 ```bash
 # Terminal 1 - Backend
-cd /var/www/spotify/backend
+cd /var/www/niemadidaphat/backend
 npm run dev
 
 # Terminal 2 - Frontend  
-cd /var/www/spotify/frontend
+cd /var/www/niemadidaphat/frontend
 npm run dev
 ```
 
 ### Phương án B: Chạy Production với PM2
 ```bash
 # Build frontend
-cd /var/www/spotify/frontend
+cd /var/www/niemadidaphat/frontend
 npm run build
 
 # Copy build files vào backend
-cp -r dist /var/www/spotify/backend/
+cp -r dist /var/www/niemadidaphat/backend/
 
 # Khởi động backend với PM2
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 pm2 start ecosystem.config.js
 
 # Lưu cấu hình PM2
@@ -240,7 +240,7 @@ server {
 
     # Frontend (serve static files)
     location / {
-        root /var/www/spotify/backend/dist;
+        root /var/www/niemadidaphat/backend/dist;
         try_files $uri $uri/ /index.html;
     }
 

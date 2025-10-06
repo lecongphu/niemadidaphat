@@ -29,7 +29,7 @@ sudo bash setup-ubuntu.sh
 
 ### Bước 2: Clone repository (nếu chưa)
 ```bash
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 git clone https://github.com/burakorkmez/realtime-spotify-clone .
 cd backend && npm install
 cd ../frontend && npm install
@@ -149,7 +149,7 @@ mongorestore --uri="mongodb://user:pass@localhost:27017/spotify-clone" /backup
 pm2 logs spotify-backend
 
 # Kiểm tra .env
-cat /var/www/spotify/backend/.env
+cat /var/www/niemadidaphat/backend/.env
 
 # Kiểm tra MongoDB
 sudo systemctl status mongod
@@ -158,12 +158,12 @@ sudo systemctl status mongod
 ### Frontend không hiển thị
 ```bash
 # Kiểm tra build
-ls /var/www/spotify/backend/dist
+ls /var/www/niemadidaphat/backend/dist
 
 # Rebuild nếu cần
-cd /var/www/spotify/frontend
+cd /var/www/niemadidaphat/frontend
 npm run build
-cp -r dist /var/www/spotify/backend/
+cp -r dist /var/www/niemadidaphat/backend/
 pm2 restart spotify-backend
 ```
 
@@ -181,7 +181,7 @@ sudo kill -9 <PID>
 ## 📁 CẤU TRÚC THƯ MỤC
 
 ```
-/var/www/spotify/
+/var/www/niemadidaphat/
 ├── backend/
 │   ├── src/
 │   ├── .env          # ← File cấu hình backend

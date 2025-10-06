@@ -33,7 +33,7 @@ if command -v tar &> /dev/null; then
     echo "   scp spotify-scripts.tar.gz user@server:/tmp/"
     echo ""
     echo "📦 Giải nén trên Ubuntu:"
-    echo "   cd /var/www/spotify"
+    echo "   cd /var/www/niemadidaphat"
     echo "   tar -xzf /tmp/spotify-scripts.tar.gz"
     echo "   chmod +x *.sh"
     echo "   sudo bash quick-install.sh"

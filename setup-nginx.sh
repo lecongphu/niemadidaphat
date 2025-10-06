@@ -74,7 +74,7 @@ server {
 
     # Frontend - Serve static files
     location / {
-        root /var/www/spotify/backend/dist;
+        root /var/www/niemadidaphat/backend/dist;
         try_files \$uri \$uri/ /index.html;
         
         # Cache static assets

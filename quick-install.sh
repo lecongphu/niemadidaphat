@@ -108,8 +108,8 @@ echo "✓ Certbot installed"
 # 8. CLONE PROJECT
 # ============================================
 echo -e "${YELLOW}[8/9] Clone project...${NC}"
-mkdir -p /var/www/spotify
-cd /var/www/spotify
+mkdir -p /var/www/niemadidaphat
+cd /var/www/niemadidaphat
 
 if [ -d ".git" ]; then
     echo "✓ Project đã tồn tại, pulling updates..."
@@ -118,18 +118,18 @@ else
     git clone https://github.com/burakorkmez/realtime-spotify-clone.git . > /dev/null 2>&1
 fi
 
-chown -R $SUDO_USER:$SUDO_USER /var/www/spotify
+chown -R $SUDO_USER:$SUDO_USER /var/www/niemadidaphat
 echo "✓ Project cloned"
 
 # ============================================
 # 9. INSTALL DEPENDENCIES
 # ============================================
 echo -e "${YELLOW}[9/9] Cài đặt dependencies...${NC}"
-cd /var/www/spotify/backend
+cd /var/www/niemadidaphat/backend
 sudo -u $SUDO_USER npm install > /dev/null 2>&1
 echo "✓ Backend dependencies installed"
 
-cd /var/www/spotify/frontend
+cd /var/www/niemadidaphat/frontend
 sudo -u $SUDO_USER npm install > /dev/null 2>&1
 echo "✓ Frontend dependencies installed"
 
@@ -149,7 +149,7 @@ echo "✓ Firewall configured"
 echo ""
 echo -e "${YELLOW}Tạo helper scripts...${NC}"
 
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 
 # Tạo các script helper (nội dung đã có ở các file trước)
 cat > setup-mongodb.sh << 'EOFMONGO'
@@ -183,7 +183,7 @@ echo ""
 echo "📋 CÁC BƯỚC TIẾP THEO:"
 echo ""
 echo "1️⃣  Thiết lập MongoDB:"
-echo "   cd /var/www/spotify"
+echo "   cd /var/www/niemadidaphat"
 echo "   bash setup-mongodb.sh"
 echo ""
 echo "2️⃣  Đăng ký dịch vụ (MIỄN PHÍ):"
@@ -215,10 +215,10 @@ echo "   ================"
 echo "   VITE_CLERK_PUBLISHABLE_KEY=pk_test_..."
 echo ""
 echo "4️⃣  Build và chạy:"
-echo "   cd /var/www/spotify/frontend"
+echo "   cd /var/www/niemadidaphat/frontend"
 echo "   npm run build"
-echo "   cp -r dist /var/www/spotify/backend/"
-echo "   cd /var/www/spotify/backend"
+echo "   cp -r dist /var/www/niemadidaphat/backend/"
+echo "   cd /var/www/niemadidaphat/backend"
 echo "   pm2 start src/index.js --name spotify"
 echo "   pm2 save"
 echo "   pm2 startup"

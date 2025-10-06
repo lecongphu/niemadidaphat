@@ -24,9 +24,9 @@ scp -r E:\spotify\*.md your_user@your_server_ip:/tmp/
 ssh your_user@your_server_ip
 
 # Di chuyển scripts vào thư mục dự án
-sudo mkdir -p /var/www/spotify
-sudo chown $USER:$USER /var/www/spotify
-cd /var/www/spotify
+sudo mkdir -p /var/www/niemadidaphat
+sudo chown $USER:$USER /var/www/niemadidaphat
+cd /var/www/niemadidaphat
 mv /tmp/*.sh .
 mv /tmp/*.md .
 
@@ -54,7 +54,7 @@ git push
 ssh your_user@your_server_ip
 
 # Clone repo của bạn
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 git clone https://github.com/your-username/your-repo.git .
 
 # Cấp quyền thực thi
@@ -80,14 +80,14 @@ sudo bash quick-install.sh
 
 ### Bước 3: Upload files
 1. Bên trái: Browse tới `E:\spotify`
-2. Bên phải: Browse tới `/var/www/spotify`
+2. Bên phải: Browse tới `/var/www/niemadidaphat`
 3. Kéo thả các file `.sh` và `.md` từ trái sang phải
 4. Click **Upload**
 
 ### Bước 4: SSH vào Ubuntu và chạy
 ```bash
 ssh your_user@your_server_ip
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 chmod +x *.sh
 sudo bash quick-install.sh
 ```
@@ -100,7 +100,7 @@ Nếu bạn không có SCP/Git, có thể copy-paste từng file:
 
 ### Trên Ubuntu:
 ```bash
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 
 # Tạo file quick-install.sh
 nano quick-install.sh
@@ -128,7 +128,7 @@ sudo bash quick-install.sh
 
 ### 1. Kiểm tra files
 ```bash
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 ls -lh *.sh *.md
 ```
 
@@ -241,7 +241,7 @@ pwd
 ls -la *.sh
 
 # Di chuyển đúng thư mục
-cd /var/www/spotify
+cd /var/www/niemadidaphat
 ```
 
 ---

@@ -106,8 +106,8 @@ ufw status
 # 8. TẠO THƯ MỤC DỰ ÁN
 # ============================================
 echo -e "${YELLOW}[8/8] Tạo thư mục dự án...${NC}"
-mkdir -p /var/www/spotify
-chown -R $SUDO_USER:$SUDO_USER /var/www/spotify
+mkdir -p /var/www/niemadidaphat
+chown -R $SUDO_USER:$SUDO_USER /var/www/niemadidaphat
 
 echo ""
 echo -e "${GREEN}=================================================="
@@ -117,12 +117,12 @@ echo ""
 echo "📋 CÁC BƯỚC TIẾP THEO:"
 echo ""
 echo "1️⃣  Clone repository:"
-echo "   cd /var/www/spotify"
+echo "   cd /var/www/niemadidaphat"
 echo "   git clone https://github.com/burakorkmez/realtime-spotify-clone ."
 echo ""
 echo "2️⃣  Cài đặt dependencies:"
-echo "   cd /var/www/spotify/backend && npm install"
-echo "   cd /var/www/spotify/frontend && npm install"
+echo "   cd /var/www/niemadidaphat/backend && npm install"
+echo "   cd /var/www/niemadidaphat/frontend && npm install"
 echo ""
 echo "3️⃣  Tạo MongoDB user - Chạy script setup-mongodb.sh"
 echo ""
