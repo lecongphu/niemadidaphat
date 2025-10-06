@@ -4,34 +4,28 @@ import { User } from "../models/user.model.js";
 
 export const getStats = async (req, res, next) => {
 	try {
-		const [totalSongs, totalAlbums, totalUsers, uniqueArtists] = await Promise.all([
+		const [totalSongs, totalAlbums, totalUsers, songs, albums] = await Promise.all([
 			Song.countDocuments(),
 			Album.countDocuments(),
 			User.countDocuments(),
-
-			Song.aggregate([
-				{
-					$unionWith: {
-						coll: "albums",
-						pipeline: [],
-					},
-				},
-				{
-					$group: {
-						_id: "$artist",
-					},
-				},
-				{
-					$count: "count",
-				},
-			]),
+			Song.find().select('artist'),
+			Album.find().select('artist'),
 		]);
+
+		// Đếm unique artists từ cả songs và albums (Firestore không hỗ trợ $unionWith và $group)
+		const artistsSet = new Set();
+		songs.forEach(song => {
+			if (song.artist) artistsSet.add(song.artist);
+		});
+		albums.forEach(album => {
+			if (album.artist) artistsSet.add(album.artist);
+		});
 
 		res.status(200).json({
 			totalAlbums,
 			totalSongs,
 			totalUsers,
-			totalArtists: uniqueArtists[0]?.count || 0,
+			totalArtists: artistsSet.size,
 		});
 	} catch (error) {
 		next(error);
