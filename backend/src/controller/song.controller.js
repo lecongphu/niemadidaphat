@@ -13,12 +13,21 @@ export const getAllSongs = async (req, res, next) => {
 
 export const getFeaturedSongs = async (req, res, next) => {
 	try {
-		// fetch 6 random songs (Firestore không hỗ trợ $sample, nên random ở phía app)
-		const allSongs = await Song.find().select('_id title artist imageUrl audioUrl');
-		
-		// Shuffle array và lấy 6 bài đầu
-		const shuffled = allSongs.sort(() => 0.5 - Math.random());
-		const songs = shuffled.slice(0, 6);
+		// fetch 6 random songs using mongodb's aggregation pipeline
+		const songs = await Song.aggregate([
+			{
+				$sample: { size: 6 },
+			},
+			{
+				$project: {
+					_id: 1,
+					title: 1,
+					artist: 1,
+					imageUrl: 1,
+					audioUrl: 1,
+				},
+			},
+		]);
 
 		res.json(songs);
 	} catch (error) {
@@ -28,12 +37,20 @@ export const getFeaturedSongs = async (req, res, next) => {
 
 export const getMadeForYouSongs = async (req, res, next) => {
 	try {
-		// fetch 4 random songs (Firestore không hỗ trợ $sample, nên random ở phía app)
-		const allSongs = await Song.find().select('_id title artist imageUrl audioUrl');
-		
-		// Shuffle array và lấy 4 bài đầu
-		const shuffled = allSongs.sort(() => 0.5 - Math.random());
-		const songs = shuffled.slice(0, 4);
+		const songs = await Song.aggregate([
+			{
+				$sample: { size: 4 },
+			},
+			{
+				$project: {
+					_id: 1,
+					title: 1,
+					artist: 1,
+					imageUrl: 1,
+					audioUrl: 1,
+				},
+			},
+		]);
 
 		res.json(songs);
 	} catch (error) {
@@ -43,12 +60,20 @@ export const getMadeForYouSongs = async (req, res, next) => {
 
 export const getTrendingSongs = async (req, res, next) => {
 	try {
-		// fetch 4 random songs (Firestore không hỗ trợ $sample, nên random ở phía app)
-		const allSongs = await Song.find().select('_id title artist imageUrl audioUrl');
-		
-		// Shuffle array và lấy 4 bài đầu
-		const shuffled = allSongs.sort(() => 0.5 - Math.random());
-		const songs = shuffled.slice(0, 4);
+		const songs = await Song.aggregate([
+			{
+				$sample: { size: 4 },
+			},
+			{
+				$project: {
+					_id: 1,
+					title: 1,
+					artist: 1,
+					imageUrl: 1,
+					audioUrl: 1,
+				},
+			},
+		]);
 
 		res.json(songs);
 	} catch (error) {
