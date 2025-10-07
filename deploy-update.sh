@@ -139,7 +139,7 @@ build_frontend() {
 # Function reload PM2
 reload_pm2() {
     echo ""
-    echo -e "${YELLOW}[STEP 4] Reload PM2...${NC}"
+    echo -e "${YELLOW}[STEP 4] Restart PM2 (kill + start)...${NC}"
     
     # Kiem tra PM2 da cai dat chua
     if ! command -v pm2 &> /dev/null; then
@@ -148,17 +148,20 @@ reload_pm2() {
         exit 1
     fi
     
-    # Reload app
-    pm2 reload "$PM2_APP_NAME" --update-env
+    # Kill tat ca PM2 processes
+    echo "Dang kill tat ca PM2 processes..."
+    pm2 kill
+    echo -e "${GREEN}[OK] Da kill tat ca PM2 processes${NC}"
     
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}[OK] Da reload PM2 thanh cong${NC}"
-    else
-        echo -e "${YELLOW}[WARNING] Khong the reload, thu restart...${NC}"
-        pm2 restart "$PM2_APP_NAME"
-        check_error "Khong the restart PM2"
-        echo -e "${GREEN}[OK] Da restart PM2 thanh cong${NC}"
-    fi
+    # Doi 2 giay de dam bao processes da tat hoan toan
+    sleep 2
+    
+    # Start app moi
+    echo "Dang start app moi..."
+    cd "$BACKEND_DIR"
+    pm2 start src/index.js --name "$PM2_APP_NAME" --node-args="--max-old-space-size=512"
+    check_error "Khong the start PM2"
+    echo -e "${GREEN}[OK] Da start PM2 thanh cong${NC}"
     
     # Luu PM2 config
     pm2 save
