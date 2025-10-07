@@ -30,23 +30,69 @@ if [ ! -f "$PROJECT_DIR/backend/.env" ]; then
 fi
 
 # ============================================
-# 1. BUILD FRONTEND
+# 1. PULL CODE MỚI
 # ============================================
-echo -e "${YELLOW}[1/4] Building frontend...${NC}"
+echo -e "${YELLOW}[1/5] Pulling latest code...${NC}"
+cd $PROJECT_DIR
+
+# Stash local changes nếu có
+if [ -n "$(git status --porcelain)" ]; then
+    echo "Có local changes, đang stash..."
+    git stash
+fi
+
+# Fetch và pull code
+git fetch origin main
+LOCAL=$(git rev-parse @)
+REMOTE=$(git rev-parse @{u} 2>/dev/null || git rev-parse origin/main)
+BASE=$(git merge-base @ @{u} 2>/dev/null || git merge-base @ origin/main)
+
+if [ "$LOCAL" = "$REMOTE" ]; then
+    echo "Code đã là phiên bản mới nhất"
+elif [ "$LOCAL" = "$BASE" ]; then
+    echo "Đang pull code mới..."
+    git pull --ff-only origin main
+    echo -e "${GREEN}✅ Đã pull code mới thành công${NC}"
+elif [ "$REMOTE" = "$BASE" ]; then
+    echo "Local đang ahead of remote"
+else
+    echo "Branches đã phân nhánh, đang reset về remote..."
+    git reset --hard origin/main
+    echo -e "${GREEN}✅ Đã reset về remote branch${NC}"
+fi
+
+# Install dependencies nếu package.json thay đổi
+echo "Kiểm tra dependencies..."
+cd $PROJECT_DIR/backend
+if git diff HEAD@{1} HEAD -- package.json 2>/dev/null | grep -q "^+.*\"" || [ ! -d "node_modules" ]; then
+    echo "Cài đặt backend dependencies..."
+    npm install
+fi
+
+cd $PROJECT_DIR/frontend
+if git diff HEAD@{1} HEAD -- package.json 2>/dev/null | grep -q "^+.*\"" || [ ! -d "node_modules" ]; then
+    echo "Cài đặt frontend dependencies..."
+    npm install
+fi
+
+# ============================================
+# 2. BUILD FRONTEND
+# ============================================
+echo -e "${YELLOW}[2/5] Building frontend...${NC}"
 cd $PROJECT_DIR/frontend
 npm run build
 
 # ============================================
-# 2. COPY BUILD FILES
+# 3. COPY BUILD FILES
 # ============================================
-echo -e "${YELLOW}[2/4] Copying build files...${NC}"
+echo -e "${YELLOW}[3/5] Copying build files...${NC}"
 rm -rf $PROJECT_DIR/backend/dist
 cp -r $PROJECT_DIR/frontend/dist $PROJECT_DIR/backend/
 
 # ============================================
-# 3. TẠO PM2 ECOSYSTEM FILE
+# 4. TẠO PM2 ECOSYSTEM FILE
 # ============================================
-echo -e "${YELLOW}[3/4] Creating PM2 ecosystem file...${NC}"
+echo -e "${YELLOW}[4/5] Creating PM2 ecosystem file...${NC}"
 
 cat > $PROJECT_DIR/ecosystem.config.js << 'EOF'
 module.exports = {
@@ -75,17 +121,21 @@ sudo mkdir -p /var/log/pm2
 sudo chown -R $USER:$USER /var/log/pm2
 
 # ============================================
-# 4. KHỞI ĐỘNG VỚI PM2
+# 5. KHỞI ĐỘNG VỚI PM2
 # ============================================
-echo -e "${YELLOW}[4/4] Starting application with PM2...${NC}"
+echo -e "${YELLOW}[5/5] Starting application with PM2...${NC}"
 
 cd $PROJECT_DIR
 
-# Stop nếu đang chạy
-pm2 stop spotify-backend 2>/dev/null || true
-pm2 delete spotify-backend 2>/dev/null || true
+# Kill tất cả PM2 processes để đảm bảo khởi động sạch
+echo "Đang kill tất cả PM2 processes..."
+pm2 kill
+
+# Đợi 2 giây để đảm bảo processes đã tắt hoàn toàn
+sleep 2
 
 # Start app
+echo "Đang start application mới..."
 pm2 start ecosystem.config.js
 
 # Save PM2 process list
