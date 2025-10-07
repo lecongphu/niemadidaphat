@@ -2,11 +2,27 @@ import { Song } from "../models/song.model.js";
 import { Album } from "../models/album.model.js";
 import cloudinary from "../lib/cloudinary.js";
 
+// helper function to create slug from string
+const createSlug = (text) => {
+	return text
+		.toString()
+		.toLowerCase()
+		.normalize("NFD") // Chuẩn hóa để xử lý dấu tiếng Việt
+		.replace(/[\u0300-\u036f]/g, "") // Loại bỏ dấu
+		.replace(/đ/g, "d") // Thay thế đ -> d
+		.replace(/Đ/g, "D") // Thay thế Đ -> D
+		.trim()
+		.replace(/[^a-z0-9\s-]/g, "") // Loại bỏ ký tự đặc biệt
+		.replace(/\s+/g, "-") // Thay khoảng trắng bằng -
+		.replace(/-+/g, "-"); // Loại bỏ dấu - trùng lặp
+};
+
 // helper function for cloudinary uploads
-const uploadToCloudinary = async (file) => {
+const uploadToCloudinary = async (file, folder) => {
 	try {
 		const result = await cloudinary.uploader.upload(file.tempFilePath, {
 			resource_type: "auto",
+			folder: folder, // Thư mục để lưu file
 		});
 		return result.secure_url;
 	} catch (error) {
@@ -25,8 +41,18 @@ export const createSong = async (req, res, next) => {
 		const audioFile = req.files.audioFile;
 		const imageFile = req.files.imageFile;
 
-		const audioUrl = await uploadToCloudinary(audioFile);
-		const imageUrl = await uploadToCloudinary(imageFile);
+		// Tạo folder path dựa trên album nếu có
+		let folderPath = "songs/singles"; // Mặc định cho bài hát không thuộc album
+		if (albumId) {
+			const album = await Album.findById(albumId);
+			if (album) {
+				const albumSlug = createSlug(album.title);
+				folderPath = `songs/albums/${albumSlug}`;
+			}
+		}
+
+		const audioUrl = await uploadToCloudinary(audioFile, `${folderPath}/audio`);
+		const imageUrl = await uploadToCloudinary(imageFile, `${folderPath}/images`);
 
 		const song = new Song({
 			title,
@@ -79,7 +105,11 @@ export const createAlbum = async (req, res, next) => {
 		const { title, artist, releaseYear } = req.body;
 		const { imageFile } = req.files;
 
-		const imageUrl = await uploadToCloudinary(imageFile);
+		// Tạo slug từ tên album
+		const albumSlug = createSlug(title);
+		const folderPath = `albums/${albumSlug}`;
+
+		const imageUrl = await uploadToCloudinary(imageFile, folderPath);
 
 		const album = new Album({
 			title,
