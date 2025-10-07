@@ -57,9 +57,29 @@ pull_code() {
         git stash
     fi
     
-    # Pull code
-    git pull origin main
-    check_error "Khong the pull code tu Git"
+    # Fetch remote changes
+    echo "Fetching remote changes..."
+    git fetch origin main
+    
+    # Kiem tra neu co divergent branches
+    LOCAL=$(git rev-parse @)
+    REMOTE=$(git rev-parse @{u} 2>/dev/null || git rev-parse origin/main)
+    BASE=$(git merge-base @ @{u} 2>/dev/null || git merge-base @ origin/main)
+    
+    if [ "$LOCAL" = "$REMOTE" ]; then
+        echo "Already up to date."
+    elif [ "$LOCAL" = "$BASE" ]; then
+        # Can fast-forward
+        echo "Fast-forwarding..."
+        git pull --ff-only origin main
+    elif [ "$REMOTE" = "$BASE" ]; then
+        echo -e "${YELLOW}[WARNING] Local is ahead of remote${NC}"
+    else
+        # Diverged - reset to remote (production server should follow remote)
+        echo -e "${YELLOW}[WARNING] Branches da phan nhanh. Dang reset ve remote...${NC}"
+        git reset --hard origin/main
+        echo -e "${GREEN}[OK] Da reset ve remote branch${NC}"
+    fi
     
     echo -e "${GREEN}[OK] Da pull code thanh cong${NC}"
 }
