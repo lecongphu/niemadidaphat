@@ -35,7 +35,10 @@ app.use(
 );
 
 app.use(express.json()); // to parse req.body
-app.use(clerkMiddleware()); // this will add auth to req obj => req.auth()
+app.use(clerkMiddleware({authorizedParties: ['https://niemadidaphat.com', 'http://localhost:3000', 'http://localhost:5000', 'http://127.0.0.1:3000'], 
+	publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
+	secretKey: process.env.CLERK_SECRET_KEY,
+})); // this will add auth to req obj => req.auth()
 app.use(
 	fileUpload({
 		useTempFiles: true,
