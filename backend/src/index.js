@@ -17,6 +17,8 @@ import authRoutes from "./routes/auth.route.js";
 import songRoutes from "./routes/song.route.js";
 import albumRoutes from "./routes/album.route.js";
 import statRoutes from "./routes/stat.route.js";
+import { apiLimiter, authLimiter } from "./middleware/ratelimit.js";
+import helmet from "helmet";
 
 dotenv.config();
 
@@ -34,10 +36,16 @@ app.use(
 	})
 );
 
+app.use(helmet({
+	contentSecurityPolicy: false, // Tắt CSP nếu gặp vấn đề với assets
+}));
+
 app.use(express.json()); // to parse req.body
-app.use(clerkMiddleware({authorizedParties: ['https://niemadidaphat.com', 'http://localhost:3000', 'http://localhost:5000', 'http://127.0.0.1:3000'], 
+app.use(clerkMiddleware({ 
+	// Tự động verify JWT token trong Authorization header
 	publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
 	secretKey: process.env.CLERK_SECRET_KEY,
+	authorizedParties: undefined,
 })); // this will add auth to req obj => req.auth()
 app.use(
 	fileUpload({
@@ -72,6 +80,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
+app.use("/api/", apiLimiter);
+app.use("/api/auth/", authLimiter);
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "../frontend/dist")));
