@@ -36,16 +36,16 @@ app.use(
 	})
 );
 
-/* app.use(helmet({
+app.use(helmet({
 	contentSecurityPolicy: false, // Tắt CSP nếu gặp vấn đề với assets
-})); */
+}));
 
 app.use(express.json()); // to parse req.body
 app.use(clerkMiddleware({ 
 	// Tự động verify JWT token trong Authorization header
 	publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
 	secretKey: process.env.CLERK_SECRET_KEY,
-	authorizedParties: undefined,
+	authorizedParties: undefined, domains: 'https://niemadidaphat.com', proxyUrl: 'https://niemadidaphat.com/__clerk',
 })); // this will add auth to req obj => req.auth()
 app.use(
 	fileUpload({
