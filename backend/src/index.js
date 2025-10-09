@@ -31,7 +31,7 @@ initializeSocket(httpServer);
 
 app.use(
 	cors({
-		origin: ['http://localhost:3000', 'https://niemadidaphat.com'],
+		origin: 'http://localhost:3000',
 		credentials: true,
 	})
 );
@@ -45,7 +45,7 @@ app.use(clerkMiddleware({
 	// Tự động verify JWT token trong Authorization header
 	publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
 	secretKey: process.env.CLERK_SECRET_KEY,
-	authorizedParties: undefined, domains: 'https://niemadidaphat.com', proxyUrl: 'https://niemadidaphat.com/__clerk',
+	
 })); // this will add auth to req obj => req.auth()
 app.use(
 	fileUpload({
