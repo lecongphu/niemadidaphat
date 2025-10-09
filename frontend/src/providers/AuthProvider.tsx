@@ -19,7 +19,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	useEffect(() => {
 		const initAuth = async () => {
 			try {
-				const token = await getToken({ template: 'HoPhap'});
+				const token = await getToken();
 				updateApiToken(token);
 				if (token) {
 					await checkAdminStatus();
