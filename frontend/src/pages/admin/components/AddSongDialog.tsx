@@ -43,6 +43,23 @@ const AddSongDialog = () => {
 	const audioInputRef = useRef<HTMLInputElement>(null);
 	const imageInputRef = useRef<HTMLInputElement>(null);
 
+	const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		setFiles((prev) => ({ ...prev, audio: file }));
+
+		// Tính duration tự động
+		const audio = new Audio();
+		audio.src = URL.createObjectURL(file);
+
+		audio.addEventListener("loadedmetadata", () => {
+			const durationInSeconds = Math.floor(audio.duration);
+			setNewSong((prev) => ({ ...prev, duration: durationInSeconds.toString() }));
+			URL.revokeObjectURL(audio.src); // Cleanup
+		});
+	};
+
 	const handleSubmit = async () => {
 		setIsLoading(true);
 
@@ -109,7 +126,7 @@ const AddSongDialog = () => {
 						accept='audio/*'
 						ref={audioInputRef}
 						hidden
-						onChange={(e) => setFiles((prev) => ({ ...prev, audio: e.target.files![0] }))}
+						onChange={handleAudioChange}
 					/>
 
 					<input
@@ -175,13 +192,17 @@ const AddSongDialog = () => {
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Duration (seconds)</label>
+						<label className='text-sm font-medium'>
+							Duration (seconds) 
+							<span className='text-xs text-emerald-500 ml-2'>Auto calculated</span>
+						</label>
 						<Input
 							type='number'
 							min='0'
 							value={newSong.duration}
 							onChange={(e) => setNewSong({ ...newSong, duration: e.target.value || "0" })}
 							className='bg-zinc-800 border-zinc-700'
+							placeholder='Select audio file to auto calculate'
 						/>
 					</div>
 
