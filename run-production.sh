@@ -29,6 +29,12 @@ if [ ! -f "$PROJECT_DIR/backend/.env" ]; then
     exit 1
 fi
 
+if [ ! -f "$PROJECT_DIR/frontend/.env" ]; then
+    echo "❌ Không tìm thấy file frontend/.env"
+    echo "Vui lòng chạy: bash create-env.sh"
+    exit 1
+fi
+
 # ============================================
 # 1. PULL CODE MỚI
 # ============================================
