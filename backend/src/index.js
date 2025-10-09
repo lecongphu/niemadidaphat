@@ -36,9 +36,9 @@ app.use(
 	})
 );
 
-app.use(helmet({
+/* app.use(helmet({
 	contentSecurityPolicy: false, // Tắt CSP nếu gặp vấn đề với assets
-}));
+})); */
 
 app.use(express.json()); // to parse req.body
 app.use(clerkMiddleware({ 
