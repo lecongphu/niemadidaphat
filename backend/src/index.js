@@ -17,7 +17,7 @@ import authRoutes from "./routes/auth.route.js";
 import songRoutes from "./routes/song.route.js";
 import albumRoutes from "./routes/album.route.js";
 import statRoutes from "./routes/stat.route.js";
-import { apiLimiter, authLimiter } from "./middleware/ratelimit.js";
+import { apiLimiter, authLimiter } from "./middleware/rateLimit.js";
 import helmet from "helmet";
 
 dotenv.config();
