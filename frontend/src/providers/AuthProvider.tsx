@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
+import { setupAxiosInterceptor } from "@/lib/axiosInterceptor";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
 import { useAuth } from "@clerk/clerk-react";
@@ -34,10 +35,16 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			}
 		};
 
+		// Setup axios interceptor để tự động refresh token khi hết hạn
+		const cleanupInterceptor = setupAxiosInterceptor(axiosInstance, getToken);
+
 		initAuth();
 
 		// clean up
-		return () => disconnectSocket();
+		return () => {
+			disconnectSocket();
+			cleanupInterceptor(); // Remove interceptor khi unmount
+		};
 	}, [getToken, userId, checkAdminStatus, initSocket, disconnectSocket]);
 
 	if (loading)
