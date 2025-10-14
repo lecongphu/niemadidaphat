@@ -26,6 +26,9 @@ const __dirname = path.resolve();
 const app = express();
 const PORT = process.env.PORT;
 
+// Trust proxy để lấy đúng IP khi deploy sau proxy/load balancer
+app.set('trust proxy', 1);
+
 const httpServer = createServer(app);
 initializeSocket(httpServer);
 
@@ -80,8 +83,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
-//app.use("/api/", apiLimiter);
-//app.use("/api/auth/", authLimiter);
+app.use("/api/", apiLimiter);
+app.use("/api/auth/", authLimiter);
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "../frontend/dist")));
