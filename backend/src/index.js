@@ -30,6 +30,15 @@ const PORT = process.env.PORT;
 // Cho phép Express đọc X-Forwarded-For header để lấy IP thật của client
 app.set('trust proxy', 1);
 
+// Tạo tmp directory nếu chưa tồn tại - FIX cho Ubuntu
+const tmpDir = path.join(__dirname, "tmp");
+if (!fs.existsSync(tmpDir)) {
+	fs.mkdirSync(tmpDir, { recursive: true, mode: 0o755 });
+	console.log("✅ Created tmp directory:", tmpDir);
+} else {
+	console.log("✅ Tmp directory already exists:", tmpDir);
+}
+
 const httpServer = createServer(app);
 initializeSocket(httpServer);
 
@@ -54,7 +63,7 @@ app.use(clerkMiddleware({
 app.use(
 	fileUpload({
 		useTempFiles: true,
-		tempFileDir: path.join(__dirname, "tmp"),
+		tempFileDir: tmpDir, // Sử dụng biến tmpDir đã tạo ở trên
 		createParentPath: true,
 		limits: {
 			fileSize: 10 * 1024 * 1024, // 10MB  max file size
@@ -62,17 +71,21 @@ app.use(
 	})
 );
 
-// cron jobs
-const tempDir = path.join(process.cwd(), "tmp");
+// Cron job - Cleanup tmp files mỗi giờ
 cron.schedule("0 * * * *", () => {
-	if (fs.existsSync(tempDir)) {
-		fs.readdir(tempDir, (err, files) => {
+	if (fs.existsSync(tmpDir)) {
+		fs.readdir(tmpDir, (err, files) => {
 			if (err) {
-				console.log("error", err);
+				console.log("❌ Error reading tmp directory:", err);
 				return;
 			}
-			for (const file of files) {
-				fs.unlink(path.join(tempDir, file), (err) => {});
+			if (files.length > 0) {
+				console.log(`🧹 Cleaning up ${files.length} temp files...`);
+				for (const file of files) {
+					fs.unlink(path.join(tmpDir, file), (err) => {
+						if (err) console.log("Error deleting file:", file, err);
+					});
+				}
 			}
 		});
 	}
