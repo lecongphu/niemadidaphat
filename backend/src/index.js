@@ -66,8 +66,8 @@ app.use(
 		tempFileDir: tmpDir, // Sử dụng biến tmpDir đã tạo ở trên
 		createParentPath: true,
 		limits: {
-			fileSize: 10 * 1024 * 1024, // 10MB  max file size
-		},
+			fileSize: 1000 * 1024 * 1024, // 1000MB  max file size
+		},	
 	})
 );
 
