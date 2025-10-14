@@ -26,7 +26,8 @@ const __dirname = path.resolve();
 const app = express();
 const PORT = process.env.PORT;
 
-// Trust proxy để lấy đúng IP khi deploy sau proxy/load balancer
+// Trust proxy - BẮT BUỘC khi deploy sau reverse proxy (Nginx, Cloudflare, etc.)
+// Cho phép Express đọc X-Forwarded-For header để lấy IP thật của client
 app.set('trust proxy', 1);
 
 const httpServer = createServer(app);
