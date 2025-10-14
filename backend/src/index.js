@@ -34,9 +34,6 @@ app.set('trust proxy', 1);
 const tmpDir = path.join(__dirname, "tmp");
 if (!fs.existsSync(tmpDir)) {
 	fs.mkdirSync(tmpDir, { recursive: true, mode: 0o755 });
-	console.log("✅ Created tmp directory:", tmpDir);
-} else {
-	console.log("✅ Tmp directory already exists:", tmpDir);
 }
 
 const httpServer = createServer(app);
@@ -44,7 +41,7 @@ initializeSocket(httpServer);
 
 app.use(
 	cors({
-		origin: 'http://localhost:3000',
+		origin: ['http://localhost:3000', 'https://niemadidaphat.com'],
 		credentials: true,
 	})
 );
@@ -66,8 +63,8 @@ app.use(
 		tempFileDir: tmpDir, // Sử dụng biến tmpDir đã tạo ở trên
 		createParentPath: true,
 		limits: {
-			fileSize: 1000 * 1024 * 1024, // 1000MB  max file size
-		},	
+			fileSize: 10 * 1024 * 1024, // 10MB  max file size
+		},
 	})
 );
 
