@@ -80,8 +80,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
-app.use("/api/", apiLimiter);
-app.use("/api/auth/", authLimiter);
+//app.use("/api/", apiLimiter);
+//app.use("/api/auth/", authLimiter);
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "../frontend/dist")));
