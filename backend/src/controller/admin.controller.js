@@ -20,14 +20,29 @@ const createSlug = (text) => {
 // helper function for cloudinary uploads
 const uploadToCloudinary = async (file, folder) => {
 	try {
+		console.log("📤 Uploading to Cloudinary:", {
+			fileName: file.name,
+			fileSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+			tempPath: file.tempFilePath,
+			folder: folder
+		});
+		
 		const result = await cloudinary.uploader.upload(file.tempFilePath, {
 			resource_type: "auto",
 			folder: folder, // Thư mục để lưu file
 		});
+		
+		console.log("✅ Upload successful:", file.name);
 		return result.secure_url;
 	} catch (error) {
-		console.log("Error in uploadToCloudinary", error);
-		throw new Error("Error uploading to cloudinary");
+		console.error("❌ Cloudinary upload error:", {
+			fileName: file?.name,
+			tempPath: file?.tempFilePath,
+			folder: folder,
+			error: error.message,
+			stack: error.stack
+		});
+		throw new Error(`Error uploading ${file?.name} to cloudinary: ${error.message}`);
 	}
 };
 

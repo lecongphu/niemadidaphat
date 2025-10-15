@@ -33,7 +33,19 @@ app.set('trust proxy', 1);
 // Tạo tmp directory nếu chưa tồn tại - FIX cho Ubuntu
 const tmpDir = path.join(__dirname, "tmp");
 if (!fs.existsSync(tmpDir)) {
-	fs.mkdirSync(tmpDir, { recursive: true, mode: 0o755 });
+	fs.mkdirSync(tmpDir, { recursive: true, mode: 0o777 });
+}
+
+// Test write permission để verify tmp directory có thể ghi được
+try {
+	const testFile = path.join(tmpDir, '.write-test');
+	fs.writeFileSync(testFile, 'test');
+	fs.unlinkSync(testFile);
+	console.log("✅ Tmp directory is writable");
+} catch (err) {
+	console.error("❌ Cannot write to tmp directory:", err.message);
+	console.error("   Path:", tmpDir);
+	console.error("   Please check directory permissions!");
 }
 
 const httpServer = createServer(app);
@@ -106,7 +118,29 @@ if (process.env.NODE_ENV === "production") {
 
 // error handler
 app.use((err, req, res, next) => {
-	res.status(500).json({ message: process.env.NODE_ENV === "production" ? "Internal server error" : err.message });
+	// Handle file upload errors
+	if (err.code === 'LIMIT_FILE_SIZE') {
+		return res.status(413).json({ 
+			message: 'File quá lớn. Giới hạn 10MB cho mỗi file.' 
+		});
+	}
+	
+	if (err.code === 'LIMIT_FILE_COUNT') {
+		return res.status(400).json({ 
+			message: 'Quá nhiều files được upload cùng lúc.' 
+		});
+	}
+	
+	// Log error for debugging
+	console.error("Server Error:", {
+		message: err.message,
+		code: err.code,
+		stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+	});
+	
+	res.status(500).json({ 
+		message: process.env.NODE_ENV === "production" ? "Internal server error" : err.message 
+	});
 });
 
 httpServer.listen(PORT, () => {
