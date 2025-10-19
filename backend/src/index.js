@@ -31,7 +31,7 @@ const PORT = process.env.PORT || 5000;
 app.set('trust proxy', 1);
 
 // Tạo tmp directory nếu chưa tồn tại - FIX cho Ubuntu
-const tmpDir = path.join(__dirname, "tmp");
+const tmpDir = path.join(__dirname, "folderTemp");
 if (!fs.existsSync(tmpDir)) {
 	fs.mkdirSync(tmpDir, { recursive: true, mode: 0o777 });
 }
