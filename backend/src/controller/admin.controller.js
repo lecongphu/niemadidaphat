@@ -53,6 +53,11 @@ export const createSong = async (req, res, next) => {
 		}
 
 		const { title, artist, albumId, duration } = req.body;
+		
+		// Validate required fields
+		if (!title || !artist || !duration) {
+			return res.status(400).json({ message: "Thiếu thông tin bắt buộc: title, artist, duration" });
+		}
 		const audioFile = req.files.audioFile;
 		const imageFile = req.files.imageFile;
 
@@ -88,7 +93,6 @@ export const createSong = async (req, res, next) => {
 		}
 		res.status(201).json(song);
 	} catch (error) {
-		console.log("Error in createSong", error);
 		next(error);
 	}
 };
@@ -110,14 +114,24 @@ export const deleteSong = async (req, res, next) => {
 
 		res.status(200).json({ message: "Song deleted successfully" });
 	} catch (error) {
-		console.log("Error in deleteSong", error);
 		next(error);
 	}
 };
 
 export const createAlbum = async (req, res, next) => {
 	try {
+		// Validate files
+		if (!req.files || !req.files.imageFile) {
+			return res.status(400).json({ message: "Vui lòng upload ảnh album" });
+		}
+		
 		const { title, artist, releaseYear } = req.body;
+		
+		// Validate required fields
+		if (!title || !artist || !releaseYear) {
+			return res.status(400).json({ message: "Thiếu thông tin bắt buộc: title, artist, releaseYear" });
+		}
+		
 		const { imageFile } = req.files;
 
 		// Tạo slug từ tên album
@@ -137,7 +151,6 @@ export const createAlbum = async (req, res, next) => {
 
 		res.status(201).json(album);
 	} catch (error) {
-		console.log("Error in createAlbum", error);
 		next(error);
 	}
 };
@@ -149,7 +162,6 @@ export const deleteAlbum = async (req, res, next) => {
 		await Album.findByIdAndDelete(id);
 		res.status(200).json({ message: "Album deleted successfully" });
 	} catch (error) {
-		console.log("Error in deleteAlbum", error);
 		next(error);
 	}
 };

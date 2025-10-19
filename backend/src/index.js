@@ -24,7 +24,7 @@ dotenv.config();
 
 const __dirname = path.resolve();
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 // Trust proxy - BẮT BUỘC khi deploy sau reverse proxy (Nginx, Cloudflare, etc.)
 // Cho phép Express đọc X-Forwarded-For header để lấy IP thật của client
@@ -36,24 +36,12 @@ if (!fs.existsSync(tmpDir)) {
 	fs.mkdirSync(tmpDir, { recursive: true, mode: 0o777 });
 }
 
-// Test write permission để verify tmp directory có thể ghi được
-try {
-	const testFile = path.join(tmpDir, '.write-test');
-	fs.writeFileSync(testFile, 'test');
-	fs.unlinkSync(testFile);
-	console.log("✅ Tmp directory is writable");
-} catch (err) {
-	console.error("❌ Cannot write to tmp directory:", err.message);
-	console.error("   Path:", tmpDir);
-	console.error("   Please check directory permissions!");
-}
-
 const httpServer = createServer(app);
 initializeSocket(httpServer);
 
 app.use(
 	cors({
-		origin: ['http://localhost:3000', 'https://niemadidaphat.com'],
+		origin: process.env.FRONTEND_URL?.split(',') || 'http://localhost:3000',
 		credentials: true,
 	})
 );
@@ -63,12 +51,7 @@ app.use(helmet({
 }));
 
 app.use(express.json()); // to parse req.body
-app.use(clerkMiddleware({ 
-	// Tự động verify JWT token trong Authorization header
-	publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
-	secretKey: process.env.CLERK_SECRET_KEY,
-	
-})); // this will add auth to req obj => req.auth()
+app.use(clerkMiddleware()); // this will add auth to req obj => req.auth()
 app.use(
 	fileUpload({
 		useTempFiles: true,
@@ -100,14 +83,16 @@ cron.schedule("0 * * * *", () => {
 	}
 });
 
+// Apply rate limiters BEFORE routes
+app.use("/api/auth/", authLimiter); // Rate limit cho authentication
+app.use("/api/", apiLimiter); // Rate limit cho tất cả API còn lại
+
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
-app.use("/api/", apiLimiter);
-app.use("/api/auth/", authLimiter);
 
 if (process.env.NODE_ENV === "production") {
 	app.use(express.static(path.join(__dirname, "../frontend/dist")));
