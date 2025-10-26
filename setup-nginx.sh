@@ -69,8 +69,8 @@ server {
     gzip_min_length 1024;
     gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/json;
 
-    # Client max body size (cho upload files)
-    client_max_body_size 20M;
+    # Client max body size (cho upload files lớn - audio 500MB)
+    client_max_body_size 550M;
 
     # Frontend - Serve static files
     location / {
@@ -94,10 +94,13 @@ server {
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_cache_bypass \$http_upgrade;
         
-        # Timeouts
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
+        # Timeouts (tăng lên cho upload files lớn)
+        proxy_connect_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
+        
+        # Request buffering (tắt để stream upload)
+        proxy_request_buffering off;
     }
 
     # Socket.io WebSocket
