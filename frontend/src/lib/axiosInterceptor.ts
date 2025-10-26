@@ -26,8 +26,8 @@ export const setupAxiosInterceptor = (
 				originalRequest._retry = true;
 
 				try {
-					// Lấy token mới từ Clerk (tự động refresh nếu session còn valid)
-					const newToken = await getToken();
+					// Lấy token mới từ Clerk với template "HoPhap"
+					const newToken = await getToken({ template: 'HoPhap' });
 
 					if (newToken) {
 						// Cập nhật token mới vào axios instance

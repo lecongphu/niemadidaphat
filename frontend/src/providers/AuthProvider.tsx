@@ -20,7 +20,8 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	useEffect(() => {
 		const initAuth = async () => {
 			try {
-				const token = await getToken();
+				// Sử dụng JWT template tên "HoPhap"
+				const token = await getToken({ template: 'HoPhap' });
 				updateApiToken(token);
 				if (token) {
 					await checkAdminStatus();
