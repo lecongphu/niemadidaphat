@@ -6,6 +6,8 @@ import MainLayout from "./layout/MainLayout";
 import ChatPage from "./pages/chat/ChatPage";
 import AlbumPage from "./pages/album/AlbumPage";
 import AdminPage from "./pages/admin/AdminPage";
+import TermsOfServicePage from "./pages/legal/TermsOfServicePage";
+import PrivacyPolicyPage from "./pages/legal/PrivacyPolicyPage";
 
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
@@ -20,6 +22,8 @@ function App() {
 				/>
 				<Route path='/auth-callback' element={<AuthCallbackPage />} />
 				<Route path='/admin' element={<AdminPage />} />
+				<Route path='/terms-of-service' element={<TermsOfServicePage />} />
+				<Route path='/privacy-policy' element={<PrivacyPolicyPage />} />
 
 				<Route element={<MainLayout />}>
 					<Route path='/' element={<HomePage />} />
