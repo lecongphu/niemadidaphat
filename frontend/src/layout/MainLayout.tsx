@@ -4,7 +4,6 @@ import LeftSidebar from "./components/LeftSidebar";
 import FriendsActivity from "./components/FriendsActivity";
 import AudioPlayer from "./components/AudioPlayer";
 import { PlaybackControls } from "./components/PlaybackControls";
-import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
 
 const MainLayout = () => {
@@ -46,11 +45,10 @@ const MainLayout = () => {
 						</ResizablePanel>
 					</>
 				)}
-			</ResizablePanelGroup>
+		</ResizablePanelGroup>
 
-			<PlaybackControls />
-			<Footer />
-		</div>
-	);
+		<PlaybackControls />
+	</div>
+);
 };
 export default MainLayout;
