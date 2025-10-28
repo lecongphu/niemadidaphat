@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 
 const TermsOfServicePage = () => {
 	return (
-		<div className='min-h-screen bg-zinc-900 text-zinc-100'>
-			<div className='max-w-4xl mx-auto px-4 py-8'>
+		<div className='min-h-screen bg-zinc-900 text-zinc-100 flex flex-col'>
+			<div className='max-w-4xl mx-auto px-4 py-8 flex-1'>
 				<Link to='/' className='inline-flex items-center text-emerald-400 hover:text-emerald-300 mb-8'>
 					<span className='mr-2'>←</span> Quay lại Trang chủ
 				</Link>
@@ -149,6 +150,7 @@ const TermsOfServicePage = () => {
 					</div>
 				</div>
 			</div>
+			<Footer />
 		</div>
 	);
 };
