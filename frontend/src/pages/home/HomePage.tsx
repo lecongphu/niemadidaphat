@@ -45,9 +45,9 @@ const HomePage = () => {
 						<SectionGrid title='Made For You' songs={madeForYouSongs} isLoading={isLoading} />
 						<SectionGrid title='Trending' songs={trendingSongs} isLoading={isLoading} />
 					</div>
+					<Footer />
 				</div>
 			</ScrollArea>
-			<Footer />
 		</main>
 	);
 };
