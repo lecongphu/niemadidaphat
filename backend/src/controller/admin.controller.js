@@ -207,12 +207,9 @@ const extractPublicId = (url) => {
 // ==================== CONTROLLERS ====================
 
 /**
- * Tạo bài hát mới với transaction support
+ * Tạo bài hát mới
  */
 export const createSong = async (req, res, next) => {
-	const session = await mongoose.startSession();
-	session.startTransaction();
-	
 	let uploadedAudio = null;
 	let uploadedImage = null;
 	
@@ -247,9 +244,8 @@ export const createSong = async (req, res, next) => {
 		let album = null;
 		
 		if (albumId && mongoose.Types.ObjectId.isValid(albumId)) {
-			album = await Album.findById(albumId).session(session);
+			album = await Album.findById(albumId);
 			if (!album) {
-				await session.abortTransaction();
 				return res.status(404).json({ message: "Album không tồn tại" });
 			}
 			const albumSlug = createSlug(album.title);
@@ -278,18 +274,15 @@ export const createSong = async (req, res, next) => {
 			albumId: albumId || null,
 		});
 
-		await song.save({ session });
+		await song.save();
 
 		// Update album if song belongs to one
 		if (albumId && album) {
 			await Album.findByIdAndUpdate(
 				albumId, 
-				{ $push: { songs: song._id } },
-				{ session }
+				{ $push: { songs: song._id } }
 			);
 		}
-
-		await session.commitTransaction();
 		
 		console.log("✅ Song created successfully:", song._id);
 		
@@ -299,8 +292,6 @@ export const createSong = async (req, res, next) => {
 		});
 		
 	} catch (error) {
-		await session.abortTransaction();
-		
 		// Cleanup uploaded files on error
 		if (uploadedAudio?.publicId) {
 			await deleteFromCloudinary(uploadedAudio.publicId, 'video');
@@ -319,8 +310,6 @@ export const createSong = async (req, res, next) => {
 		
 		console.error("❌ Error creating song:", error.message);
 		next(error);
-	} finally {
-		session.endSession();
 	}
 };
 
@@ -328,9 +317,6 @@ export const createSong = async (req, res, next) => {
  * Xóa bài hát với cleanup Cloudinary resources
  */
 export const deleteSong = async (req, res, next) => {
-	const session = await mongoose.startSession();
-	session.startTransaction();
-	
 	try {
 		const { id } = req.params;
 
@@ -339,10 +325,9 @@ export const deleteSong = async (req, res, next) => {
 			return res.status(400).json({ message: "ID không hợp lệ" });
 		}
 
-		const song = await Song.findById(id).session(session);
+		const song = await Song.findById(id);
 		
 		if (!song) {
-			await session.abortTransaction();
 			return res.status(404).json({ message: "Không tìm thấy bài hát" });
 		}
 
@@ -356,17 +341,14 @@ export const deleteSong = async (req, res, next) => {
 		if (song.albumId) {
 			await Album.findByIdAndUpdate(
 				song.albumId, 
-				{ $pull: { songs: song._id } },
-				{ session }
+				{ $pull: { songs: song._id } }
 			);
 		}
 
 		// Delete song from database
-		await Song.findByIdAndDelete(id, { session });
+		await Song.findByIdAndDelete(id);
 
-		await session.commitTransaction();
-
-		// Delete files from Cloudinary (do this after DB transaction)
+		// Delete files from Cloudinary
 		// Extract publicIds from URLs
 		const audioPublicId = extractPublicId(song.audioUrl);
 		const imagePublicId = extractPublicId(song.imageUrl);
@@ -394,11 +376,8 @@ export const deleteSong = async (req, res, next) => {
 		});
 		
 	} catch (error) {
-		await session.abortTransaction();
 		console.error("❌ Error deleting song:", error.message);
 		next(error);
-	} finally {
-		session.endSession();
 	}
 };
 
@@ -499,9 +478,6 @@ export const createAlbum = async (req, res, next) => {
  * Xóa album và tất cả bài hát trong album
  */
 export const deleteAlbum = async (req, res, next) => {
-	const session = await mongoose.startSession();
-	session.startTransaction();
-	
 	try {
 		const { id } = req.params;
 
@@ -510,10 +486,9 @@ export const deleteAlbum = async (req, res, next) => {
 			return res.status(400).json({ message: "ID không hợp lệ" });
 		}
 
-		const album = await Album.findById(id).session(session);
+		const album = await Album.findById(id);
 		
 		if (!album) {
-			await session.abortTransaction();
 			return res.status(404).json({ message: "Không tìm thấy album" });
 		}
 
@@ -524,17 +499,15 @@ export const deleteAlbum = async (req, res, next) => {
 		});
 
 		// Get all songs in the album before deleting
-		const songs = await Song.find({ albumId: id }).session(session);
+		const songs = await Song.find({ albumId: id });
 		
 		console.log(`📋 Found ${songs.length} songs in album to delete`);
 
 		// Delete all songs in the album
-		await Song.deleteMany({ albumId: id }, { session });
+		await Song.deleteMany({ albumId: id });
 
 		// Delete the album
-		await Album.findByIdAndDelete(id, { session });
-
-		await session.commitTransaction();
+		await Album.findByIdAndDelete(id);
 
 		// Delete album image from Cloudinary
 		const albumImagePublicId = extractPublicId(album.imageUrl);
@@ -573,11 +546,8 @@ export const deleteAlbum = async (req, res, next) => {
 		});
 		
 	} catch (error) {
-		await session.abortTransaction();
 		console.error("❌ Error deleting album:", error.message);
 		next(error);
-	} finally {
-		session.endSession();
 	}
 };
 
