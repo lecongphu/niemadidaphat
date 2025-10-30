@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import { clerkMiddleware } from "@clerk/express";
 import fileUpload from "express-fileupload";
 import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import cors from "cors";
 import fs from "fs";
 import { createServer } from "http";
@@ -22,7 +24,9 @@ import helmet from "helmet";
 
 dotenv.config();
 
-const __dirname = path.resolve();
+// FIX: Đúng cách để lấy __dirname trong ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -63,7 +67,7 @@ app.use(
 	})
 );
 
-// Cron job - Cleanup tmp files mỗi giờ
+// Cron job - Cleanup tmp files mỗi giờ (CHỈ xóa files cũ hơn 1 giờ)
 cron.schedule("0 * * * *", () => {
 	if (fs.existsSync(tmpDir)) {
 		fs.readdir(tmpDir, (err, files) => {
@@ -71,13 +75,36 @@ cron.schedule("0 * * * *", () => {
 				console.log("❌ Error reading tmp directory:", err);
 				return;
 			}
-			if (files.length > 0) {
-				console.log(`🧹 Cleaning up ${files.length} temp files...`);
-				for (const file of files) {
-					fs.unlink(path.join(tmpDir, file), (err) => {
-						if (err) console.log("Error deleting file:", file, err);
-					});
+
+			if (files.length === 0) return;
+
+			const now = Date.now();
+			const MAX_AGE = 60 * 60 * 1000; // 1 giờ (ms)
+			let deletedCount = 0;
+
+			console.log(`🔍 Checking ${files.length} temp files for cleanup...`);
+
+			for (const file of files) {
+				try {
+					const filePath = path.join(tmpDir, file);
+					const stats = fs.statSync(filePath);
+					const fileAge = now - stats.mtimeMs;
+
+					// Chỉ xóa files cũ hơn MAX_AGE để tránh xóa files đang upload
+					if (fileAge > MAX_AGE) {
+						fs.unlinkSync(filePath);
+						deletedCount++;
+						console.log(`🗑️ Deleted old temp file: ${file} (age: ${Math.round(fileAge / 1000 / 60)}m)`);
+					}
+				} catch (error) {
+					console.log(`⚠️ Error deleting file ${file}:`, error.message);
 				}
+			}
+
+			if (deletedCount > 0) {
+				console.log(`✅ Cleaned up ${deletedCount} old temp files`);
+			} else {
+				console.log(`✓ No old temp files to clean up`);
 			}
 		});
 	}
