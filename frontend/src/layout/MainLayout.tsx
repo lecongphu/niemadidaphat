@@ -45,10 +45,10 @@ const MainLayout = () => {
 						</ResizablePanel>
 					</>
 				)}
-		</ResizablePanelGroup>
+			</ResizablePanelGroup>
 
-		<PlaybackControls />
-	</div>
-);
+			<PlaybackControls />
+		</div>
+	);
 };
 export default MainLayout;

@@ -1,5 +1,4 @@
 import { axiosInstance } from "@/lib/axios";
-import { setupAxiosInterceptor } from "@/lib/axiosInterceptor";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useChatStore } from "@/stores/useChatStore";
 import { useAuth } from "@clerk/clerk-react";
@@ -20,8 +19,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	useEffect(() => {
 		const initAuth = async () => {
 			try {
-				// Sử dụng JWT template tên "HoPhap"
-				const token = await getToken({ template: 'HoPhap' });
+				const token = await getToken();
 				updateApiToken(token);
 				if (token) {
 					await checkAdminStatus();
@@ -36,16 +34,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			}
 		};
 
-		// Setup axios interceptor để tự động refresh token khi hết hạn
-		const cleanupInterceptor = setupAxiosInterceptor(axiosInstance, getToken);
-
 		initAuth();
 
 		// clean up
-		return () => {
-			disconnectSocket();
-			cleanupInterceptor(); // Remove interceptor khi unmount
-		};
+		return () => disconnectSocket();
 	}, [getToken, userId, checkAdminStatus, initSocket, disconnectSocket]);
 
 	if (loading)

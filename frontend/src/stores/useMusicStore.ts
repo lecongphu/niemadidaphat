@@ -51,8 +51,8 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			}));
 			toast.success("Song deleted successfully");
 		} catch (error: any) {
-			const errorMessage = error?.response?.data?.message || error.message || "Error deleting song";
-			toast.error(errorMessage);
+			console.log("Error in deleteSong", error);
+			toast.error("Error deleting song");
 		} finally {
 			set({ isLoading: false });
 		}
@@ -65,13 +65,12 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			set((state) => ({
 				albums: state.albums.filter((album) => album._id !== id),
 				songs: state.songs.map((song) =>
-					song.albumId === id ? { ...song, album: null } : song
+					song.albumId === state.albums.find((a) => a._id === id)?.title ? { ...song, album: null } : song
 				),
 			}));
 			toast.success("Album deleted successfully");
 		} catch (error: any) {
-			const errorMessage = error?.response?.data?.message || error.message || "Failed to delete album";
-			toast.error(errorMessage);
+			toast.error("Failed to delete album: " + error.message);
 		} finally {
 			set({ isLoading: false });
 		}
@@ -83,8 +82,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			const response = await axiosInstance.get("/songs");
 			set({ songs: response.data });
 		} catch (error: any) {
-			const errorMessage = error?.response?.data?.message || error.message || "Failed to fetch songs";
-			set({ error: errorMessage });
+			set({ error: error.message });
 		} finally {
 			set({ isLoading: false });
 		}
@@ -96,8 +94,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			const response = await axiosInstance.get("/stats");
 			set({ stats: response.data });
 		} catch (error: any) {
-			const errorMessage = error?.response?.data?.message || error.message || "Failed to fetch stats";
-			set({ error: errorMessage });
+			set({ error: error.message });
 		} finally {
 			set({ isLoading: false });
 		}
@@ -110,8 +107,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			const response = await axiosInstance.get("/albums");
 			set({ albums: response.data });
 		} catch (error: any) {
-			const errorMessage = error?.response?.data?.message || error.message || "Failed to fetch albums";
-			set({ error: errorMessage });
+			set({ error: error.response.data.message });
 		} finally {
 			set({ isLoading: false });
 		}
@@ -123,8 +119,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			const response = await axiosInstance.get(`/albums/${id}`);
 			set({ currentAlbum: response.data });
 		} catch (error: any) {
-			const errorMessage = error?.response?.data?.message || error.message || "Failed to fetch album";
-			set({ error: errorMessage });
+			set({ error: error.response.data.message });
 		} finally {
 			set({ isLoading: false });
 		}
@@ -136,8 +131,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			const response = await axiosInstance.get("/songs/featured");
 			set({ featuredSongs: response.data });
 		} catch (error: any) {
-			const errorMessage = error?.response?.data?.message || error.message || "Failed to fetch featured songs";
-			set({ error: errorMessage });
+			set({ error: error.response.data.message });
 		} finally {
 			set({ isLoading: false });
 		}
@@ -149,8 +143,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			const response = await axiosInstance.get("/songs/made-for-you");
 			set({ madeForYouSongs: response.data });
 		} catch (error: any) {
-			const errorMessage = error?.response?.data?.message || error.message || "Failed to fetch made for you songs";
-			set({ error: errorMessage });
+			set({ error: error.response.data.message });
 		} finally {
 			set({ isLoading: false });
 		}
@@ -162,8 +155,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			const response = await axiosInstance.get("/songs/trending");
 			set({ trendingSongs: response.data });
 		} catch (error: any) {
-			const errorMessage = error?.response?.data?.message || error.message || "Failed to fetch trending songs";
-			set({ error: errorMessage });
+			set({ error: error.response.data.message });
 		} finally {
 			set({ isLoading: false });
 		}
