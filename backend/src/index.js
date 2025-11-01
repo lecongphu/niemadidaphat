@@ -35,6 +35,13 @@ app.use(
 );
 
 app.use(express.json()); // to parse req.body
+
+// Request logging
+app.use((req, res, next) => {
+	console.log(`${req.method} ${req.path}`);
+	next();
+});
+
 app.use(clerkMiddleware()); // this will add auth to req obj => req.auth
 app.use(
 	fileUpload({
@@ -63,6 +70,13 @@ cron.schedule("*/10 * * * *", () => {
 	}
 });
 
+// Serve static files in production
+if (process.env.NODE_ENV === "production") {
+	const frontendDistPath = path.join(__dirname, "../../frontend/dist");
+	app.use(express.static(frontendDistPath));
+}
+
+// API routes
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
@@ -70,12 +84,18 @@ app.use("/api/songs", songRoutes);
 app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
 
+// SPA fallback - must be AFTER API routes
 if (process.env.NODE_ENV === "production") {
 	const frontendDistPath = path.join(__dirname, "../../frontend/dist");
-	app.use(express.static(frontendDistPath));
 	app.use((req, res, next) => {
+		// Only serve index.html for non-API routes that haven't been handled yet
 		if (!req.path.startsWith('/api')) {
-			res.sendFile(path.join(frontendDistPath, "index.html"));
+			res.sendFile(path.join(frontendDistPath, "index.html"), (err) => {
+				if (err) {
+					console.error("Error serving index.html:", err);
+					next(err);
+				}
+			});
 		} else {
 			next();
 		}
@@ -84,7 +104,11 @@ if (process.env.NODE_ENV === "production") {
 
 // error handler
 app.use((err, req, res, next) => {
-	res.status(500).json({ message: process.env.NODE_ENV === "production" ? "Internal server error" : err.message });
+	console.error("Error occurred:", err);
+	res.status(500).json({
+		message: process.env.NODE_ENV === "production" ? "Internal server error" : err.message,
+		...(process.env.NODE_ENV !== "production" && { stack: err.stack })
+	});
 });
 
 httpServer.listen(PORT, () => {
