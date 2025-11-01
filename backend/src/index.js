@@ -72,7 +72,9 @@ cron.schedule("*/10 * * * *", () => {
 
 // Serve static files in production
 if (process.env.NODE_ENV === "production") {
-	const frontendDistPath = path.join(__dirname, "../../frontend/dist");
+	// Use process.cwd() which is the backend directory when running npm start --prefix backend
+	const frontendDistPath = path.join(process.cwd(), "../frontend/dist");
+	console.log("Frontend dist path:", frontendDistPath);
 	app.use(express.static(frontendDistPath));
 }
 
@@ -86,13 +88,17 @@ app.use("/api/stats", statRoutes);
 
 // SPA fallback - must be AFTER API routes
 if (process.env.NODE_ENV === "production") {
-	const frontendDistPath = path.join(__dirname, "../../frontend/dist");
+	const frontendDistPath = path.join(process.cwd(), "../frontend/dist");
+	const indexPath = path.join(frontendDistPath, "index.html");
+	console.log("Index.html path:", indexPath);
+
 	app.use((req, res, next) => {
 		// Only serve index.html for non-API routes that haven't been handled yet
 		if (!req.path.startsWith('/api')) {
-			res.sendFile(path.join(frontendDistPath, "index.html"), (err) => {
+			res.sendFile(indexPath, (err) => {
 				if (err) {
 					console.error("Error serving index.html:", err);
+					console.error("Tried to serve from:", indexPath);
 					next(err);
 				}
 			});
