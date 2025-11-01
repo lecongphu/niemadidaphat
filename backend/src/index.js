@@ -49,7 +49,7 @@ app.use(
 
 // cron jobs
 const tempDir = path.join(process.cwd(), "tmp");
-cron.schedule("/10 * * * *", () => {
+cron.schedule("*/10 * * * *", () => {
 	if (fs.existsSync(tempDir)) {
 		fs.readdir(tempDir, (err, files) => {
 			if (err) {
