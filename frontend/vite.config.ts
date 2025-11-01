@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
 import react from "@vitejs/plugin-react";
