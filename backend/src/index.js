@@ -29,7 +29,7 @@ initializeSocket(httpServer);
 
 app.use(
 	cors({
-		origin: "http://localhost:3000",
+		origin: process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL || "https://niemadidaphat.com" : "http://localhost:3000",
 		credentials: true,
 	})
 );
@@ -71,10 +71,11 @@ app.use("/api/albums", albumRoutes);
 app.use("/api/stats", statRoutes);
 
 if (process.env.NODE_ENV === "production") {
-	app.use(express.static(path.join(__dirname, "../frontend/dist")));
+	const frontendDistPath = path.join(__dirname, "../../frontend/dist");
+	app.use(express.static(frontendDistPath));
 	app.use((req, res, next) => {
 		if (!req.path.startsWith('/api')) {
-			res.sendFile(path.resolve(__dirname, "../frontend", "dist", "index.html"));
+			res.sendFile(path.join(frontendDistPath, "index.html"));
 		} else {
 			next();
 		}
