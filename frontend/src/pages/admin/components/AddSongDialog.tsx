@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { axiosInstance } from "@/lib/axios";
 import { useMusicStore } from "@/stores/useMusicStore";
-import { Plus, Upload } from "lucide-react";
+import { Link2, Plus, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -29,6 +30,7 @@ const AddSongDialog = () => {
 	const [songDialogOpen, setSongDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
+	const [uploadMethod, setUploadMethod] = useState<"file" | "url">("file");
 
 	const [newSong, setNewSong] = useState<NewSong>({
 		title: "",
@@ -41,6 +43,11 @@ const AddSongDialog = () => {
 	const [files, setFiles] = useState<{ audio: File | null; image: File | null }>({
 		audio: null,
 		image: null,
+	});
+
+	const [urls, setUrls] = useState<{ audio: string; image: string }>({
+		audio: "",
+		image: "",
 	});
 
 	const audioInputRef = useRef<HTMLInputElement>(null);
@@ -63,13 +70,40 @@ const AddSongDialog = () => {
 		});
 	};
 
+	const handleAudioUrlChange = (url: string) => {
+		setUrls((prev) => ({ ...prev, audio: url }));
+
+		if (url) {
+			// Calculate audio duration from URL
+			const audio = new Audio();
+			audio.src = url;
+			audio.crossOrigin = "anonymous";
+
+			audio.addEventListener("loadedmetadata", () => {
+				const durationInSeconds = Math.floor(audio.duration);
+				setNewSong((prev) => ({ ...prev, duration: durationInSeconds.toString() }));
+			});
+
+			audio.addEventListener("error", () => {
+				console.error("Could not load audio from URL");
+			});
+		}
+	};
+
 	const handleSubmit = async () => {
 		setIsLoading(true);
 		setUploadProgress(0);
 
 		try {
-			if (!files.audio || !files.image) {
-				return toast.error("Vui lòng tải lên cả file âm thanh và hình ảnh");
+			// Validation based on upload method
+			if (uploadMethod === "file") {
+				if (!files.audio || !files.image) {
+					return toast.error("Vui lòng tải lên cả file âm thanh và hình ảnh");
+				}
+			} else {
+				if (!urls.audio || !urls.image) {
+					return toast.error("Vui lòng nhập cả URL âm thanh và hình ảnh");
+				}
 			}
 
 			if (!newSong.album) {
@@ -84,28 +118,42 @@ const AddSongDialog = () => {
 				return toast.error("Vui lòng chọn chủ đề");
 			}
 
-			const formData = new FormData();
+			if (uploadMethod === "file") {
+				// File upload mode
+				const formData = new FormData();
 
-			formData.append("title", newSong.title);
-			formData.append("teacher", newSong.teacher);
-			formData.append("duration", newSong.duration);
-			formData.append("albumId", newSong.album);
-			formData.append("category", newSong.category);
+				formData.append("title", newSong.title);
+				formData.append("teacher", newSong.teacher);
+				formData.append("duration", newSong.duration);
+				formData.append("albumId", newSong.album);
+				formData.append("category", newSong.category);
 
-			formData.append("audioFile", files.audio);
-			formData.append("imageFile", files.image);
+				formData.append("audioFile", files.audio!);
+				formData.append("imageFile", files.image!);
 
-			await axiosInstance.post("/admin/songs", formData, {
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
-				onUploadProgress: (progressEvent) => {
-					const progress = progressEvent.total
-						? Math.round((progressEvent.loaded * 100) / progressEvent.total)
-						: 0;
-					setUploadProgress(progress);
-				},
-			});
+				await axiosInstance.post("/admin/songs", formData, {
+					headers: {
+						"Content-Type": "multipart/form-data",
+					},
+					onUploadProgress: (progressEvent) => {
+						const progress = progressEvent.total
+							? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+							: 0;
+						setUploadProgress(progress);
+					},
+				});
+			} else {
+				// URL mode
+				await axiosInstance.post("/admin/songs/url", {
+					title: newSong.title,
+					teacher: newSong.teacher,
+					duration: parseInt(newSong.duration),
+					albumId: newSong.album,
+					category: newSong.category,
+					audioUrl: urls.audio,
+					imageUrl: urls.image,
+				});
+			}
 
 			setNewSong({
 				title: "",
@@ -119,7 +167,14 @@ const AddSongDialog = () => {
 				audio: null,
 				image: null,
 			});
+
+			setUrls({
+				audio: "",
+				image: "",
+			});
+
 			setUploadProgress(0);
+			setSongDialogOpen(false);
 			toast.success("Bài pháp đã được thêm thành công");
 		} catch (error: any) {
 			toast.error("Không thể thêm bài pháp: " + error.message);
@@ -161,40 +216,84 @@ const AddSongDialog = () => {
 						onChange={(e) => setFiles((prev) => ({ ...prev, image: e.target.files![0] }))}
 					/>
 
-					{/* image upload area */}
-					<div
-						className='flex items-center justify-center p-6 border-2 border-dashed border-zinc-700 rounded-lg cursor-pointer'
-						onClick={() => imageInputRef.current?.click()}
-					>
-						<div className='text-center'>
-							{files.image ? (
-								<div className='space-y-2'>
-									<div className='text-sm text-emerald-500'>Image selected:</div>
-									<div className='text-xs text-zinc-400'>{files.image.name.slice(0, 20)}</div>
-								</div>
-							) : (
-								<>
-									<div className='p-3 bg-zinc-800 rounded-full inline-block mb-2'>
-										<Upload className='h-6 w-6 text-zinc-400' />
-									</div>
-									<div className='text-sm text-zinc-400 mb-2'>Tải lên hình ảnh</div>
-									<Button variant='outline' size='sm' className='text-xs'>
-										Chọn File
-									</Button>
-								</>
-							)}
-						</div>
-					</div>
+					{/* Upload Method Tabs */}
+					<Tabs value={uploadMethod} onValueChange={(value) => setUploadMethod(value as "file" | "url")}>
+						<TabsList className='grid w-full grid-cols-2 bg-zinc-800'>
+							<TabsTrigger value='file' className='data-[state=active]:bg-emerald-500'>
+								<Upload className='h-4 w-4 mr-2' />
+								Tải File Lên
+							</TabsTrigger>
+							<TabsTrigger value='url' className='data-[state=active]:bg-emerald-500'>
+								<Link2 className='h-4 w-4 mr-2' />
+								Nhập URL
+							</TabsTrigger>
+						</TabsList>
 
-					{/* Audio upload */}
-					<div className='space-y-2'>
-						<label className='text-sm font-medium'>File Âm Thanh</label>
-						<div className='flex items-center gap-2'>
-							<Button variant='outline' onClick={() => audioInputRef.current?.click()} className='w-full'>
-								{files.audio ? files.audio.name.slice(0, 20) : "Chọn File Âm Thanh"}
-							</Button>
-						</div>
-					</div>
+						{/* File Upload Tab */}
+						<TabsContent value='file' className='space-y-4'>
+							{/* image upload area */}
+							<div
+								className='flex items-center justify-center p-6 border-2 border-dashed border-zinc-700 rounded-lg cursor-pointer'
+								onClick={() => imageInputRef.current?.click()}
+							>
+								<div className='text-center'>
+									{files.image ? (
+										<div className='space-y-2'>
+											<div className='text-sm text-emerald-500'>Image selected:</div>
+											<div className='text-xs text-zinc-400'>{files.image.name.slice(0, 20)}</div>
+										</div>
+									) : (
+										<>
+											<div className='p-3 bg-zinc-800 rounded-full inline-block mb-2'>
+												<Upload className='h-6 w-6 text-zinc-400' />
+											</div>
+											<div className='text-sm text-zinc-400 mb-2'>Tải lên hình ảnh</div>
+											<Button variant='outline' size='sm' className='text-xs'>
+												Chọn File
+											</Button>
+										</>
+									)}
+								</div>
+							</div>
+
+							{/* Audio upload */}
+							<div className='space-y-2'>
+								<label className='text-sm font-medium'>File Âm Thanh</label>
+								<div className='flex items-center gap-2'>
+									<Button variant='outline' onClick={() => audioInputRef.current?.click()} className='w-full'>
+										{files.audio ? files.audio.name.slice(0, 20) : "Chọn File Âm Thanh"}
+									</Button>
+								</div>
+							</div>
+						</TabsContent>
+
+						{/* URL Input Tab */}
+						<TabsContent value='url' className='space-y-4'>
+							{/* Image URL */}
+							<div className='space-y-2'>
+								<label className='text-sm font-medium'>URL Hình Ảnh</label>
+								<Input
+									type='url'
+									placeholder='https://example.com/image.jpg'
+									value={urls.image}
+									onChange={(e) => setUrls((prev) => ({ ...prev, image: e.target.value }))}
+									className='bg-zinc-800 border-zinc-700'
+								/>
+							</div>
+
+							{/* Audio URL */}
+							<div className='space-y-2'>
+								<label className='text-sm font-medium'>URL Âm Thanh</label>
+								<Input
+									type='url'
+									placeholder='https://example.com/audio.mp3'
+									value={urls.audio}
+									onChange={(e) => handleAudioUrlChange(e.target.value)}
+									className='bg-zinc-800 border-zinc-700'
+								/>
+							</div>
+						</TabsContent>
+					</Tabs>
 
 					{/* other fields */}
 					<div className='space-y-2'>

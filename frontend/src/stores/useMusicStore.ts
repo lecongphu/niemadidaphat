@@ -25,7 +25,6 @@ interface MusicStore {
 	fetchSongs: () => Promise<void>;
 	fetchTeachers: () => Promise<void>;
 	fetchCategories: () => Promise<void>;
-	deleteSong: (id: string) => Promise<void>;
 	deleteAlbum: (id: string) => Promise<void>;
 	deleteTeacher: (id: string) => Promise<void>;
 }
@@ -46,23 +45,6 @@ export const useMusicStore = create<MusicStore>((set) => ({
 		totalAlbums: 0,
 		totalUsers: 0,
 		totalTeachers: 0,
-	},
-
-	deleteSong: async (id) => {
-		set({ isLoading: true, error: null });
-		try {
-			await axiosInstance.delete(`/admin/songs/${id}`);
-
-			set((state) => ({
-				songs: state.songs.filter((song) => song._id !== id),
-			}));
-			toast.success("Bài pháp đã được xóa thành công");
-		} catch (error: any) {
-			console.log("Error in deleteSong", error);
-			toast.error("Không thể xóa bài pháp: " + (error.response?.data?.message || error.message));
-		} finally {
-			set({ isLoading: false });
-		}
 	},
 
 	deleteAlbum: async (id) => {

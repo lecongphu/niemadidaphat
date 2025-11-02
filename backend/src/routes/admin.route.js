@@ -3,8 +3,8 @@ import {
 	checkAdmin,
 	createAlbum,
 	createSong,
+	createSongFromUrl,
 	deleteAlbum,
-	deleteSong,
 	createTeacher,
 	deleteTeacher,
 	updateTeacher,
@@ -20,7 +20,7 @@ router.use(protectRoute, requireAdmin);
 router.get("/check", checkAdmin);
 
 router.post("/songs", createSong);
-router.delete("/songs/:id", deleteSong);
+router.post("/songs/url", createSongFromUrl);
 router.put("/songs/order", updateSongsOrder);
 
 router.post("/albums", createAlbum);

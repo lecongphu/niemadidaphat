@@ -77,11 +77,7 @@ export const createSong = async (req, res, next) => {
 		}
 
 		const folderPath = `niemadidaphat/${album.title}`;
-		const songFileName = title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
-
-		console.log("Folder path:", folderPath);
-		console.log("Song filename:", songFileName);
-		console.log("Uploading files to Cloudinary...");
+		const songFileName = title;
 
 		let audioUrl, imageUrl;
 
@@ -89,7 +85,7 @@ export const createSong = async (req, res, next) => {
 			// Upload audio with custom folder and filename
 			audioUrl = await uploadToCloudinary(audioFile, {
 				folder: folderPath,
-				public_id: `audio_${songFileName}`,
+				public_id: `audios/audio_${songFileName}`,
 				resource_type: "video", // audio files use 'video' resource type in Cloudinary
 			});
 			console.log("Audio uploaded successfully");
@@ -102,7 +98,7 @@ export const createSong = async (req, res, next) => {
 			// Upload image with custom folder and filename
 			imageUrl = await uploadToCloudinary(imageFile, {
 				folder: folderPath,
-				public_id: `image_${songFileName}`,
+				public_id: `images/image_${songFileName}`,
 				resource_type: "image",
 			});
 			console.log("Image uploaded successfully");
@@ -147,6 +143,92 @@ export const createSong = async (req, res, next) => {
 	}
 };
 
+export const createSongFromUrl = async (req, res, next) => {
+	try {
+		const { title, teacher, albumId, duration, category, audioUrl, imageUrl } = req.body;
+
+		console.log("Creating song from URLs...");
+
+		// Validate required fields
+		if (!title) {
+			return res.status(400).json({ message: "Title is required" });
+		}
+
+		if (!teacher) {
+			return res.status(400).json({ message: "Teacher is required" });
+		}
+
+		if (!albumId) {
+			return res.status(400).json({ message: "Album is required" });
+		}
+
+		if (!category) {
+			return res.status(400).json({ message: "Category is required" });
+		}
+
+		if (!duration) {
+			return res.status(400).json({ message: "Duration is required" });
+		}
+
+		if (!audioUrl) {
+			return res.status(400).json({ message: "Audio URL is required" });
+		}
+
+		if (!imageUrl) {
+			return res.status(400).json({ message: "Image URL is required" });
+		}
+
+		// Validate teacher exists
+		const teacherExists = await Teacher.findById(teacher);
+		if (!teacherExists) {
+			return res.status(404).json({ message: "Teacher not found" });
+		}
+
+		// Validate category exists
+		const categoryExists = await Category.findById(category);
+		if (!categoryExists) {
+			return res.status(404).json({ message: "Category not found" });
+		}
+
+		// Validate album exists
+		const album = await Album.findById(albumId);
+		if (!album) {
+			return res.status(404).json({ message: "Album not found" });
+		}
+
+		console.log("Creating song document with URLs...");
+
+		// Get the current number of songs in the album to set order
+		const songsCount = await Song.countDocuments({ albumId });
+
+		const song = new Song({
+			title,
+			teacher,
+			audioUrl,
+			imageUrl,
+			duration: parseInt(duration),
+			albumId,
+			category,
+			order: songsCount, // Set order to be at the end
+		});
+
+		await song.save();
+
+		console.log("Song saved successfully");
+
+		// Update the album's songs array
+		await Album.findByIdAndUpdate(albumId, {
+			$push: { songs: song._id },
+		});
+
+		res.status(201).json(song);
+	} catch (error) {
+		console.error("Error in createSongFromUrl:", error);
+		console.error("Error stack:", error.stack);
+		res.status(500).json({ message: error.message || "Internal server error" });
+	}
+};
+
 export const deleteSong = async (req, res, next) => {
 	try {
 		const { id } = req.params;
@@ -156,6 +238,11 @@ export const deleteSong = async (req, res, next) => {
 		if (!song) {
 			return res.status(404).json({ message: "Song not found" });
 		}
+
+		// Check if URL is from Cloudinary
+		const isCloudinaryUrl = (url) => {
+			return url && url.includes('res.cloudinary.com');
+		};
 
 		// Extract public_id from Cloudinary URLs to delete the files
 		// URL format: https://res.cloudinary.com/{cloud_name}/{resource_type}/upload/{version}/{public_id}.{format}
@@ -171,30 +258,58 @@ export const deleteSong = async (req, res, next) => {
 			return null;
 		};
 
-		// Delete audio file from Cloudinary
-		if (song.audioUrl) {
+		// Delete audio file from Cloudinary (only if it's hosted on Cloudinary)
+		if (song.audioUrl && isCloudinaryUrl(song.audioUrl)) {
+			console.log('Attempting to delete audio from Cloudinary...');
+			console.log('Audio URL:', song.audioUrl);
 			const audioPublicId = extractPublicId(song.audioUrl);
+			console.log('Extracted audio public_id:', audioPublicId);
 			if (audioPublicId) {
 				try {
-					await cloudinary.uploader.destroy(audioPublicId, { resource_type: 'video' });
-					console.log('Audio file deleted from Cloudinary:', audioPublicId);
+					const result = await cloudinary.uploader.destroy(audioPublicId, { resource_type: 'video' });
+					console.log('Audio file deletion result:', result);
+					if (result.result === 'ok') {
+						console.log('✓ Audio file deleted from Cloudinary:', audioPublicId);
+					} else if (result.result === 'not found') {
+						console.log('✗ Audio file not found on Cloudinary:', audioPublicId);
+					} else {
+						console.log('✗ Audio file deletion failed:', result);
+					}
 				} catch (err) {
-					console.log('Error deleting audio from Cloudinary:', err);
+					console.log('✗ Error deleting audio from Cloudinary:', err.message);
 				}
+			} else {
+				console.log('✗ Could not extract public_id from audio URL');
 			}
+		} else if (song.audioUrl) {
+			console.log('Audio URL is not from Cloudinary, skipping deletion:', song.audioUrl);
 		}
 
-		// Delete image file from Cloudinary
-		if (song.imageUrl) {
+		// Delete image file from Cloudinary (only if it's hosted on Cloudinary)
+		if (song.imageUrl && isCloudinaryUrl(song.imageUrl)) {
+			console.log('Attempting to delete image from Cloudinary...');
+			console.log('Image URL:', song.imageUrl);
 			const imagePublicId = extractPublicId(song.imageUrl);
+			console.log('Extracted image public_id:', imagePublicId);
 			if (imagePublicId) {
 				try {
-					await cloudinary.uploader.destroy(imagePublicId, { resource_type: 'image' });
-					console.log('Image file deleted from Cloudinary:', imagePublicId);
+					const result = await cloudinary.uploader.destroy(imagePublicId, { resource_type: 'image' });
+					console.log('Image file deletion result:', result);
+					if (result.result === 'ok') {
+						console.log('✓ Image file deleted from Cloudinary:', imagePublicId);
+					} else if (result.result === 'not found') {
+						console.log('✗ Image file not found on Cloudinary:', imagePublicId);
+					} else {
+						console.log('✗ Image file deletion failed:', result);
+					}
 				} catch (err) {
-					console.log('Error deleting image from Cloudinary:', err);
+					console.log('✗ Error deleting image from Cloudinary:', err.message);
 				}
+			} else {
+				console.log('✗ Could not extract public_id from image URL');
 			}
+		} else if (song.imageUrl) {
+			console.log('Image URL is not from Cloudinary, skipping deletion:', song.imageUrl);
 		}
 
 		// if song belongs to an album, update the album's songs array
@@ -232,8 +347,8 @@ export const createAlbum = async (req, res, next) => {
 		const { imageFile } = req.files;
 
 		// Create folder path: niemadidaphat/{Album Title}/{Album Title}
-		const folderPath = `niemadidaphat/${title}`;
-		const albumFileName = title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+		const folderPath = `niemadidaphat/audios/${title}`;
+		const albumFileName = title;
 
 		// Upload image with custom folder and filename
 		const imageUrl = await uploadToCloudinary(imageFile, {
