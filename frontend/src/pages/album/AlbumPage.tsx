@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { getName } from "@/lib/utils";
 import { Clock, Pause, Play } from "lucide-react";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -65,11 +66,7 @@ const AlbumPage = () => {
 								<h1 className='text-7xl font-bold my-4'>{currentAlbum?.title}</h1>
 								<div className='flex items-center gap-2 text-sm text-zinc-100'>
 									<span className='font-medium text-white'>
-										{currentAlbum?.teacher
-											? typeof currentAlbum.teacher === 'string'
-												? currentAlbum.teacher
-												: currentAlbum.teacher.name
-											: ''}
+										{getName(currentAlbum?.teacher)}
 									</span>
 									<span>• {currentAlbum?.songs.length} bài pháp</span>
 									<span>• {currentAlbum?.releaseYear}</span>
@@ -138,7 +135,7 @@ const AlbumPage = () => {
 
 													<div>
 														<div className={`font-medium text-white`}>{song.title}</div>
-														<div>{song.teacher}</div>
+														<div>{getName(song.teacher)}</div>
 													</div>
 												</div>
 												<div className='flex items-center'>{song.createdAt.split("T")[0]}</div>

@@ -9,12 +9,12 @@ export interface Category {
 export interface Song {
 	_id: string;
 	title: string;
-	teacher: string;
+	teacher: Teacher | string | { _id: string; name: string };
 	albumId: string | null;
 	imageUrl: string;
 	audioUrl: string;
 	duration: number;
-	category: Category | string;
+	category: Category | string | { _id: string; name: string };
 	order: number;
 	createdAt: string;
 	updatedAt: string;

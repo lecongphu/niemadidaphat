@@ -4,7 +4,10 @@ export const getAllSongs = async (req, res, next) => {
 	try {
 		// -1 = Descending => newest -> oldest
 		// 1 = Ascending => oldest -> newest
-		const songs = await Song.find().sort({ createdAt: -1 }).populate("category", "name");
+		const songs = await Song.find()
+			.sort({ createdAt: -1 })
+			.populate("category", "name")
+			.populate("teacher", "name");
 		res.json(songs);
 	} catch (error) {
 		next(error);
@@ -19,10 +22,21 @@ export const getFeaturedSongs = async (req, res, next) => {
 				$sample: { size: 6 },
 			},
 			{
+				$lookup: {
+					from: "teachers",
+					localField: "teacher",
+					foreignField: "_id",
+					as: "teacher"
+				}
+			},
+			{
+				$unwind: "$teacher"
+			},
+			{
 				$project: {
 					_id: 1,
 					title: 1,
-					teacher: 1,
+					teacher: "$teacher.name",
 					imageUrl: 1,
 					audioUrl: 1,
 				},
@@ -42,10 +56,21 @@ export const getMadeForYouSongs = async (req, res, next) => {
 				$sample: { size: 4 },
 			},
 			{
+				$lookup: {
+					from: "teachers",
+					localField: "teacher",
+					foreignField: "_id",
+					as: "teacher"
+				}
+			},
+			{
+				$unwind: "$teacher"
+			},
+			{
 				$project: {
 					_id: 1,
 					title: 1,
-					teacher: 1,
+					teacher: "$teacher.name",
 					imageUrl: 1,
 					audioUrl: 1,
 				},
@@ -65,10 +90,21 @@ export const getTrendingSongs = async (req, res, next) => {
 				$sample: { size: 4 },
 			},
 			{
+				$lookup: {
+					from: "teachers",
+					localField: "teacher",
+					foreignField: "_id",
+					as: "teacher"
+				}
+			},
+			{
+				$unwind: "$teacher"
+			},
+			{
 				$project: {
 					_id: 1,
 					title: 1,
-					teacher: 1,
+					teacher: "$teacher.name",
 					imageUrl: 1,
 					audioUrl: 1,
 				},

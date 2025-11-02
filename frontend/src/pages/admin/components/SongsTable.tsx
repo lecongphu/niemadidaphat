@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useMusicStore } from "@/stores/useMusicStore";
+import { getName } from "@/lib/utils";
 import { Calendar, Trash2 } from "lucide-react";
 
 const SongsTable = () => {
@@ -42,10 +43,8 @@ const SongsTable = () => {
 							<img src={song.imageUrl} alt={song.title} className='size-10 rounded object-cover' />
 						</TableCell>
 						<TableCell className='font-medium'>{song.title}</TableCell>
-						<TableCell>{song.teacher}</TableCell>
-						<TableCell>
-							{typeof song.category === 'string' ? song.category : song.category.name}
-						</TableCell>
+						<TableCell>{getName(song.teacher)}</TableCell>
+						<TableCell>{getName(song.category)}</TableCell>
 						<TableCell>
 							<span className='inline-flex items-center gap-1 text-zinc-400'>
 								<Calendar className='h-4 w-4' />
