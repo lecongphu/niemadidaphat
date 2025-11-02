@@ -76,19 +76,8 @@ export const createSong = async (req, res, next) => {
 			return res.status(404).json({ message: "Album not found" });
 		}
 
-		// Create folder path and sanitize filenames
-		const sanitizeForCloudinary = (str) => {
-			// Remove special characters and replace spaces with underscores
-			return str
-				.normalize("NFD")
-				.replace(/[\u0300-\u036f]/g, "") // Remove diacritics
-				.replace(/[^a-zA-Z0-9\s-]/g, "") // Keep only alphanumeric, spaces, and hyphens
-				.replace(/\s+/g, "_") // Replace spaces with underscores
-				.substring(0, 100); // Limit length
-		};
-
-		const folderPath = `niemadidaphat/${sanitizeForCloudinary(album.title)}`;
-		const songFileName = sanitizeForCloudinary(title);
+		const folderPath = `niemadidaphat/${album.title}`;
+		const songFileName = title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
 
 		console.log("Folder path:", folderPath);
 		console.log("Song filename:", songFileName);
