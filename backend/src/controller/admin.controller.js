@@ -7,9 +7,6 @@ import cloudinary from "../lib/cloudinary.js";
 // helper function for cloudinary uploads
 const uploadToCloudinary = async (file, options = {}) => {
 	try {
-		console.log("Uploading file:", file.name, "Size:", file.size, "bytes");
-		console.log("Temp file path:", file.tempFilePath);
-		console.log("Upload options:", options);
 
 		const result = await cloudinary.uploader.upload(file.tempFilePath, {
 			resource_type: "auto",
@@ -28,10 +25,7 @@ const uploadToCloudinary = async (file, options = {}) => {
 
 export const createSong = async (req, res, next) => {
 	try {
-		console.log("=== CREATE SONG REQUEST ===");
-		console.log("Request body:", req.body);
-		console.log("Request files:", req.files ? Object.keys(req.files) : "No files");
-
+		
 		if (!req.files || !req.files.audioFile || !req.files.imageFile) {
 			return res.status(400).json({ message: "Please upload all files" });
 		}
