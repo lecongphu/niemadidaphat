@@ -7,21 +7,30 @@ import cloudinary from "../lib/cloudinary.js";
 // helper function for cloudinary uploads
 const uploadToCloudinary = async (file, options = {}) => {
 	try {
+		console.log("Uploading file:", file.name, "Size:", file.size, "bytes");
+		console.log("Temp file path:", file.tempFilePath);
+		console.log("Upload options:", options);
+
 		const result = await cloudinary.uploader.upload(file.tempFilePath, {
 			resource_type: "auto",
 			...options,
 		});
+
+		console.log("Upload successful:", result.secure_url);
 		return result.secure_url;
 	} catch (error) {
-		console.log("Error in uploadToCloudinary", error);
-		throw new Error("Error uploading to cloudinary");
+		console.log("Error in uploadToCloudinary:", error);
+		console.log("Error message:", error.message);
+		console.log("Error details:", error.error);
+		throw new Error(`Error uploading to cloudinary: ${error.message}`);
 	}
 };
 
 export const createSong = async (req, res, next) => {
 	try {
+		console.log("=== CREATE SONG REQUEST ===");
 		console.log("Request body:", req.body);
-		console.log("Request files:", req.files);
+		console.log("Request files:", req.files ? Object.keys(req.files) : "No files");
 
 		if (!req.files || !req.files.audioFile || !req.files.imageFile) {
 			return res.status(400).json({ message: "Please upload all files" });
@@ -30,6 +39,9 @@ export const createSong = async (req, res, next) => {
 		const { title, teacher, albumId, duration, category } = req.body;
 		const audioFile = req.files.audioFile;
 		const imageFile = req.files.imageFile;
+
+		console.log("Audio file size:", audioFile.size, "bytes");
+		console.log("Image file size:", imageFile.size, "bytes");
 
 		// Validate required fields
 		if (!title) {
@@ -70,25 +82,53 @@ export const createSong = async (req, res, next) => {
 			return res.status(404).json({ message: "Album not found" });
 		}
 
-		// Create folder path: niemadidaphat/{Album Title}/{Song Title}
-		const folderPath = `niemadidaphat/${album.title}`;
-		const songFileName = title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+		// Create folder path and sanitize filenames
+		const sanitizeForCloudinary = (str) => {
+			// Remove special characters and replace spaces with underscores
+			return str
+				.normalize("NFD")
+				.replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+				.replace(/[^a-zA-Z0-9\s-]/g, "") // Keep only alphanumeric, spaces, and hyphens
+				.replace(/\s+/g, "_") // Replace spaces with underscores
+				.substring(0, 100); // Limit length
+		};
 
+		const folderPath = `niemadidaphat/${sanitizeForCloudinary(album.title)}`;
+		const songFileName = sanitizeForCloudinary(title);
+
+		console.log("Folder path:", folderPath);
+		console.log("Song filename:", songFileName);
 		console.log("Uploading files to Cloudinary...");
 
-		// Upload audio with custom folder and filename
-		const audioUrl = await uploadToCloudinary(audioFile, {
-			folder: folderPath,
-			public_id: songFileName,
-			resource_type: "video", // audio files use 'video' resource type in Cloudinary
-		});
+		let audioUrl, imageUrl;
 
-		// Upload image with custom folder and filename
-		const imageUrl = await uploadToCloudinary(imageFile, {
-			folder: folderPath,
-			public_id: songFileName,
-			resource_type: "image",
-		});
+		try {
+			// Upload audio with custom folder and filename
+			audioUrl = await uploadToCloudinary(audioFile, {
+				folder: folderPath,
+				public_id: `audio_${songFileName}`,
+				resource_type: "video", // audio files use 'video' resource type in Cloudinary
+			});
+			console.log("Audio uploaded successfully");
+		} catch (error) {
+			console.error("Failed to upload audio:", error.message);
+			return res.status(500).json({ message: `Failed to upload audio: ${error.message}` });
+		}
+
+		try {
+			// Upload image with custom folder and filename
+			imageUrl = await uploadToCloudinary(imageFile, {
+				folder: folderPath,
+				public_id: `image_${songFileName}`,
+				resource_type: "image",
+			});
+			console.log("Image uploaded successfully");
+		} catch (error) {
+			console.error("Failed to upload image:", error.message);
+			// If image upload fails, we should cleanup the audio file
+			// But for now, just return the error
+			return res.status(500).json({ message: `Failed to upload image: ${error.message}` });
+		}
 
 		console.log("Files uploaded successfully");
 		console.log("Creating song document...");
@@ -114,8 +154,8 @@ export const createSong = async (req, res, next) => {
 
 		res.status(201).json(song);
 	} catch (error) {
-		console.log("Error in createSong", error);
-		console.log("Error details:", error.message);
+		console.error("Error in createSong:", error);
+		console.error("Error stack:", error.stack);
 		res.status(500).json({ message: error.message || "Internal server error" });
 	}
 };
