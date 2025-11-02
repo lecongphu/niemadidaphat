@@ -28,6 +28,7 @@ const AddSongDialog = () => {
 	const { albums, teachers, categories } = useMusicStore();
 	const [songDialogOpen, setSongDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [uploadProgress, setUploadProgress] = useState(0);
 
 	const [newSong, setNewSong] = useState<NewSong>({
 		title: "",
@@ -64,6 +65,7 @@ const AddSongDialog = () => {
 
 	const handleSubmit = async () => {
 		setIsLoading(true);
+		setUploadProgress(0);
 
 		try {
 			if (!files.audio || !files.image) {
@@ -97,6 +99,12 @@ const AddSongDialog = () => {
 				headers: {
 					"Content-Type": "multipart/form-data",
 				},
+				onUploadProgress: (progressEvent) => {
+					const progress = progressEvent.total
+						? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+						: 0;
+					setUploadProgress(progress);
+				},
 			});
 
 			setNewSong({
@@ -111,11 +119,13 @@ const AddSongDialog = () => {
 				audio: null,
 				image: null,
 			});
+			setUploadProgress(0);
 			toast.success("Bài giảng đã được thêm thành công");
 		} catch (error: any) {
 			toast.error("Không thể thêm bài giảng: " + error.message);
 		} finally {
 			setIsLoading(false);
+			setUploadProgress(0);
 		}
 	};
 
@@ -270,6 +280,22 @@ const AddSongDialog = () => {
 							</SelectContent>
 						</Select>
 					</div>
+
+					{/* Upload Progress */}
+					{isLoading && uploadProgress > 0 && (
+						<div className='space-y-2'>
+							<div className='flex justify-between text-sm'>
+								<span className='text-zinc-400'>Đang tải lên...</span>
+								<span className='text-emerald-400'>{uploadProgress}%</span>
+							</div>
+							<div className='w-full bg-zinc-800 rounded-full h-2 overflow-hidden'>
+								<div
+									className='bg-emerald-500 h-full transition-all duration-300 ease-out'
+									style={{ width: `${uploadProgress}%` }}
+								/>
+							</div>
+						</div>
+					)}
 				</div>
 
 				<DialogFooter>
@@ -277,7 +303,7 @@ const AddSongDialog = () => {
 						Hủy
 					</Button>
 					<Button onClick={handleSubmit} disabled={isLoading}>
-						{isLoading ? "Đang tải lên..." : "Thêm Bài Giảng"}
+						{isLoading ? `Đang tải lên... ${uploadProgress}%` : "Thêm Bài Giảng"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
