@@ -127,6 +127,9 @@ export const createSong = async (req, res, next) => {
 		console.log("Files uploaded successfully");
 		console.log("Creating song document...");
 
+		// Get the current number of songs in the album to set order
+		const songsCount = await Song.countDocuments({ albumId });
+
 		const song = new Song({
 			title,
 			teacher,
@@ -135,6 +138,7 @@ export const createSong = async (req, res, next) => {
 			duration: parseInt(duration),
 			albumId,
 			category,
+			order: songsCount, // Set order to be at the end
 		});
 
 		await song.save();
@@ -209,6 +213,19 @@ export const deleteSong = async (req, res, next) => {
 			await Album.findByIdAndUpdate(song.albumId, {
 				$pull: { songs: song._id },
 			});
+
+			// Reorder remaining songs in the album
+			const remainingSongs = await Song.find({
+				albumId: song.albumId,
+				order: { $gt: song.order }
+			});
+
+			// Decrease order of all songs that came after the deleted song
+			const updatePromises = remainingSongs.map((s) => {
+				return Song.findByIdAndUpdate(s._id, { order: s.order - 1 });
+			});
+
+			await Promise.all(updatePromises);
 		}
 
 		await Song.findByIdAndDelete(id);
@@ -342,6 +359,31 @@ export const getCategories = async (req, res, next) => {
 		res.status(200).json(categories);
 	} catch (error) {
 		console.log("Error in getCategories", error);
+		next(error);
+	}
+};
+
+export const updateSongsOrder = async (req, res, next) => {
+	try {
+		const { songs } = req.body; // Array of { songId, order }
+
+		if (!songs || !Array.isArray(songs)) {
+			return res.status(400).json({ message: "Songs array is required" });
+		}
+
+		console.log("Updating order for", songs.length, "songs");
+
+		// Update each song's order
+		const updatePromises = songs.map(({ songId, order }) => {
+			return Song.findByIdAndUpdate(songId, { order }, { new: true });
+		});
+
+		await Promise.all(updatePromises);
+
+		console.log("Songs order updated successfully");
+		res.status(200).json({ message: "Songs order updated successfully" });
+	} catch (error) {
+		console.log("Error in updateSongsOrder", error);
 		next(error);
 	}
 };

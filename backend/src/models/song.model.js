@@ -33,6 +33,10 @@ const songSchema = new mongoose.Schema(
 			ref: "Category",
 			required: true,
 		},
+		order: {
+			type: Number,
+			default: 0,
+		},
 	},
 	{ timestamps: true }
 );

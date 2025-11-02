@@ -13,7 +13,10 @@ export const getAlbumById = async (req, res, next) => {
 	try {
 		const { albumId } = req.params;
 
-		const album = await Album.findById(albumId).populate("songs");
+		const album = await Album.findById(albumId).populate({
+			path: "songs",
+			options: { sort: { order: 1 } } // Sort songs by order ascending
+		});
 
 		if (!album) {
 			return res.status(404).json({ message: "Album not found" });

@@ -15,6 +15,7 @@ export interface Song {
 	audioUrl: string;
 	duration: number;
 	category: Category | string;
+	order: number;
 	createdAt: string;
 	updatedAt: string;
 }
