@@ -22,7 +22,7 @@ export const getFeaturedSongs = async (req, res, next) => {
 				$project: {
 					_id: 1,
 					title: 1,
-					artist: 1,
+					teacher: 1,
 					imageUrl: 1,
 					audioUrl: 1,
 				},
@@ -45,7 +45,7 @@ export const getMadeForYouSongs = async (req, res, next) => {
 				$project: {
 					_id: 1,
 					title: 1,
-					artist: 1,
+					teacher: 1,
 					imageUrl: 1,
 					audioUrl: 1,
 				},
@@ -68,7 +68,7 @@ export const getTrendingSongs = async (req, res, next) => {
 				$project: {
 					_id: 1,
 					title: 1,
-					artist: 1,
+					teacher: 1,
 					imageUrl: 1,
 					audioUrl: 1,
 				},

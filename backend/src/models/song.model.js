@@ -6,8 +6,9 @@ const songSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		artist: {
-			type: String,
+		teacher: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Teacher",
 			required: true,
 		},
 		imageUrl: {

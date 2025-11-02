@@ -17,7 +17,7 @@ const AlbumsTable = () => {
 				<TableRow className='hover:bg-zinc-800/50'>
 					<TableHead className='w-[50px]'></TableHead>
 					<TableHead>Title</TableHead>
-					<TableHead>Artist</TableHead>
+					<TableHead>Teacher</TableHead>
 					<TableHead>Release Year</TableHead>
 					<TableHead>Songs</TableHead>
 					<TableHead className='text-right'>Actions</TableHead>
@@ -30,7 +30,7 @@ const AlbumsTable = () => {
 							<img src={album.imageUrl} alt={album.title} className='w-10 h-10 rounded object-cover' />
 						</TableCell>
 						<TableCell className='font-medium'>{album.title}</TableCell>
-						<TableCell>{album.artist}</TableCell>
+						<TableCell>{typeof album.teacher === 'string' ? album.teacher : album.teacher.name}</TableCell>
 						<TableCell>
 							<span className='inline-flex items-center gap-1 text-zinc-400'>
 								<Calendar className='h-4 w-4' />

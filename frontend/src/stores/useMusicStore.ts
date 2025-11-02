@@ -1,11 +1,12 @@
 import { axiosInstance } from "@/lib/axios";
-import { Album, Song, Stats } from "@/types";
+import { Album, Song, Stats, Teacher } from "@/types";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 
 interface MusicStore {
 	songs: Song[];
 	albums: Album[];
+	teachers: Teacher[];
 	isLoading: boolean;
 	error: string | null;
 	currentAlbum: Album | null;
@@ -21,13 +22,16 @@ interface MusicStore {
 	fetchTrendingSongs: () => Promise<void>;
 	fetchStats: () => Promise<void>;
 	fetchSongs: () => Promise<void>;
+	fetchTeachers: () => Promise<void>;
 	deleteSong: (id: string) => Promise<void>;
 	deleteAlbum: (id: string) => Promise<void>;
+	deleteTeacher: (id: string) => Promise<void>;
 }
 
 export const useMusicStore = create<MusicStore>((set) => ({
 	albums: [],
 	songs: [],
+	teachers: [],
 	isLoading: false,
 	error: null,
 	currentAlbum: null,
@@ -38,7 +42,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 		totalSongs: 0,
 		totalAlbums: 0,
 		totalUsers: 0,
-		totalArtists: 0,
+		totalTeachers: 0,
 	},
 
 	deleteSong: async (id) => {
@@ -156,6 +160,34 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			set({ trendingSongs: response.data });
 		} catch (error: any) {
 			set({ error: error.response.data.message });
+		} finally {
+			set({ isLoading: false });
+		}
+	},
+
+	fetchTeachers: async () => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.get("/teachers");
+			set({ teachers: response.data });
+		} catch (error: any) {
+			set({ error: error.response?.data?.message || error.message });
+		} finally {
+			set({ isLoading: false });
+		}
+	},
+
+	deleteTeacher: async (id) => {
+		set({ isLoading: true, error: null });
+		try {
+			await axiosInstance.delete(`/admin/teachers/${id}`);
+			set((state) => ({
+				teachers: state.teachers.filter((teacher) => teacher._id !== id),
+			}));
+			toast.success("Teacher deleted successfully");
+		} catch (error: any) {
+			console.log("Error in deleteTeacher", error);
+			toast.error("Error deleting teacher");
 		} finally {
 			set({ isLoading: false });
 		}

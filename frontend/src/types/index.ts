@@ -1,7 +1,7 @@
 export interface Song {
 	_id: string;
 	title: string;
-	artist: string;
+	teacher: string;
 	albumId: string | null;
 	imageUrl: string;
 	audioUrl: string;
@@ -13,17 +13,28 @@ export interface Song {
 export interface Album {
 	_id: string;
 	title: string;
-	artist: string;
+	teacher: Teacher | string;
 	imageUrl: string;
 	releaseYear: number;
 	songs: Song[];
+}
+
+export interface Teacher {
+	_id: string;
+	name: string;
+	bio: string;
+	imageUrl: string;
+	specialization: string;
+	yearsOfExperience: number;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface Stats {
 	totalSongs: number;
 	totalAlbums: number;
 	totalUsers: number;
-	totalArtists: number;
+	totalTeachers: number;
 }
 
 export interface Message {

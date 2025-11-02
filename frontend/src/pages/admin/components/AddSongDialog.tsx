@@ -18,19 +18,19 @@ import toast from "react-hot-toast";
 
 interface NewSong {
 	title: string;
-	artist: string;
+	teacher: string;
 	album: string;
 	duration: string;
 }
 
 const AddSongDialog = () => {
-	const { albums } = useMusicStore();
+	const { albums, teachers } = useMusicStore();
 	const [songDialogOpen, setSongDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const [newSong, setNewSong] = useState<NewSong>({
 		title: "",
-		artist: "",
+		teacher: "",
 		album: "",
 		duration: "0",
 	});
@@ -43,6 +43,23 @@ const AddSongDialog = () => {
 	const audioInputRef = useRef<HTMLInputElement>(null);
 	const imageInputRef = useRef<HTMLInputElement>(null);
 
+	const handleAudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		setFiles((prev) => ({ ...prev, audio: file }));
+
+		// Calculate audio duration
+		const audio = new Audio();
+		audio.src = URL.createObjectURL(file);
+
+		audio.addEventListener("loadedmetadata", () => {
+			const durationInSeconds = Math.floor(audio.duration);
+			setNewSong((prev) => ({ ...prev, duration: durationInSeconds.toString() }));
+			URL.revokeObjectURL(audio.src); // Clean up
+		});
+	};
+
 	const handleSubmit = async () => {
 		setIsLoading(true);
 
@@ -51,14 +68,20 @@ const AddSongDialog = () => {
 				return toast.error("Please upload both audio and image files");
 			}
 
+			if (!newSong.album) {
+				return toast.error("Please select an album");
+			}
+
+			if (!newSong.teacher) {
+				return toast.error("Please select a teacher");
+			}
+
 			const formData = new FormData();
 
 			formData.append("title", newSong.title);
-			formData.append("artist", newSong.artist);
+			formData.append("teacher", newSong.teacher);
 			formData.append("duration", newSong.duration);
-			if (newSong.album && newSong.album !== "none") {
-				formData.append("albumId", newSong.album);
-			}
+			formData.append("albumId", newSong.album);
 
 			formData.append("audioFile", files.audio);
 			formData.append("imageFile", files.image);
@@ -71,7 +94,7 @@ const AddSongDialog = () => {
 
 			setNewSong({
 				title: "",
-				artist: "",
+				teacher: "",
 				album: "",
 				duration: "0",
 			});
@@ -109,7 +132,7 @@ const AddSongDialog = () => {
 						accept='audio/*'
 						ref={audioInputRef}
 						hidden
-						onChange={(e) => setFiles((prev) => ({ ...prev, audio: e.target.files![0] }))}
+						onChange={handleAudioChange}
 					/>
 
 					<input
@@ -166,27 +189,44 @@ const AddSongDialog = () => {
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Artist</label>
+						<label className='text-sm font-medium'>Teacher *</label>
+						<Select
+							value={newSong.teacher}
+							onValueChange={(value) => setNewSong({ ...newSong, teacher: value })}
+						>
+							<SelectTrigger className='bg-zinc-800 border-zinc-700'>
+								<SelectValue placeholder='Select teacher' />
+							</SelectTrigger>
+							<SelectContent className='bg-zinc-800 border-zinc-700'>
+								{teachers.map((teacher) => (
+									<SelectItem key={teacher._id} value={teacher._id}>
+										{teacher.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					<div className='space-y-2'>
+						<label className='text-sm font-medium'>Duration</label>
 						<Input
-							value={newSong.artist}
-							onChange={(e) => setNewSong({ ...newSong, artist: e.target.value })}
-							className='bg-zinc-800 border-zinc-700'
+							type='text'
+							value={
+								newSong.duration === "0"
+									? "Auto-calculated from audio"
+									: `${newSong.duration} seconds (${Math.floor(parseInt(newSong.duration) / 60)}:${(
+											parseInt(newSong.duration) % 60
+									  )
+											.toString()
+											.padStart(2, "0")})`
+							}
+							readOnly
+							className='bg-zinc-800 border-zinc-700 text-zinc-400'
 						/>
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Duration (seconds)</label>
-						<Input
-							type='number'
-							min='0'
-							value={newSong.duration}
-							onChange={(e) => setNewSong({ ...newSong, duration: e.target.value || "0" })}
-							className='bg-zinc-800 border-zinc-700'
-						/>
-					</div>
-
-					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Album (Optional)</label>
+						<label className='text-sm font-medium'>Album *</label>
 						<Select
 							value={newSong.album}
 							onValueChange={(value) => setNewSong({ ...newSong, album: value })}
@@ -195,7 +235,6 @@ const AddSongDialog = () => {
 								<SelectValue placeholder='Select album' />
 							</SelectTrigger>
 							<SelectContent className='bg-zinc-800 border-zinc-700'>
-								<SelectItem value='none'>No Album (Single)</SelectItem>
 								{albums.map((album) => (
 									<SelectItem key={album._id} value={album._id}>
 										{album.title}

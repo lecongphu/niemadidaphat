@@ -24,7 +24,7 @@ const FeaturedSection = () => {
 					/>
 					<div className='flex-1 p-4'>
 						<p className='font-medium truncate'>{song.title}</p>
-						<p className='text-sm text-zinc-400 truncate'>{song.artist}</p>
+						<p className='text-sm text-zinc-400 truncate'>{song.teacher}</p>
 					</div>
 					<PlayButton song={song} />
 				</div>
