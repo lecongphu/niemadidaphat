@@ -16,11 +16,11 @@ const AlbumsTable = () => {
 			<TableHeader>
 				<TableRow className='hover:bg-zinc-800/50'>
 					<TableHead className='w-[50px]'></TableHead>
-					<TableHead>Title</TableHead>
-					<TableHead>Teacher</TableHead>
-					<TableHead>Release Year</TableHead>
-					<TableHead>Songs</TableHead>
-					<TableHead className='text-right'>Actions</TableHead>
+					<TableHead>Tiêu Đề</TableHead>
+					<TableHead>Giảng Sư</TableHead>
+					<TableHead>Năm Phát Hành</TableHead>
+					<TableHead>Bài Giảng</TableHead>
+					<TableHead className='text-right'>Hành Động</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>
@@ -40,7 +40,7 @@ const AlbumsTable = () => {
 						<TableCell>
 							<span className='inline-flex items-center gap-1 text-zinc-400'>
 								<Music className='h-4 w-4' />
-								{album.songs.length} songs
+								{album.songs.length} bài giảng
 							</span>
 						</TableCell>
 						<TableCell className='text-right'>

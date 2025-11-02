@@ -103,9 +103,9 @@ const AddSongDialog = () => {
 				audio: null,
 				image: null,
 			});
-			toast.success("Song added successfully");
+			toast.success("Bài giảng đã được thêm thành công");
 		} catch (error: any) {
-			toast.error("Failed to add song: " + error.message);
+			toast.error("Không thể thêm bài giảng: " + error.message);
 		} finally {
 			setIsLoading(false);
 		}
@@ -116,14 +116,14 @@ const AddSongDialog = () => {
 			<DialogTrigger asChild>
 				<Button className='bg-emerald-500 hover:bg-emerald-600 text-black'>
 					<Plus className='mr-2 h-4 w-4' />
-					Add Song
+					Thêm Bài Giảng
 				</Button>
 			</DialogTrigger>
 
 			<DialogContent className='bg-zinc-900 border-zinc-700 max-h-[80vh] overflow-auto'>
 				<DialogHeader>
-					<DialogTitle>Add New Song</DialogTitle>
-					<DialogDescription>Add a new song to your music library</DialogDescription>
+					<DialogTitle>Thêm Bài Giảng Mới</DialogTitle>
+					<DialogDescription>Thêm một bài giảng mới vào thư viện</DialogDescription>
 				</DialogHeader>
 
 				<div className='space-y-4 py-4'>
@@ -247,10 +247,10 @@ const AddSongDialog = () => {
 
 				<DialogFooter>
 					<Button variant='outline' onClick={() => setSongDialogOpen(false)} disabled={isLoading}>
-						Cancel
+						Hủy
 					</Button>
 					<Button onClick={handleSubmit} disabled={isLoading}>
-						{isLoading ? "Uploading..." : "Add Song"}
+						{isLoading ? "Đang tải lên..." : "Thêm Bài Giảng"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
