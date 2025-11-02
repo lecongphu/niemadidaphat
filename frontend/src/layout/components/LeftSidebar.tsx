@@ -58,7 +58,7 @@ const LeftSidebar = () => {
 				<div className='flex items-center justify-between mb-4'>
 					<div className='flex items-center text-white px-2'>
 						<Library className='size-5 mr-2' />
-						<span className='hidden md:inline'>Playlists</span>
+						<span className='hidden md:inline'>Bộ Kinh</span>
 					</div>
 				</div>
 
@@ -75,14 +75,14 @@ const LeftSidebar = () => {
 								>
 									<img
 										src={album.imageUrl}
-										alt='Playlist img'
+										alt='Hình ảnh bộ kinh'
 										className='size-12 rounded-md flex-shrink-0 object-cover'
 									/>
 
 									<div className='flex-1 min-w-0 hidden md:block'>
 										<p className='font-medium truncate'>{album.title}</p>
 										<p className='text-sm text-zinc-400 truncate'>
-											Album • {typeof album.teacher === 'string' ? album.teacher : album.teacher.name}
+											Bộ Kinh • {typeof album.teacher === 'string' ? album.teacher : album.teacher.name}
 										</p>
 									</div>
 								</Link>

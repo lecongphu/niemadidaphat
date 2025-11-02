@@ -13,11 +13,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	useEffect(() => {
 		// Set the token getter function for axios interceptor
-		setTokenGetter(getToken);
+		setTokenGetter(() => getToken({ template: "HoPhap" }));
 
 		const initAuth = async () => {
 			try {
-				const token = await getToken();
+				const token = await getToken({ template: "HoPhap" });
 				if (token) {
 					await checkAdminStatus();
 					// init socket

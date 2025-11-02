@@ -91,6 +91,50 @@ export const deleteSong = async (req, res, next) => {
 
 		const song = await Song.findById(id);
 
+		if (!song) {
+			return res.status(404).json({ message: "Song not found" });
+		}
+
+		// Extract public_id from Cloudinary URLs to delete the files
+		// URL format: https://res.cloudinary.com/{cloud_name}/{resource_type}/upload/{version}/{public_id}.{format}
+		const extractPublicId = (url) => {
+			const parts = url.split('/');
+			const uploadIndex = parts.indexOf('upload');
+			if (uploadIndex !== -1 && uploadIndex + 2 < parts.length) {
+				// Get everything after 'upload/{version}/' and before the file extension
+				const pathAfterUpload = parts.slice(uploadIndex + 2).join('/');
+				// Remove file extension
+				return pathAfterUpload.substring(0, pathAfterUpload.lastIndexOf('.'));
+			}
+			return null;
+		};
+
+		// Delete audio file from Cloudinary
+		if (song.audioUrl) {
+			const audioPublicId = extractPublicId(song.audioUrl);
+			if (audioPublicId) {
+				try {
+					await cloudinary.uploader.destroy(audioPublicId, { resource_type: 'video' });
+					console.log('Audio file deleted from Cloudinary:', audioPublicId);
+				} catch (err) {
+					console.log('Error deleting audio from Cloudinary:', err);
+				}
+			}
+		}
+
+		// Delete image file from Cloudinary
+		if (song.imageUrl) {
+			const imagePublicId = extractPublicId(song.imageUrl);
+			if (imagePublicId) {
+				try {
+					await cloudinary.uploader.destroy(imagePublicId, { resource_type: 'image' });
+					console.log('Image file deleted from Cloudinary:', imagePublicId);
+				} catch (err) {
+					console.log('Error deleting image from Cloudinary:', err);
+				}
+			}
+		}
+
 		// if song belongs to an album, update the album's songs array
 		if (song.albumId) {
 			await Album.findByIdAndUpdate(song.albumId, {

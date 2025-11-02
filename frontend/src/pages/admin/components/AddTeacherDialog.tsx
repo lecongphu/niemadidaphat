@@ -43,11 +43,11 @@ const AddTeacherDialog = () => {
 
 		try {
 			if (!imageFile) {
-				return toast.error("Please upload an image file");
+				return toast.error("Vui lòng tải lên file hình ảnh");
 			}
 
 			if (!newTeacher.name || !newTeacher.specialization) {
-				return toast.error("Please fill in all required fields");
+				return toast.error("Vui lòng điền đầy đủ các trường bắt buộc");
 			}
 
 			const formData = new FormData();
@@ -72,10 +72,10 @@ const AddTeacherDialog = () => {
 
 			setImageFile(null);
 			setTeacherDialogOpen(false);
-			toast.success("Teacher created successfully");
+			toast.success("Pháp sư đã được tạo thành công");
 			fetchTeachers();
 		} catch (error: any) {
-			toast.error("Error creating teacher: " + error.response?.data?.message || error.message);
+			toast.error("Lỗi khi tạo pháp sư: " + error.response?.data?.message || error.message);
 		} finally {
 			setIsLoading(false);
 		}
@@ -86,14 +86,14 @@ const AddTeacherDialog = () => {
 			<DialogTrigger asChild>
 				<Button className='bg-violet-500 hover:bg-violet-600 text-white'>
 					<Plus className='mr-2 h-4 w-4' />
-					Add Teacher
+					Thêm Pháp Sư
 				</Button>
 			</DialogTrigger>
 
 			<DialogContent className='bg-zinc-900 border-zinc-700 max-h-[80vh] overflow-auto'>
 				<DialogHeader>
-					<DialogTitle>Add New Teacher</DialogTitle>
-					<DialogDescription>Add a new teacher to your platform</DialogDescription>
+					<DialogTitle>Thêm Pháp Sư Mới</DialogTitle>
+					<DialogDescription>Thêm pháp sư mới vào nền tảng</DialogDescription>
 				</DialogHeader>
 
 				<div className='space-y-4 py-4'>
@@ -120,7 +120,7 @@ const AddTeacherDialog = () => {
 									<div className='p-3 bg-zinc-800 rounded-full inline-block mb-2'>
 										<Upload className='h-6 w-6 text-zinc-400' />
 									</div>
-									<div className='text-sm text-zinc-400 mb-2'>Upload teacher photo</div>
+									<div className='text-sm text-zinc-400 mb-2'>Tải lên ảnh pháp sư</div>
 									<div className='text-xs text-zinc-500'>SVG, PNG, JPG or GIF</div>
 								</>
 							)}
@@ -128,7 +128,7 @@ const AddTeacherDialog = () => {
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Name</label>
+						<label className='text-sm font-medium'>Tên</label>
 						<Input
 							value={newTeacher.name}
 							onChange={(e) => setNewTeacher({ ...newTeacher, name: e.target.value })}
@@ -138,7 +138,7 @@ const AddTeacherDialog = () => {
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Specialization</label>
+						<label className='text-sm font-medium'>Chuyên Môn</label>
 						<Input
 							value={newTeacher.specialization}
 							onChange={(e) => setNewTeacher({ ...newTeacher, specialization: e.target.value })}
@@ -148,7 +148,7 @@ const AddTeacherDialog = () => {
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Years of Experience</label>
+						<label className='text-sm font-medium'>Số Năm Kinh Nghiệm</label>
 						<Input
 							type='number'
 							value={newTeacher.yearsOfExperience}
@@ -160,22 +160,22 @@ const AddTeacherDialog = () => {
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Biography</label>
+						<label className='text-sm font-medium'>Tiểu Sử</label>
 						<Textarea
 							value={newTeacher.bio}
 							onChange={(e) => setNewTeacher({ ...newTeacher, bio: e.target.value })}
 							className='bg-zinc-800 border-zinc-700 min-h-[100px]'
-							placeholder='Brief biography of the teacher...'
+							placeholder='Tiểu sử ngắn gọn của pháp sư...'
 						/>
 					</div>
 				</div>
 
 				<DialogFooter>
 					<Button variant='outline' onClick={() => setTeacherDialogOpen(false)} disabled={isLoading}>
-						Cancel
+						Hủy
 					</Button>
 					<Button onClick={handleSubmit} className='bg-violet-500 hover:bg-violet-600' disabled={isLoading}>
-						{isLoading ? "Creating..." : "Add Teacher"}
+						{isLoading ? "Đang tạo..." : "Thêm Pháp Sư"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

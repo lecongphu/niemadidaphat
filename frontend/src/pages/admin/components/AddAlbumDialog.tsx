@@ -42,11 +42,11 @@ const AddAlbumDialog = () => {
 
 		try {
 			if (!imageFile) {
-				return toast.error("Please upload an image");
+				return toast.error("Vui lòng tải lên hình ảnh");
 			}
 
 			if (!newAlbum.teacher) {
-				return toast.error("Please select a teacher");
+				return toast.error("Vui lòng chọn pháp sư");
 			}
 
 			const formData = new FormData();
@@ -68,9 +68,9 @@ const AddAlbumDialog = () => {
 			});
 			setImageFile(null);
 			setAlbumDialogOpen(false);
-			toast.success("Album created successfully");
+			toast.success("Bộ kinh đã được tạo thành công");
 		} catch (error: any) {
-			toast.error("Failed to create album: " + error.message);
+			toast.error("Không thể tạo bộ kinh: " + error.message);
 		} finally {
 			setIsLoading(false);
 		}
@@ -81,13 +81,13 @@ const AddAlbumDialog = () => {
 			<DialogTrigger asChild>
 				<Button className='bg-violet-500 hover:bg-violet-600 text-white'>
 					<Plus className='mr-2 h-4 w-4' />
-					Add Album
+					Thêm Bộ Kinh
 				</Button>
 			</DialogTrigger>
 			<DialogContent className='bg-zinc-900 border-zinc-700'>
 				<DialogHeader>
-					<DialogTitle>Add New Album</DialogTitle>
-					<DialogDescription>Add a new album to your collection</DialogDescription>
+					<DialogTitle>Thêm Bộ Kinh Mới</DialogTitle>
+					<DialogDescription>Thêm một bộ kinh mới vào thư viện</DialogDescription>
 				</DialogHeader>
 				<div className='space-y-4 py-4'>
 					<input
@@ -106,30 +106,30 @@ const AddAlbumDialog = () => {
 								<Upload className='h-6 w-6 text-zinc-400' />
 							</div>
 							<div className='text-sm text-zinc-400 mb-2'>
-								{imageFile ? imageFile.name : "Upload album artwork"}
+								{imageFile ? imageFile.name : "Tải lên hình ảnh bộ kinh"}
 							</div>
 							<Button variant='outline' size='sm' className='text-xs'>
-								Choose File
+								Chọn File
 							</Button>
 						</div>
 					</div>
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Album Title</label>
+						<label className='text-sm font-medium'>Tên Bộ Kinh</label>
 						<Input
 							value={newAlbum.title}
 							onChange={(e) => setNewAlbum({ ...newAlbum, title: e.target.value })}
 							className='bg-zinc-800 border-zinc-700'
-							placeholder='Enter album title'
+							placeholder='Nhập tên bộ kinh'
 						/>
 					</div>
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Teacher *</label>
+						<label className='text-sm font-medium'>Pháp Sư *</label>
 						<Select
 							value={newAlbum.teacher}
 							onValueChange={(value) => setNewAlbum({ ...newAlbum, teacher: value })}
 						>
 							<SelectTrigger className='bg-zinc-800 border-zinc-700'>
-								<SelectValue placeholder='Select teacher' />
+								<SelectValue placeholder='Chọn pháp sư' />
 							</SelectTrigger>
 							<SelectContent className='bg-zinc-800 border-zinc-700'>
 								{teachers.map((teacher) => (
@@ -141,13 +141,13 @@ const AddAlbumDialog = () => {
 						</Select>
 					</div>
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Release Year</label>
+						<label className='text-sm font-medium'>Năm Phát Hành</label>
 						<Input
 							type='number'
 							value={newAlbum.releaseYear}
 							onChange={(e) => setNewAlbum({ ...newAlbum, releaseYear: parseInt(e.target.value) })}
 							className='bg-zinc-800 border-zinc-700'
-							placeholder='Enter release year'
+							placeholder='Nhập năm phát hành'
 							min={1900}
 							max={new Date().getFullYear()}
 						/>
@@ -155,14 +155,14 @@ const AddAlbumDialog = () => {
 				</div>
 				<DialogFooter>
 					<Button variant='outline' onClick={() => setAlbumDialogOpen(false)} disabled={isLoading}>
-						Cancel
+						Hủy
 					</Button>
 					<Button
 						onClick={handleSubmit}
 						className='bg-violet-500 hover:bg-violet-600'
 						disabled={isLoading || !imageFile || !newAlbum.title || !newAlbum.teacher}
 					>
-						{isLoading ? "Creating..." : "Add Album"}
+						{isLoading ? "Đang tạo..." : "Thêm Bộ Kinh"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

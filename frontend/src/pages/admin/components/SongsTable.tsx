@@ -9,7 +9,7 @@ const SongsTable = () => {
 	if (isLoading) {
 		return (
 			<div className='flex items-center justify-center py-8'>
-				<div className='text-zinc-400'>Đang tải bài giảng...</div>
+				<div className='text-zinc-400'>Đang tải bài pháp...</div>
 			</div>
 		);
 	}
@@ -28,8 +28,8 @@ const SongsTable = () => {
 				<TableRow className='hover:bg-zinc-800/50'>
 					<TableHead className='w-[50px]'></TableHead>
 					<TableHead>Tiêu Đề</TableHead>
-					<TableHead>Giảng Sư</TableHead>
-					<TableHead>Thể Loại</TableHead>
+					<TableHead>Pháp Sư</TableHead>
+					<TableHead>Chủ Đề</TableHead>
 					<TableHead>Ngày Phát Hành</TableHead>
 					<TableHead className='text-right'>Hành Động</TableHead>
 				</TableRow>

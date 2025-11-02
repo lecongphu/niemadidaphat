@@ -56,10 +56,10 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			set((state) => ({
 				songs: state.songs.filter((song) => song._id !== id),
 			}));
-			toast.success("Song deleted successfully");
+			toast.success("Bài pháp đã được xóa thành công");
 		} catch (error: any) {
 			console.log("Error in deleteSong", error);
-			toast.error("Error deleting song");
+			toast.error("Không thể xóa bài pháp: " + (error.response?.data?.message || error.message));
 		} finally {
 			set({ isLoading: false });
 		}
@@ -75,9 +75,9 @@ export const useMusicStore = create<MusicStore>((set) => ({
 					song.albumId === state.albums.find((a) => a._id === id)?.title ? { ...song, album: null } : song
 				),
 			}));
-			toast.success("Album deleted successfully");
+			toast.success("Bộ kinh đã được xóa thành công");
 		} catch (error: any) {
-			toast.error("Failed to delete album: " + error.message);
+			toast.error("Không thể xóa bộ kinh: " + (error.response?.data?.message || error.message));
 		} finally {
 			set({ isLoading: false });
 		}
@@ -187,10 +187,10 @@ export const useMusicStore = create<MusicStore>((set) => ({
 			set((state) => ({
 				teachers: state.teachers.filter((teacher) => teacher._id !== id),
 			}));
-			toast.success("Teacher deleted successfully");
+			toast.success("Pháp sư đã được xóa thành công");
 		} catch (error: any) {
 			console.log("Error in deleteTeacher", error);
-			toast.error("Error deleting teacher");
+			toast.error("Không thể xóa pháp sư: " + (error.response?.data?.message || error.message));
 		} finally {
 			set({ isLoading: false });
 		}

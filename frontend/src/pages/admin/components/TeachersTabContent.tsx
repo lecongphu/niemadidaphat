@@ -11,9 +11,9 @@ const TeachersTabContent = () => {
 					<div>
 						<CardTitle className='flex items-center gap-2'>
 							<Users className='size-5 text-violet-500' />
-							Teachers
+							Pháp Sư
 						</CardTitle>
-						<CardDescription>Manage dharma teachers</CardDescription>
+						<CardDescription>Quản lý các pháp sư</CardDescription>
 					</div>
 					<AddTeacherDialog />
 				</div>

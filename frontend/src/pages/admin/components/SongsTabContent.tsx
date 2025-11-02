@@ -11,9 +11,9 @@ const SongsTabContent = () => {
 					<div>
 						<CardTitle className='flex items-center gap-2'>
 							<Music className='size-5 text-emerald-500' />
-							Songs Library
+							Thư Viện Bài Pháp
 						</CardTitle>
-						<CardDescription>Manage your music tracks</CardDescription>
+						<CardDescription>Quản lý các bài pháp</CardDescription>
 					</div>
 					<AddSongDialog />
 				</div>

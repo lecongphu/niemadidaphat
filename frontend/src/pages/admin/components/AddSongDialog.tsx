@@ -69,19 +69,19 @@ const AddSongDialog = () => {
 
 		try {
 			if (!files.audio || !files.image) {
-				return toast.error("Please upload both audio and image files");
+				return toast.error("Vui lòng tải lên cả file âm thanh và hình ảnh");
 			}
 
 			if (!newSong.album) {
-				return toast.error("Please select an album");
+				return toast.error("Vui lòng chọn bộ kinh");
 			}
 
 			if (!newSong.teacher) {
-				return toast.error("Please select a teacher");
+				return toast.error("Vui lòng chọn pháp sư");
 			}
 
 			if (!newSong.category) {
-				return toast.error("Please select a category");
+				return toast.error("Vui lòng chọn chủ đề");
 			}
 
 			const formData = new FormData();
@@ -120,9 +120,9 @@ const AddSongDialog = () => {
 				image: null,
 			});
 			setUploadProgress(0);
-			toast.success("Bài giảng đã được thêm thành công");
+			toast.success("Bài pháp đã được thêm thành công");
 		} catch (error: any) {
-			toast.error("Không thể thêm bài giảng: " + error.message);
+			toast.error("Không thể thêm bài pháp: " + error.message);
 		} finally {
 			setIsLoading(false);
 			setUploadProgress(0);
@@ -134,14 +134,14 @@ const AddSongDialog = () => {
 			<DialogTrigger asChild>
 				<Button className='bg-emerald-500 hover:bg-emerald-600 text-black'>
 					<Plus className='mr-2 h-4 w-4' />
-					Thêm Bài Giảng
+					Thêm Bài Pháp
 				</Button>
 			</DialogTrigger>
 
 			<DialogContent className='bg-zinc-900 border-zinc-700 max-h-[80vh] overflow-auto'>
 				<DialogHeader>
-					<DialogTitle>Thêm Bài Giảng Mới</DialogTitle>
-					<DialogDescription>Thêm một bài giảng mới vào thư viện</DialogDescription>
+					<DialogTitle>Thêm Bài Pháp Mới</DialogTitle>
+					<DialogDescription>Thêm một bài pháp mới vào thư viện</DialogDescription>
 				</DialogHeader>
 
 				<div className='space-y-4 py-4'>
@@ -177,9 +177,9 @@ const AddSongDialog = () => {
 									<div className='p-3 bg-zinc-800 rounded-full inline-block mb-2'>
 										<Upload className='h-6 w-6 text-zinc-400' />
 									</div>
-									<div className='text-sm text-zinc-400 mb-2'>Upload artwork</div>
+									<div className='text-sm text-zinc-400 mb-2'>Tải lên hình ảnh</div>
 									<Button variant='outline' size='sm' className='text-xs'>
-										Choose File
+										Chọn File
 									</Button>
 								</>
 							)}
@@ -188,17 +188,17 @@ const AddSongDialog = () => {
 
 					{/* Audio upload */}
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Audio File</label>
+						<label className='text-sm font-medium'>File Âm Thanh</label>
 						<div className='flex items-center gap-2'>
 							<Button variant='outline' onClick={() => audioInputRef.current?.click()} className='w-full'>
-								{files.audio ? files.audio.name.slice(0, 20) : "Choose Audio File"}
+								{files.audio ? files.audio.name.slice(0, 20) : "Chọn File Âm Thanh"}
 							</Button>
 						</div>
 					</div>
 
 					{/* other fields */}
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Title</label>
+						<label className='text-sm font-medium'>Tên Bài Pháp</label>
 						<Input
 							value={newSong.title}
 							onChange={(e) => setNewSong({ ...newSong, title: e.target.value })}
@@ -207,13 +207,13 @@ const AddSongDialog = () => {
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Teacher *</label>
+						<label className='text-sm font-medium'>Pháp Sư *</label>
 						<Select
 							value={newSong.teacher}
 							onValueChange={(value) => setNewSong({ ...newSong, teacher: value })}
 						>
 							<SelectTrigger className='bg-zinc-800 border-zinc-700'>
-								<SelectValue placeholder='Select teacher' />
+								<SelectValue placeholder='Chọn pháp sư' />
 							</SelectTrigger>
 							<SelectContent className='bg-zinc-800 border-zinc-700'>
 								{teachers.map((teacher) => (
@@ -226,13 +226,13 @@ const AddSongDialog = () => {
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Duration</label>
+						<label className='text-sm font-medium'>Thời Lượng</label>
 						<Input
 							type='text'
 							value={
 								newSong.duration === "0"
-									? "Auto-calculated from audio"
-									: `${newSong.duration} seconds (${Math.floor(parseInt(newSong.duration) / 60)}:${(
+									? "Tự động tính từ file âm thanh"
+									: `${newSong.duration} giây (${Math.floor(parseInt(newSong.duration) / 60)}:${(
 											parseInt(newSong.duration) % 60
 									  )
 											.toString()
@@ -244,13 +244,13 @@ const AddSongDialog = () => {
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Album *</label>
+						<label className='text-sm font-medium'>Bộ Kinh *</label>
 						<Select
 							value={newSong.album}
 							onValueChange={(value) => setNewSong({ ...newSong, album: value })}
 						>
 							<SelectTrigger className='bg-zinc-800 border-zinc-700'>
-								<SelectValue placeholder='Select album' />
+								<SelectValue placeholder='Chọn bộ kinh' />
 							</SelectTrigger>
 							<SelectContent className='bg-zinc-800 border-zinc-700'>
 								{albums.map((album) => (
@@ -263,13 +263,13 @@ const AddSongDialog = () => {
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Thể loại *</label>
+						<label className='text-sm font-medium'>Chủ Đề *</label>
 						<Select
 							value={newSong.category}
 							onValueChange={(value) => setNewSong({ ...newSong, category: value })}
 						>
 							<SelectTrigger className='bg-zinc-800 border-zinc-700'>
-								<SelectValue placeholder='Chọn thể loại' />
+								<SelectValue placeholder='Chọn chủ đề' />
 							</SelectTrigger>
 							<SelectContent className='bg-zinc-800 border-zinc-700'>
 								{categories.map((category) => (
@@ -303,7 +303,7 @@ const AddSongDialog = () => {
 						Hủy
 					</Button>
 					<Button onClick={handleSubmit} disabled={isLoading}>
-						{isLoading ? `Đang tải lên... ${uploadProgress}%` : "Thêm Bài Giảng"}
+						{isLoading ? `Đang tải lên... ${uploadProgress}%` : "Thêm Bài Pháp"}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
