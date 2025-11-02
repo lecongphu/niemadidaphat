@@ -1,3 +1,11 @@
+export interface Category {
+	_id: string;
+	name: string;
+	description?: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
 export interface Song {
 	_id: string;
 	title: string;
@@ -6,6 +14,7 @@ export interface Song {
 	imageUrl: string;
 	audioUrl: string;
 	duration: number;
+	category: Category | string;
 	createdAt: string;
 	updatedAt: string;
 }

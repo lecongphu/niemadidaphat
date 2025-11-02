@@ -4,7 +4,7 @@ export const getAllSongs = async (req, res, next) => {
 	try {
 		// -1 = Descending => newest -> oldest
 		// 1 = Ascending => oldest -> newest
-		const songs = await Song.find().sort({ createdAt: -1 });
+		const songs = await Song.find().sort({ createdAt: -1 }).populate("category", "name");
 		res.json(songs);
 	} catch (error) {
 		next(error);

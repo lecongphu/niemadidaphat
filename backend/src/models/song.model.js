@@ -28,6 +28,11 @@ const songSchema = new mongoose.Schema(
 			ref: "Album",
 			required: false,
 		},
+		category: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Category",
+			required: true,
+		},
 	},
 	{ timestamps: true }
 );

@@ -21,10 +21,11 @@ interface NewSong {
 	teacher: string;
 	album: string;
 	duration: string;
+	category: string;
 }
 
 const AddSongDialog = () => {
-	const { albums, teachers } = useMusicStore();
+	const { albums, teachers, categories } = useMusicStore();
 	const [songDialogOpen, setSongDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
@@ -33,6 +34,7 @@ const AddSongDialog = () => {
 		teacher: "",
 		album: "",
 		duration: "0",
+		category: "",
 	});
 
 	const [files, setFiles] = useState<{ audio: File | null; image: File | null }>({
@@ -76,12 +78,17 @@ const AddSongDialog = () => {
 				return toast.error("Please select a teacher");
 			}
 
+			if (!newSong.category) {
+				return toast.error("Please select a category");
+			}
+
 			const formData = new FormData();
 
 			formData.append("title", newSong.title);
 			formData.append("teacher", newSong.teacher);
 			formData.append("duration", newSong.duration);
 			formData.append("albumId", newSong.album);
+			formData.append("category", newSong.category);
 
 			formData.append("audioFile", files.audio);
 			formData.append("imageFile", files.image);
@@ -97,6 +104,7 @@ const AddSongDialog = () => {
 				teacher: "",
 				album: "",
 				duration: "0",
+				category: "",
 			});
 
 			setFiles({
@@ -238,6 +246,25 @@ const AddSongDialog = () => {
 								{albums.map((album) => (
 									<SelectItem key={album._id} value={album._id}>
 										{album.title}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					<div className='space-y-2'>
+						<label className='text-sm font-medium'>Thể loại *</label>
+						<Select
+							value={newSong.category}
+							onValueChange={(value) => setNewSong({ ...newSong, category: value })}
+						>
+							<SelectTrigger className='bg-zinc-800 border-zinc-700'>
+								<SelectValue placeholder='Chọn thể loại' />
+							</SelectTrigger>
+							<SelectContent className='bg-zinc-800 border-zinc-700'>
+								{categories.map((category) => (
+									<SelectItem key={category._id} value={category._id}>
+										{category.name}
 									</SelectItem>
 								))}
 							</SelectContent>

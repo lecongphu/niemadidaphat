@@ -29,6 +29,7 @@ const SongsTable = () => {
 					<TableHead className='w-[50px]'></TableHead>
 					<TableHead>Tiêu Đề</TableHead>
 					<TableHead>Giảng Sư</TableHead>
+					<TableHead>Thể Loại</TableHead>
 					<TableHead>Ngày Phát Hành</TableHead>
 					<TableHead className='text-right'>Hành Động</TableHead>
 				</TableRow>
@@ -42,6 +43,9 @@ const SongsTable = () => {
 						</TableCell>
 						<TableCell className='font-medium'>{song.title}</TableCell>
 						<TableCell>{song.teacher}</TableCell>
+						<TableCell>
+							{typeof song.category === 'string' ? song.category : song.category.name}
+						</TableCell>
 						<TableCell>
 							<span className='inline-flex items-center gap-1 text-zinc-400'>
 								<Calendar className='h-4 w-4' />

@@ -12,14 +12,15 @@ import { useMusicStore } from "@/stores/useMusicStore";
 const AdminPage = () => {
 	const { isAdmin, isLoading } = useAuthStore();
 
-	const { fetchAlbums, fetchSongs, fetchStats, fetchTeachers } = useMusicStore();
+	const { fetchAlbums, fetchSongs, fetchStats, fetchTeachers, fetchCategories } = useMusicStore();
 
 	useEffect(() => {
 		fetchAlbums();
 		fetchSongs();
 		fetchStats();
 		fetchTeachers();
-	}, [fetchAlbums, fetchSongs, fetchStats, fetchTeachers]);
+		fetchCategories();
+	}, [fetchAlbums, fetchSongs, fetchStats, fetchTeachers, fetchCategories]);
 
 	if (!isAdmin && !isLoading) return <div>Unauthorized</div>;
 

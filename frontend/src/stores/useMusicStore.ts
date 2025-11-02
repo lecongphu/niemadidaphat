@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
-import { Album, Song, Stats, Teacher } from "@/types";
+import { Album, Category, Song, Stats, Teacher } from "@/types";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 
@@ -7,6 +7,7 @@ interface MusicStore {
 	songs: Song[];
 	albums: Album[];
 	teachers: Teacher[];
+	categories: Category[];
 	isLoading: boolean;
 	error: string | null;
 	currentAlbum: Album | null;
@@ -23,6 +24,7 @@ interface MusicStore {
 	fetchStats: () => Promise<void>;
 	fetchSongs: () => Promise<void>;
 	fetchTeachers: () => Promise<void>;
+	fetchCategories: () => Promise<void>;
 	deleteSong: (id: string) => Promise<void>;
 	deleteAlbum: (id: string) => Promise<void>;
 	deleteTeacher: (id: string) => Promise<void>;
@@ -32,6 +34,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 	albums: [],
 	songs: [],
 	teachers: [],
+	categories: [],
 	isLoading: false,
 	error: null,
 	currentAlbum: null,
@@ -188,6 +191,18 @@ export const useMusicStore = create<MusicStore>((set) => ({
 		} catch (error: any) {
 			console.log("Error in deleteTeacher", error);
 			toast.error("Error deleting teacher");
+		} finally {
+			set({ isLoading: false });
+		}
+	},
+
+	fetchCategories: async () => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.get("/categories");
+			set({ categories: response.data });
+		} catch (error: any) {
+			set({ error: error.response?.data?.message || error.message });
 		} finally {
 			set({ isLoading: false });
 		}

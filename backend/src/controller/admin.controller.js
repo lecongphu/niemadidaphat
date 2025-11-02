@@ -23,13 +23,18 @@ export const createSong = async (req, res, next) => {
 			return res.status(400).json({ message: "Please upload all files" });
 		}
 
-		const { title, teacher, albumId, duration } = req.body;
+		const { title, teacher, albumId, duration, category } = req.body;
 		const audioFile = req.files.audioFile;
 		const imageFile = req.files.imageFile;
 
 		// Validate albumId is required
 		if (!albumId) {
 			return res.status(400).json({ message: "Album is required" });
+		}
+
+		// Validate category is required
+		if (!category) {
+			return res.status(400).json({ message: "Category is required" });
 		}
 
 		// Get album info to create folder structure
@@ -63,6 +68,7 @@ export const createSong = async (req, res, next) => {
 			imageUrl,
 			duration,
 			albumId,
+			category,
 		});
 
 		await song.save();
