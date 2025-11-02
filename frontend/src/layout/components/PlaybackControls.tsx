@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { getName } from "@/lib/utils";
 import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -66,7 +67,7 @@ export const PlaybackControls = () => {
 									{currentSong.title}
 								</div>
 								<div className='text-sm text-zinc-400 truncate hover:underline cursor-pointer'>
-									{currentSong.teacher}
+									{getName(currentSong.teacher)}
 								</div>
 							</div>
 						</>

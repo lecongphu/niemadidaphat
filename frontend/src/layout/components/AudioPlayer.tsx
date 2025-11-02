@@ -9,8 +9,16 @@ const AudioPlayer = () => {
 
 	// handle play/pause logic
 	useEffect(() => {
-		if (isPlaying) audioRef.current?.play();
-		else audioRef.current?.pause();
+		if (isPlaying) {
+			audioRef.current?.play().catch((error) => {
+				// Ignore AbortError - it's expected when quickly changing songs
+				if (error.name !== 'AbortError') {
+					console.error('Error playing audio:', error);
+				}
+			});
+		} else {
+			audioRef.current?.pause();
+		}
 	}, [isPlaying]);
 
 	// handle song ends
@@ -41,7 +49,14 @@ const AudioPlayer = () => {
 
 			prevSongRef.current = currentSong?.audioUrl;
 
-			if (isPlaying) audio.play();
+			if (isPlaying) {
+				audio.play().catch((error) => {
+					// Ignore AbortError - it's expected when quickly changing songs
+					if (error.name !== 'AbortError') {
+						console.error('Error playing audio:', error);
+					}
+				});
+			}
 		}
 	}, [currentSong, isPlaying]);
 
