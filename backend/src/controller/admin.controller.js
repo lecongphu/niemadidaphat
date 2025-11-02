@@ -1,6 +1,7 @@
 import { Song } from "../models/song.model.js";
 import { Album } from "../models/album.model.js";
 import { Teacher } from "../models/teacher.model.js";
+import { Category } from "../models/category.model.js";
 import cloudinary from "../lib/cloudinary.js";
 
 // helper function for cloudinary uploads
@@ -19,6 +20,9 @@ const uploadToCloudinary = async (file, options = {}) => {
 
 export const createSong = async (req, res, next) => {
 	try {
+		console.log("Request body:", req.body);
+		console.log("Request files:", req.files);
+
 		if (!req.files || !req.files.audioFile || !req.files.imageFile) {
 			return res.status(400).json({ message: "Please upload all files" });
 		}
@@ -27,14 +31,37 @@ export const createSong = async (req, res, next) => {
 		const audioFile = req.files.audioFile;
 		const imageFile = req.files.imageFile;
 
-		// Validate albumId is required
+		// Validate required fields
+		if (!title) {
+			return res.status(400).json({ message: "Title is required" });
+		}
+
+		if (!teacher) {
+			return res.status(400).json({ message: "Teacher is required" });
+		}
+
 		if (!albumId) {
 			return res.status(400).json({ message: "Album is required" });
 		}
 
-		// Validate category is required
 		if (!category) {
 			return res.status(400).json({ message: "Category is required" });
+		}
+
+		if (!duration) {
+			return res.status(400).json({ message: "Duration is required" });
+		}
+
+		// Validate teacher exists
+		const teacherExists = await Teacher.findById(teacher);
+		if (!teacherExists) {
+			return res.status(404).json({ message: "Teacher not found" });
+		}
+
+		// Validate category exists
+		const categoryExists = await Category.findById(category);
+		if (!categoryExists) {
+			return res.status(404).json({ message: "Category not found" });
 		}
 
 		// Get album info to create folder structure
@@ -46,6 +73,8 @@ export const createSong = async (req, res, next) => {
 		// Create folder path: niemadidaphat/{Album Title}/{Song Title}
 		const folderPath = `niemadidaphat/${album.title}`;
 		const songFileName = title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+
+		console.log("Uploading files to Cloudinary...");
 
 		// Upload audio with custom folder and filename
 		const audioUrl = await uploadToCloudinary(audioFile, {
@@ -61,17 +90,22 @@ export const createSong = async (req, res, next) => {
 			resource_type: "image",
 		});
 
+		console.log("Files uploaded successfully");
+		console.log("Creating song document...");
+
 		const song = new Song({
 			title,
 			teacher,
 			audioUrl,
 			imageUrl,
-			duration,
+			duration: parseInt(duration),
 			albumId,
 			category,
 		});
 
 		await song.save();
+
+		console.log("Song saved successfully");
 
 		// Update the album's songs array
 		await Album.findByIdAndUpdate(albumId, {
@@ -81,7 +115,8 @@ export const createSong = async (req, res, next) => {
 		res.status(201).json(song);
 	} catch (error) {
 		console.log("Error in createSong", error);
-		next(error);
+		console.log("Error details:", error.message);
+		res.status(500).json({ message: error.message || "Internal server error" });
 	}
 };
 
@@ -263,6 +298,16 @@ export const updateTeacher = async (req, res, next) => {
 		res.status(200).json(teacher);
 	} catch (error) {
 		console.log("Error in updateTeacher", error);
+		next(error);
+	}
+};
+
+export const getCategories = async (req, res, next) => {
+	try {
+		const categories = await Category.find();
+		res.status(200).json(categories);
+	} catch (error) {
+		console.log("Error in getCategories", error);
 		next(error);
 	}
 };
