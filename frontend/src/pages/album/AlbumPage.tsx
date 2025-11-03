@@ -6,6 +6,7 @@ import { getName } from "@/lib/utils";
 import { Clock, Pause, Play } from "lucide-react";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
+import PlayingIndicator from "@/components/PlayingIndicator";
 
 export const formatDuration = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -121,7 +122,7 @@ const AlbumPage = () => {
 											>
 												<div className='flex items-center justify-center'>
 													{isCurrentSong && isPlaying ? (
-														<div className='size-4 text-green-500'>♫</div>
+														<PlayingIndicator />
 													) : (
 														<span className='group-hover:hidden'>{index + 1}</span>
 													)}

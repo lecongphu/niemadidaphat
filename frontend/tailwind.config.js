@@ -50,6 +50,25 @@ export default {
     				'4': 'hsl(var(--chart-4))',
     				'5': 'hsl(var(--chart-5))'
     			}
+    		},
+    		keyframes: {
+    			'playing-1': {
+    				'0%, 100%': { transform: 'scaleY(0.5)' },
+    				'50%': { transform: 'scaleY(1)' }
+    			},
+    			'playing-2': {
+    				'0%, 100%': { transform: 'scaleY(1)' },
+    				'50%': { transform: 'scaleY(0.3)' }
+    			},
+    			'playing-3': {
+    				'0%, 100%': { transform: 'scaleY(0.7)' },
+    				'50%': { transform: 'scaleY(0.5)' }
+    			}
+    		},
+    		animation: {
+    			'playing-1': 'playing-1 0.8s ease-in-out infinite',
+    			'playing-2': 'playing-2 0.9s ease-in-out infinite',
+    			'playing-3': 'playing-3 1s ease-in-out infinite'
     		}
     	}
     },
