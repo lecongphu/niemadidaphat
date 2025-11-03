@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { Song } from "@/types";
 import { useChatStore } from "./useChatStore";
 
@@ -7,6 +8,7 @@ interface PlayerStore {
 	isPlaying: boolean;
 	queue: Song[];
 	currentIndex: number;
+	currentTime: number;
 
 	initializeQueue: (songs: Song[]) => void;
 	playAlbum: (songs: Song[], startIndex?: number) => void;
@@ -14,13 +16,17 @@ interface PlayerStore {
 	togglePlay: () => void;
 	playNext: () => void;
 	playPrevious: () => void;
+	setCurrentTime: (time: number) => void;
 }
 
-export const usePlayerStore = create<PlayerStore>((set, get) => ({
-	currentSong: null,
-	isPlaying: false,
-	queue: [],
-	currentIndex: -1,
+export const usePlayerStore = create<PlayerStore>()(
+	persist(
+		(set, get) => ({
+			currentSong: null,
+			isPlaying: false,
+			queue: [],
+			currentIndex: -1,
+			currentTime: 0,
 
 	initializeQueue: (songs: Song[]) => {
 		set({
@@ -155,4 +161,20 @@ export const usePlayerStore = create<PlayerStore>((set, get) => ({
 			}
 		}
 	},
-}));
+
+	setCurrentTime: (time: number) => {
+		set({ currentTime: time });
+	},
+}),
+		{
+			name: "player-storage",
+			partialize: (state) => ({
+				currentSong: state.currentSong,
+				queue: state.queue,
+				currentIndex: state.currentIndex,
+				currentTime: state.currentTime,
+				// Don't persist isPlaying - always start paused after refresh
+			}),
+		}
+	)
+);

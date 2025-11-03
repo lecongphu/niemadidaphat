@@ -4,8 +4,9 @@ import { useEffect, useRef } from "react";
 const AudioPlayer = () => {
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const prevSongRef = useRef<string | null>(null);
+	const isRestoredRef = useRef(false);
 
-	const { currentSong, isPlaying, playNext } = usePlayerStore();
+	const { currentSong, isPlaying, playNext, currentTime, setCurrentTime } = usePlayerStore();
 
 	// handle play/pause logic
 	useEffect(() => {
@@ -34,6 +35,29 @@ const AudioPlayer = () => {
 		return () => audio?.removeEventListener("ended", handleEnded);
 	}, [playNext]);
 
+	// Save current time periodically
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!audio) return;
+
+		const saveCurrentTime = () => {
+			if (!isNaN(audio.currentTime)) {
+				setCurrentTime(audio.currentTime);
+			}
+		};
+
+		// Save time every 2 seconds
+		const interval = setInterval(saveCurrentTime, 2000);
+
+		// Also save on pause
+		audio.addEventListener("pause", saveCurrentTime);
+
+		return () => {
+			clearInterval(interval);
+			audio.removeEventListener("pause", saveCurrentTime);
+		};
+	}, [setCurrentTime]);
+
 	// handle song changes
 	useEffect(() => {
 		if (!audioRef.current || !currentSong) return;
@@ -44,8 +68,22 @@ const AudioPlayer = () => {
 		const isSongChange = prevSongRef.current !== currentSong?.audioUrl;
 		if (isSongChange) {
 			audio.src = currentSong?.audioUrl;
-			// reset the playback position
-			audio.currentTime = 0;
+
+			// Restore saved position on first load or reset to 0 for new song
+			if (!isRestoredRef.current && currentTime > 0) {
+				// Wait for metadata to load before setting time
+				const handleLoadedMetadata = () => {
+					if (audio.duration >= currentTime) {
+						audio.currentTime = currentTime;
+						isRestoredRef.current = true;
+					}
+				};
+
+				audio.addEventListener("loadedmetadata", handleLoadedMetadata, { once: true });
+			} else {
+				audio.currentTime = 0;
+				setCurrentTime(0);
+			}
 
 			prevSongRef.current = currentSong?.audioUrl;
 
@@ -58,7 +96,7 @@ const AudioPlayer = () => {
 				});
 			}
 		}
-	}, [currentSong, isPlaying]);
+	}, [currentSong, isPlaying, currentTime, setCurrentTime]);
 
 	return <audio ref={audioRef} />;
 };
