@@ -73,7 +73,7 @@ const GoogleOneTap = () => {
 		};
 	}, [isSignedIn, signInLoaded]);
 
-	const handleCredentialResponse = async (response: { credential: string }) => {
+	const handleCredentialResponse = async (_response: { credential: string }) => {
 		try {
 			if (!signIn) return;
 
