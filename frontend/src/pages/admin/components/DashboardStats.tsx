@@ -8,28 +8,28 @@ const DashboardStats = () => {
 	const statsData = [
 		{
 			icon: ListMusic,
-			label: "Tổng Bài Giảng",
+			label: "Tổng Bài Pháp",
 			value: stats.totalSongs.toString(),
 			bgColor: "bg-emerald-500/10",
 			iconColor: "text-emerald-500",
 		},
 		{
 			icon: Library,
-			label: "Tổng Albums",
+			label: "Tổng Bộ Kinh",
 			value: stats.totalAlbums.toString(),
 			bgColor: "bg-violet-500/10",
 			iconColor: "text-violet-500",
 		},
 		{
 			icon: Users2,
-			label: "Tổng Giảng Sư",
+			label: "Tổng Pháp Sư",
 			value: stats.totalTeachers.toString(),
 			bgColor: "bg-orange-500/10",
 			iconColor: "text-orange-500",
 		},
 		{
 			icon: PlayCircle,
-			label: "Tổng Người Dùng",
+			label: "Tổng Phật Tử",
 			value: stats.totalUsers.toLocaleString(),
 			bgColor: "bg-sky-500/10",
 			iconColor: "text-sky-500",

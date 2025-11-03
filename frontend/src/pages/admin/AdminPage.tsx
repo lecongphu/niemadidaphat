@@ -22,7 +22,7 @@ const AdminPage = () => {
 		fetchCategories();
 	}, [fetchAlbums, fetchSongs, fetchStats, fetchTeachers, fetchCategories]);
 
-	if (!isAdmin && !isLoading) return <div>Unauthorized</div>;
+	if (!isAdmin && !isLoading) return <div>Không có quyền truy cập</div>;
 
 	return (
 		<div

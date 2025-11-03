@@ -9,10 +9,12 @@ import AdminPage from "./pages/admin/AdminPage";
 
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
+import GoogleOneTap from "./components/GoogleOneTap";
 
 function App() {
 	return (
 		<>
+			<GoogleOneTap />
 			<Routes>
 				<Route
 					path='/sso-callback'

@@ -18,7 +18,7 @@ const FriendsActivity = () => {
 			<div className='p-4 flex justify-between items-center border-b border-zinc-800'>
 				<div className='flex items-center gap-2'>
 					<Users className='size-5 shrink-0' />
-					<h2 className='font-semibold'>What they're listening to</h2>
+					<h2 className='font-semibold'>Những Phật Tử đang nghe pháp</h2>
 				</div>
 			</div>
 
@@ -65,7 +65,7 @@ const FriendsActivity = () => {
 												</div>
 											</div>
 										) : (
-											<div className='mt-1 text-xs text-zinc-400'>Idle</div>
+											<div className='mt-1 text-xs text-zinc-400'>Đang nghỉ ngơi</div>
 										)}
 									</div>
 								</div>
@@ -93,8 +93,8 @@ const LoginPrompt = () => (
 		</div>
 
 		<div className='space-y-2 max-w-[250px]'>
-			<h3 className='text-lg font-semibold text-white'>See What Friends Are Playing</h3>
-			<p className='text-sm text-zinc-400'>Login to discover what music your friends are enjoying right now</p>
+			<h3 className='text-lg font-semibold text-white'>Xem Phật Tử Khác Đang Nghe Gì</h3>
+			<p className='text-sm text-zinc-400'>Đăng nhập để biết các Phật tử khác đang thưởng thức bài pháp nào</p>
 		</div>
 	</div>
 );
