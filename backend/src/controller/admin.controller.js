@@ -216,11 +216,6 @@ export const deleteSong = async (req, res, next) => {
 			return res.status(404).json({ message: "Song not found" });
 		}
 
-		// Check if URL is from Cloudinary
-		const isCloudinaryUrl = (url) => {
-			return url && url.includes('res.cloudinary.com');
-		};
-
 		// Extract public_id from Cloudinary URLs to delete the files
 		// URL format: https://res.cloudinary.com/{cloud_name}/{resource_type}/upload/{version}/{public_id}.{format}
 		const extractPublicId = (url) => {
@@ -236,7 +231,7 @@ export const deleteSong = async (req, res, next) => {
 		};
 
 		// Delete audio file from Cloudinary (only if it's hosted on Cloudinary)
-		if (song.audioUrl && isCloudinaryUrl(song.audioUrl)) {
+		if (song.audioUrl) {
 			console.log('Attempting to delete audio from Cloudinary...');
 			console.log('Audio URL:', song.audioUrl);
 			const audioPublicId = extractPublicId(song.audioUrl);
@@ -263,7 +258,7 @@ export const deleteSong = async (req, res, next) => {
 		}
 
 		// Delete image file from Cloudinary (only if it's hosted on Cloudinary)
-		if (song.imageUrl && isCloudinaryUrl(song.imageUrl)) {
+		if (song.imageUrl) {
 			console.log('Attempting to delete image from Cloudinary...');
 			console.log('Image URL:', song.imageUrl);
 			const imagePublicId = extractPublicId(song.imageUrl);
