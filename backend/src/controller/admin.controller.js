@@ -54,10 +54,6 @@ export const createSong = async (req, res, next) => {
 			return res.status(400).json({ message: "Category is required" });
 		}
 
-		if (!duration) {
-			return res.status(400).json({ message: "Duration is required" });
-		}
-
 		// Validate teacher exists
 		const teacherExists = await Teacher.findById(teacher);
 		if (!teacherExists) {
@@ -120,7 +116,7 @@ export const createSong = async (req, res, next) => {
 			teacher,
 			audioUrl,
 			imageUrl,
-			duration: parseInt(duration),
+			duration: 0,
 			albumId,
 			category,
 			order: songsCount, // Set order to be at the end
@@ -166,10 +162,6 @@ export const createSongFromUrl = async (req, res, next) => {
 			return res.status(400).json({ message: "Category is required" });
 		}
 
-		if (!duration) {
-			return res.status(400).json({ message: "Duration is required" });
-		}
-
 		if (!audioUrl) {
 			return res.status(400).json({ message: "Audio URL is required" });
 		}
@@ -206,7 +198,7 @@ export const createSongFromUrl = async (req, res, next) => {
 			teacher,
 			audioUrl,
 			imageUrl,
-			duration: parseInt(duration),
+			duration: 0,
 			albumId,
 			category,
 			order: songsCount, // Set order to be at the end

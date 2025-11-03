@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -21,7 +22,6 @@ interface NewSong {
 	title: string;
 	teacher: string;
 	album: string;
-	duration: string;
 	category: string;
 }
 
@@ -31,12 +31,12 @@ const AddSongDialog = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
 	const [uploadMethod, setUploadMethod] = useState<"file" | "url">("file");
+	const [keepFormData, setKeepFormData] = useState(false);
 
 	const [newSong, setNewSong] = useState<NewSong>({
 		title: "",
 		teacher: "",
 		album: "",
-		duration: "0",
 		category: "",
 	});
 
@@ -58,36 +58,10 @@ const AddSongDialog = () => {
 		if (!file) return;
 
 		setFiles((prev) => ({ ...prev, audio: file }));
-
-		// Calculate audio duration
-		const audio = new Audio();
-		audio.src = URL.createObjectURL(file);
-
-		audio.addEventListener("loadedmetadata", () => {
-			const durationInSeconds = Math.floor(audio.duration);
-			setNewSong((prev) => ({ ...prev, duration: durationInSeconds.toString() }));
-			URL.revokeObjectURL(audio.src); // Clean up
-		});
 	};
 
 	const handleAudioUrlChange = (url: string) => {
 		setUrls((prev) => ({ ...prev, audio: url }));
-
-		if (url) {
-			// Calculate audio duration from URL
-			const audio = new Audio();
-			audio.src = url;
-			audio.crossOrigin = "anonymous";
-
-			audio.addEventListener("loadedmetadata", () => {
-				const durationInSeconds = Math.floor(audio.duration);
-				setNewSong((prev) => ({ ...prev, duration: durationInSeconds.toString() }));
-			});
-
-			audio.addEventListener("error", () => {
-				console.error("Could not load audio from URL");
-			});
-		}
 	};
 
 	const handleSubmit = async () => {
@@ -124,7 +98,6 @@ const AddSongDialog = () => {
 
 				formData.append("title", newSong.title);
 				formData.append("teacher", newSong.teacher);
-				formData.append("duration", newSong.duration);
 				formData.append("albumId", newSong.album);
 				formData.append("category", newSong.category);
 
@@ -147,7 +120,6 @@ const AddSongDialog = () => {
 				await axiosInstance.post("/admin/songs/url", {
 					title: newSong.title,
 					teacher: newSong.teacher,
-					duration: parseInt(newSong.duration),
 					albumId: newSong.album,
 					category: newSong.category,
 					audioUrl: urls.audio,
@@ -155,26 +127,35 @@ const AddSongDialog = () => {
 				});
 			}
 
-			setNewSong({
-				title: "",
-				teacher: "",
-				album: "",
-				duration: "0",
-				category: "",
-			});
+			// Only reset form if keepFormData is false
+			if (!keepFormData) {
+				setNewSong({
+					title: "",
+					teacher: "",
+					album: "",
+					category: "",
+				});
 
+				setUrls({
+					audio: "",
+					image: "",
+				});
+
+				setSongDialogOpen(false);
+			} else {
+				// Only reset title and files to allow adding next episode
+				setNewSong((prev) => ({
+					...prev,
+				}));
+			}
+
+			// Always reset files and progress
 			setFiles({
 				audio: null,
 				image: null,
 			});
 
-			setUrls({
-				audio: "",
-				image: "",
-			});
-
 			setUploadProgress(0);
-			setSongDialogOpen(false);
 			toast.success("Bài pháp đã được thêm thành công");
 		} catch (error: any) {
 			toast.error("Không thể thêm bài pháp: " + error.message);
@@ -325,24 +306,6 @@ const AddSongDialog = () => {
 					</div>
 
 					<div className='space-y-2'>
-						<label className='text-sm font-medium'>Thời Lượng</label>
-						<Input
-							type='text'
-							value={
-								newSong.duration === "0"
-									? "Tự động tính từ file âm thanh"
-									: `${newSong.duration} giây (${Math.floor(parseInt(newSong.duration) / 60)}:${(
-											parseInt(newSong.duration) % 60
-									  )
-											.toString()
-											.padStart(2, "0")})`
-							}
-							readOnly
-							className='bg-zinc-800 border-zinc-700 text-zinc-400'
-						/>
-					</div>
-
-					<div className='space-y-2'>
 						<label className='text-sm font-medium'>Bộ Kinh *</label>
 						<Select
 							value={newSong.album}
@@ -395,6 +358,22 @@ const AddSongDialog = () => {
 							</div>
 						</div>
 					)}
+
+					{/* Keep Form Data Checkbox */}
+					<div className='flex items-center space-x-2 pt-2'>
+						<Checkbox
+							id='keepFormData'
+							checked={keepFormData}
+							onCheckedChange={(checked) => setKeepFormData(checked as boolean)}
+							className='border-zinc-700 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500'
+						/>
+						<label
+							htmlFor='keepFormData'
+							className='text-sm font-medium leading-none cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+						>
+							Giữ thông tin form để thêm tiếp bài pháp mới
+						</label>
+					</div>
 				</div>
 
 				<DialogFooter>

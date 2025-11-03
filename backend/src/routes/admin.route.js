@@ -5,6 +5,7 @@ import {
 	createSong,
 	createSongFromUrl,
 	deleteAlbum,
+	deleteSong,
 	createTeacher,
 	deleteTeacher,
 	updateTeacher,
@@ -21,6 +22,7 @@ router.get("/check", checkAdmin);
 
 router.post("/songs", createSong);
 router.post("/songs/url", createSongFromUrl);
+router.delete("/songs/:id", deleteSong);
 router.put("/songs/order", updateSongsOrder);
 
 router.post("/albums", createAlbum);
