@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { getName } from "@/lib/utils";
-import { Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { getName, getOptimizedImageUrl } from "@/lib/utils";
+import { Download, Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 
 const formatTime = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -50,6 +51,39 @@ export const PlaybackControls = () => {
 		}
 	};
 
+	const handleDownload = async () => {
+		if (!currentSong) return;
+
+		try {
+			toast.loading("Đang chuẩn bị tải xuống...");
+
+			// Fetch the audio file
+			const response = await fetch(currentSong.audioUrl);
+			const blob = await response.blob();
+
+			// Create a download link
+			const url = window.URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = `${currentSong.title} - ${getName(currentSong.teacher)}.mp3`;
+
+			// Trigger download
+			document.body.appendChild(link);
+			link.click();
+
+			// Cleanup
+			document.body.removeChild(link);
+			window.URL.revokeObjectURL(url);
+
+			toast.dismiss();
+			toast.success("Đã tải xuống bài pháp");
+		} catch (error) {
+			console.error("Error downloading audio:", error);
+			toast.dismiss();
+			toast.error("Không thể tải xuống bài pháp");
+		}
+	};
+
 	return (
 		<footer className='h-20 sm:h-24 bg-zinc-900 border-t border-zinc-800 px-4'>
 			<div className='flex justify-between items-center h-full max-w-[1800px] mx-auto'>
@@ -58,7 +92,7 @@ export const PlaybackControls = () => {
 					{currentSong && (
 						<>
 							<img
-								src={currentSong.imageUrl}
+								src={getOptimizedImageUrl(currentSong.imageUrl)}
 								alt={currentSong.title}
 								className='w-14 h-14 object-cover rounded-md'
 							/>
@@ -70,6 +104,15 @@ export const PlaybackControls = () => {
 									{getName(currentSong.teacher)}
 								</div>
 							</div>
+							<Button
+								size='icon'
+								variant='ghost'
+								className='hover:text-white text-zinc-400 hover:bg-zinc-800 shrink-0'
+								onClick={handleDownload}
+								title='Tải xuống bài pháp'
+							>
+								<Download className='h-5 w-5' />
+							</Button>
 						</>
 					)}
 				</div>

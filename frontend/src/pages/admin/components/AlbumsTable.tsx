@@ -12,7 +12,7 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useMusicStore } from "@/stores/useMusicStore";
-import { getName } from "@/lib/utils";
+import { getName, getOptimizedImageUrl } from "@/lib/utils";
 import { Calendar, Music, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -39,7 +39,7 @@ const AlbumsTable = () => {
 				{albums.map((album) => (
 					<TableRow key={album._id} className='hover:bg-zinc-800/50'>
 						<TableCell>
-							<img src={album.imageUrl} alt={album.title} className='w-10 h-10 rounded object-cover' />
+							<img src={getOptimizedImageUrl(album.imageUrl)} alt={album.title} className='w-10 h-10 rounded object-cover' />
 						</TableCell>
 						<TableCell className='font-medium'>{album.title}</TableCell>
 						<TableCell>{getName(album.teacher)}</TableCell>

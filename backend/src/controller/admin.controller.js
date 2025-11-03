@@ -25,17 +25,15 @@ const uploadToCloudinary = async (file, options = {}) => {
 
 export const createSong = async (req, res, next) => {
 	try {
-		
-		if (!req.files || !req.files.audioFile || !req.files.imageFile) {
-			return res.status(400).json({ message: "Please upload all files" });
+
+		if (!req.files || !req.files.audioFile) {
+			return res.status(400).json({ message: "Please upload audio file" });
 		}
 
 		const { title, teacher, albumId, duration, category } = req.body;
 		const audioFile = req.files.audioFile;
-		const imageFile = req.files.imageFile;
 
 		console.log("Audio file size:", audioFile.size, "bytes");
-		console.log("Image file size:", imageFile.size, "bytes");
 
 		// Validate required fields
 		if (!title) {
@@ -75,13 +73,13 @@ export const createSong = async (req, res, next) => {
 		const folderPath = `niemadidaphat/${album.title}`;
 		const songFileName = title;
 
-		let audioUrl, imageUrl;
+		let audioUrl;
 
 		try {
 			// Upload audio with custom folder and filename
 			audioUrl = await uploadToCloudinary(audioFile, {
 				folder: folderPath,
-				public_id: `audios/audio_${songFileName}`,
+				public_id: `audios/${songFileName}`,
 				resource_type: "video", // audio files use 'video' resource type in Cloudinary
 			});
 			console.log("Audio uploaded successfully");
@@ -90,33 +88,21 @@ export const createSong = async (req, res, next) => {
 			return res.status(500).json({ message: `Failed to upload audio: ${error.message}` });
 		}
 
-		try {
-			// Upload image with custom folder and filename
-			imageUrl = await uploadToCloudinary(imageFile, {
-				folder: folderPath,
-				public_id: `images/image_${songFileName}`,
-				resource_type: "image",
-			});
-			console.log("Image uploaded successfully");
-		} catch (error) {
-			console.error("Failed to upload image:", error.message);
-			// If image upload fails, we should cleanup the audio file
-			// But for now, just return the error
-			return res.status(500).json({ message: `Failed to upload image: ${error.message}` });
-		}
-
-		console.log("Files uploaded successfully");
+		console.log("Audio uploaded successfully");
 		console.log("Creating song document...");
 
 		// Get the current number of songs in the album to set order
 		const songsCount = await Song.countDocuments({ albumId });
+
+		// Use album's image for the song
+		const imageUrl = album.imageUrl;
 
 		const song = new Song({
 			title,
 			teacher,
 			audioUrl,
 			imageUrl,
-			duration: 0,
+			duration: duration ? parseInt(duration) : 0,
 			albumId,
 			category,
 			order: songsCount, // Set order to be at the end
@@ -141,9 +127,9 @@ export const createSong = async (req, res, next) => {
 
 export const createSongFromUrl = async (req, res, next) => {
 	try {
-		const { title, teacher, albumId, duration, category, audioUrl, imageUrl } = req.body;
+		const { title, teacher, albumId, duration, category, audioUrl } = req.body;
 
-		console.log("Creating song from URLs...");
+		console.log("Creating song from URL...");
 
 		// Validate required fields
 		if (!title) {
@@ -166,10 +152,6 @@ export const createSongFromUrl = async (req, res, next) => {
 			return res.status(400).json({ message: "Audio URL is required" });
 		}
 
-		if (!imageUrl) {
-			return res.status(400).json({ message: "Image URL is required" });
-		}
-
 		// Validate teacher exists
 		const teacherExists = await Teacher.findById(teacher);
 		if (!teacherExists) {
@@ -188,17 +170,20 @@ export const createSongFromUrl = async (req, res, next) => {
 			return res.status(404).json({ message: "Album not found" });
 		}
 
-		console.log("Creating song document with URLs...");
+		console.log("Creating song document with URL...");
 
 		// Get the current number of songs in the album to set order
 		const songsCount = await Song.countDocuments({ albumId });
+
+		// Use album's image for the song
+		const imageUrl = album.imageUrl;
 
 		const song = new Song({
 			title,
 			teacher,
 			audioUrl,
 			imageUrl,
-			duration: 0,
+			duration: duration ? parseInt(duration) : 0,
 			albumId,
 			category,
 			order: songsCount, // Set order to be at the end

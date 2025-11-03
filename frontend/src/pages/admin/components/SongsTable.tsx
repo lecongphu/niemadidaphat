@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { getName } from "@/lib/utils";
+import { getName, getOptimizedImageUrl } from "@/lib/utils";
 import { Calendar, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,7 +69,7 @@ const SongsTable = () => {
 										<PlayingIndicator />
 									</div>
 								) : (
-									<img src={song.imageUrl} alt={song.title} className='size-10 rounded object-cover' />
+									<img src={getOptimizedImageUrl(song.imageUrl)} alt={song.title} className='size-10 rounded object-cover' />
 								)}
 							</TableCell>
 							<TableCell className='font-medium'>{song.title}</TableCell>

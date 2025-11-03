@@ -1,7 +1,7 @@
 import PlaylistSkeleton from "@/components/skeletons/PlaylistSkeleton";
 import { buttonVariants } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn, getOptimizedImageUrl } from "@/lib/utils";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { SignedIn } from "@clerk/clerk-react";
 import { HomeIcon, Library, MessageCircle } from "lucide-react";
@@ -74,7 +74,7 @@ const LeftSidebar = () => {
 									className='p-2 hover:bg-zinc-800 rounded-md flex items-center gap-3 group cursor-pointer'
 								>
 									<img
-										src={album.imageUrl}
+										src={getOptimizedImageUrl(album.imageUrl)}
 										alt='Hình ảnh bộ kinh'
 										className='size-12 rounded-md flex-shrink-0 object-cover'
 									/>
