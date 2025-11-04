@@ -80,13 +80,17 @@ const GoogleOneTap = () => {
 			// Since Clerk handles OAuth separately, we'll redirect to Google OAuth
 			// The credential from One-Tap can't be used directly with Clerk
 			// So we trigger the standard OAuth flow
-			await signIn.authenticateWithRedirect({
+			const signInAttempt = await signIn.authenticateWithRedirect({
 				strategy: "oauth_google",
-				redirectUrl: "/sso-callback",
-				redirectUrlComplete: "/auth-callback",
+				redirectUrl: window.location.origin + "/sso-callback",
+				redirectUrlComplete: window.location.origin + "/auth-callback",
 			});
+
+			console.log("Sign in attempt:", signInAttempt);
 		} catch (error) {
 			console.error("Error handling Google One-Tap credential:", error);
+			// Fallback: reload page to show regular sign in
+			window.location.reload();
 		}
 	};
 

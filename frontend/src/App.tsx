@@ -10,12 +10,13 @@ import PlaylistPage from "./pages/playlist/PlaylistPage";
 
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
-import GoogleOneTap from "./components/GoogleOneTap";
+// import GoogleOneTap from "./components/GoogleOneTap";
 
 function App() {
 	return (
 		<>
-			<GoogleOneTap />
+			{/* Temporarily disabled Google One Tap due to OAuth authorization issues */}
+			{/* <GoogleOneTap /> */}
 			<Routes>
 				<Route
 					path='/sso-callback'
