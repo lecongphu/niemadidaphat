@@ -31,3 +31,10 @@ export function getOptimizedImageUrl(url: string | undefined): string {
 	// Return original URL if not Cloudinary
 	return url;
 }
+
+// Helper function to format duration in seconds to MM:SS
+export function formatDuration(seconds: number): string {
+	const minutes = Math.floor(seconds / 60);
+	const remainingSeconds = seconds % 60;
+	return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+}

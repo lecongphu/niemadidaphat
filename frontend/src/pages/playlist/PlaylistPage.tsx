@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
-import { getName, getOptimizedImageUrl } from "@/lib/utils";
+import { getName, getOptimizedImageUrl, formatDuration } from "@/lib/utils";
 import { Clock, Edit, MoreVertical, Pause, Play, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -24,12 +24,6 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EditPlaylistDialog } from "./components/EditPlaylistDialog";
-
-export const formatDuration = (seconds: number) => {
-	const minutes = Math.floor(seconds / 60);
-	const remainingSeconds = seconds % 60;
-	return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-};
 
 const PlaylistPage = () => {
 	const { playlistId } = useParams();
