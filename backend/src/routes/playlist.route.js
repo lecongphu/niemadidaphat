@@ -9,7 +9,6 @@ import {
 	removeSongFromPlaylist,
 } from "../controller/playlist.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
-import { upload } from "../middleware/multer.middleware.js";
 
 const router = Router();
 
@@ -23,7 +22,7 @@ router.get("/", getUserPlaylists);
 router.get("/:playlistId", getPlaylistById);
 
 // Create new playlist
-router.post("/", upload.single("imageFile"), createPlaylist);
+router.post("/", createPlaylist);
 
 // Update playlist
 router.put("/:playlistId", updatePlaylist);

@@ -1,28 +1,20 @@
 import { Playlist } from "../models/playlist.model.js";
-import { v2 as cloudinary } from "cloudinary";
+import cloudinary from "../lib/cloudinary.js";
 
 // Helper function to upload file to Cloudinary
 const uploadToCloudinary = async (file, options = {}) => {
-	return new Promise((resolve, reject) => {
-		cloudinary.uploader
-			.upload_stream(
-				{
-					resource_type: options.resource_type || "auto",
-					folder: options.folder || "niemadidaphat/playlists",
-					public_id: options.public_id,
-				},
-				(error, result) => {
-					if (error) {
-						console.error("Cloudinary upload error:", error);
-						reject(error);
-					} else {
-						console.log("Cloudinary upload result:", result);
-						resolve(result.secure_url);
-					}
-				}
-			)
-			.end(file.buffer);
-	});
+	try {
+		const result = await cloudinary.uploader.upload(file.tempFilePath, {
+			resource_type: "auto",
+			...options,
+		});
+		console.log("Upload successful:", result.secure_url);
+		return result.secure_url;
+	} catch (error) {
+		console.log("Error in uploadToCloudinary:", error);
+		console.log("Error message:", error.message);
+		throw new Error(`Error uploading to cloudinary: ${error.message}`);
+	}
 };
 
 // Get all playlists for current user
@@ -70,7 +62,6 @@ export const createPlaylist = async (req, res, next) => {
 	try {
 		const userId = req.auth.userId;
 		const { name, description } = req.body;
-		const imageFile = req.file;
 
 		if (!name) {
 			return res.status(400).json({ message: "Playlist name is required" });
@@ -78,8 +69,9 @@ export const createPlaylist = async (req, res, next) => {
 
 		let imageUrl = undefined;
 
-		// Upload image if provided
-		if (imageFile) {
+		// Upload image if provided (using express-fileupload)
+		if (req.files && req.files.imageFile) {
+			const imageFile = req.files.imageFile;
 			try {
 				imageUrl = await uploadToCloudinary(imageFile, {
 					folder: "niemadidaphat/playlists",
