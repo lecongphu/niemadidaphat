@@ -12,6 +12,9 @@ interface PlayerStore {
 	currentIndex: number;
 	currentTime: number;
 	repeatMode: RepeatMode;
+	isShuffled: boolean;
+	originalQueue: Song[];
+	originalIndex: number;
 
 	initializeQueue: (songs: Song[]) => void;
 	playAlbum: (songs: Song[], startIndex?: number) => void;
@@ -21,6 +24,7 @@ interface PlayerStore {
 	playPrevious: () => void;
 	setCurrentTime: (time: number) => void;
 	toggleRepeatMode: () => void;
+	toggleShuffle: () => void;
 }
 
 export const usePlayerStore = create<PlayerStore>()(
@@ -32,6 +36,9 @@ export const usePlayerStore = create<PlayerStore>()(
 			currentIndex: -1,
 			currentTime: 0,
 			repeatMode: "off",
+			isShuffled: false,
+			originalQueue: [],
+			originalIndex: -1,
 
 	initializeQueue: (songs: Song[]) => {
 		set({
@@ -196,6 +203,43 @@ export const usePlayerStore = create<PlayerStore>()(
 			"off";
 		set({ repeatMode: nextMode });
 	},
+
+	toggleShuffle: () => {
+		const { isShuffled, queue, currentSong, currentIndex, originalQueue, originalIndex } = get();
+
+		if (isShuffled) {
+			// Unshuffle: restore original queue
+			const currentSongInOriginal = originalQueue.findIndex((s) => s._id === currentSong?._id);
+			set({
+				isShuffled: false,
+				queue: originalQueue,
+				currentIndex: currentSongInOriginal !== -1 ? currentSongInOriginal : originalIndex,
+				originalQueue: [],
+				originalIndex: -1,
+			});
+		} else {
+			// Shuffle: create shuffled queue
+			const shuffledQueue = [...queue];
+			const currentSongData = currentSong;
+
+			// Fisher-Yates shuffle algorithm
+			for (let i = shuffledQueue.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[shuffledQueue[i], shuffledQueue[j]] = [shuffledQueue[j], shuffledQueue[i]];
+			}
+
+			// Find new index of current song in shuffled queue
+			const newCurrentIndex = shuffledQueue.findIndex((s) => s._id === currentSongData?._id);
+
+			set({
+				isShuffled: true,
+				originalQueue: queue,
+				originalIndex: currentIndex,
+				queue: shuffledQueue,
+				currentIndex: newCurrentIndex !== -1 ? newCurrentIndex : 0,
+			});
+		}
+	},
 }),
 		{
 			name: "player-storage",
@@ -205,6 +249,9 @@ export const usePlayerStore = create<PlayerStore>()(
 				currentIndex: state.currentIndex,
 				currentTime: state.currentTime,
 				repeatMode: state.repeatMode,
+				isShuffled: state.isShuffled,
+				originalQueue: state.originalQueue,
+				originalIndex: state.originalIndex,
 				// Don't persist isPlaying - always start paused after refresh
 			}),
 		}

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { getName, getOptimizedImageUrl } from "@/lib/utils";
-import { Download, Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { Download, Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -13,11 +13,13 @@ const formatTime = (seconds: number) => {
 };
 
 export const PlaybackControls = () => {
-	const { currentSong, isPlaying, togglePlay, playNext, playPrevious, repeatMode, toggleRepeatMode } = usePlayerStore();
+	const { currentSong, isPlaying, togglePlay, playNext, playPrevious, repeatMode, toggleRepeatMode, isShuffled, toggleShuffle } = usePlayerStore();
 
 	const [volume, setVolume] = useState(75);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
+	const [isMuted, setIsMuted] = useState(false);
+	const [previousVolume, setPreviousVolume] = useState(75);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
 
 	useEffect(() => {
@@ -57,6 +59,24 @@ export const PlaybackControls = () => {
 	const handleSeek = (value: number[]) => {
 		if (audioRef.current) {
 			audioRef.current.currentTime = value[0];
+		}
+	};
+
+	const toggleMute = () => {
+		if (!audioRef.current) return;
+
+		if (isMuted) {
+			// Unmute: restore previous volume
+			const volumeToRestore = previousVolume > 0 ? previousVolume : 75;
+			setVolume(volumeToRestore);
+			audioRef.current.volume = volumeToRestore / 100;
+			setIsMuted(false);
+		} else {
+			// Mute: save current volume and set to 0
+			setPreviousVolume(volume);
+			setVolume(0);
+			audioRef.current.volume = 0;
+			setIsMuted(true);
 		}
 	};
 
@@ -132,7 +152,12 @@ export const PlaybackControls = () => {
 						<Button
 							size='icon'
 							variant='ghost'
-							className='hidden sm:inline-flex hover:text-white text-zinc-400'
+							className={`hidden sm:inline-flex hover:text-white ${
+								isShuffled ? "text-green-500" : "text-zinc-400"
+							}`}
+							onClick={toggleShuffle}
+							disabled={!currentSong}
+							title={isShuffled ? "Tắt phát ngẫu nhiên" : "Bật phát ngẫu nhiên"}
 						>
 							<Shuffle className='h-4 w-4' />
 						</Button>
@@ -210,8 +235,20 @@ export const PlaybackControls = () => {
 					</Button>
 
 					<div className='flex items-center gap-2'>
-						<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
-							<Volume1 className='h-4 w-4' />
+						<Button
+							size='icon'
+							variant='ghost'
+							className='hover:text-white text-zinc-400'
+							onClick={toggleMute}
+							title={isMuted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+						>
+							{isMuted || volume === 0 ? (
+								<VolumeX className='h-4 w-4' />
+							) : volume < 50 ? (
+								<Volume1 className='h-4 w-4' />
+							) : (
+								<Volume2 className='h-4 w-4' />
+							)}
 						</Button>
 
 						<Slider
@@ -220,9 +257,18 @@ export const PlaybackControls = () => {
 							step={1}
 							className='w-24 hover:cursor-grab active:cursor-grabbing'
 							onValueChange={(value) => {
-								setVolume(value[0]);
+								const newVolume = value[0];
+								setVolume(newVolume);
 								if (audioRef.current) {
-									audioRef.current.volume = value[0] / 100;
+									audioRef.current.volume = newVolume / 100;
+								}
+								// Unmute if user manually adjusts volume
+								if (newVolume > 0 && isMuted) {
+									setIsMuted(false);
+								}
+								// Set muted if volume is dragged to 0
+								if (newVolume === 0 && !isMuted) {
+									setIsMuted(true);
 								}
 							}}
 						/>

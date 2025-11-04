@@ -29,6 +29,18 @@ export interface Album {
 	songs: Song[];
 }
 
+export interface Playlist {
+	_id: string;
+	name: string;
+	description: string;
+	userId: string;
+	imageUrl: string;
+	songs: Song[];
+	isPublic: boolean;
+	createdAt: string;
+	updatedAt: string;
+}
+
 export interface Teacher {
 	_id: string;
 	name: string;
