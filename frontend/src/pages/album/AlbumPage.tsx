@@ -3,10 +3,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { getName, getOptimizedImageUrl } from "@/lib/utils";
-import { Clock, Pause, Play } from "lucide-react";
-import { useEffect } from "react";
+import { Clock, ListPlus, Pause, Play } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import PlayingIndicator from "@/components/PlayingIndicator";
+import { AddToPlaylistDialog } from "@/pages/playlist/components/AddToPlaylistDialog";
+import { SignedIn } from "@clerk/clerk-react";
 
 export const formatDuration = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -18,6 +20,8 @@ const AlbumPage = () => {
 	const { albumId } = useParams();
 	const { fetchAlbumById, currentAlbum, isLoading } = useMusicStore();
 	const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
+	const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
+	const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (albumId) fetchAlbumById(albumId);
@@ -40,6 +44,11 @@ const AlbumPage = () => {
 		if (!currentAlbum) return;
 
 		playAlbum(currentAlbum?.songs, index);
+	};
+
+	const handleAddToPlaylist = (songId: string) => {
+		setSelectedSongId(songId);
+		setShowAddToPlaylist(true);
 	};
 
 	return (
@@ -95,7 +104,7 @@ const AlbumPage = () => {
 						<div className='bg-black/20 backdrop-blur-sm'>
 							{/* table header */}
 							<div
-								className='grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-10 py-2 text-sm 
+								className='grid grid-cols-[16px_4fr_2fr_1fr_40px] gap-4 px-10 py-2 text-sm
             text-zinc-400 border-b border-white/5'
 							>
 								<div>#</div>
@@ -104,6 +113,7 @@ const AlbumPage = () => {
 								<div>
 									<Clock className='h-4 w-4' />
 								</div>
+								<div></div>
 							</div>
 
 							{/* songs list */}
@@ -115,12 +125,14 @@ const AlbumPage = () => {
 										return (
 											<div
 												key={song._id}
-												onClick={() => handlePlaySong(index)}
-												className={`grid grid-cols-[16px_4fr_2fr_1fr] gap-4 px-4 py-2 text-sm 
-                      text-zinc-400 hover:bg-white/5 rounded-md group cursor-pointer
+												className={`grid grid-cols-[16px_4fr_2fr_1fr_40px] gap-4 px-4 py-2 text-sm
+                      text-zinc-400 hover:bg-white/5 rounded-md group
                       `}
 											>
-												<div className='flex items-center justify-center'>
+												<div
+													className='flex items-center justify-center cursor-pointer'
+													onClick={() => handlePlaySong(index)}
+												>
 													{isCurrentSong && isPlaying ? (
 														<PlayingIndicator />
 													) : (
@@ -131,7 +143,10 @@ const AlbumPage = () => {
 													)}
 												</div>
 
-												<div className='flex items-center gap-3'>
+												<div
+													className='flex items-center gap-3 cursor-pointer'
+													onClick={() => handlePlaySong(index)}
+												>
 													<img src={getOptimizedImageUrl(song.imageUrl)} alt={song.title} className='size-10' />
 
 													<div>
@@ -139,8 +154,34 @@ const AlbumPage = () => {
 														<div>{getName(song.teacher)}</div>
 													</div>
 												</div>
-												<div className='flex items-center'>{song.createdAt.split("T")[0]}</div>
-												<div className='flex items-center'>{formatDuration(song.duration)}</div>
+												<div
+													className='flex items-center cursor-pointer'
+													onClick={() => handlePlaySong(index)}
+												>
+													{song.createdAt.split("T")[0]}
+												</div>
+												<div
+													className='flex items-center cursor-pointer'
+													onClick={() => handlePlaySong(index)}
+												>
+													{formatDuration(song.duration)}
+												</div>
+												<div className='flex items-center'>
+													<SignedIn>
+														<Button
+															size='icon'
+															variant='ghost'
+															className='h-8 w-8 opacity-0 group-hover:opacity-100'
+															onClick={(e) => {
+																e.stopPropagation();
+																handleAddToPlaylist(song._id);
+															}}
+															title='Thêm vào playlist'
+														>
+															<ListPlus className='h-4 w-4' />
+														</Button>
+													</SignedIn>
+												</div>
 											</div>
 										);
 									})}
@@ -150,6 +191,12 @@ const AlbumPage = () => {
 					</div>
 				</div>
 			</ScrollArea>
+
+			<AddToPlaylistDialog
+				open={showAddToPlaylist}
+				onOpenChange={setShowAddToPlaylist}
+				songId={selectedSongId}
+			/>
 		</div>
 	);
 };

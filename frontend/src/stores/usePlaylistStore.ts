@@ -18,7 +18,7 @@ interface PlaylistStore {
 	removeSongFromPlaylist: (playlistId: string, songId: string) => Promise<void>;
 }
 
-export const usePlaylistStore = create<PlaylistStore>((set, get) => ({
+export const usePlaylistStore = create<PlaylistStore>((set) => ({
 	playlists: [],
 	currentPlaylist: null,
 	isLoading: false,
