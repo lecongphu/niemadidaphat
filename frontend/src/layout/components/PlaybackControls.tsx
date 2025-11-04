@@ -148,18 +148,18 @@ export const PlaybackControls = () => {
 
 				{/* player controls*/}
 				<div className='flex flex-col items-center gap-2 flex-1 max-w-full sm:max-w-[45%]'>
-					<div className='flex items-center gap-4 sm:gap-6'>
+					<div className='flex items-center gap-2 sm:gap-6'>
 						<Button
 							size='icon'
 							variant='ghost'
-							className={`hidden sm:inline-flex hover:text-white ${
+							className={`hover:text-white ${
 								isShuffled ? "text-green-500" : "text-zinc-400"
 							}`}
 							onClick={toggleShuffle}
 							disabled={!currentSong}
 							title={isShuffled ? "Tắt phát ngẫu nhiên" : "Bật phát ngẫu nhiên"}
 						>
-							<Shuffle className='h-4 w-4' />
+							<Shuffle className='h-3 w-3 sm:h-4 sm:w-4' />
 						</Button>
 
 						<Button
@@ -192,7 +192,7 @@ export const PlaybackControls = () => {
 						<Button
 							size='icon'
 							variant='ghost'
-							className={`hidden sm:inline-flex hover:text-white ${
+							className={`hover:text-white ${
 								repeatMode !== "off" ? "text-green-500" : "text-zinc-400"
 							}`}
 							onClick={toggleRepeatMode}
@@ -203,9 +203,9 @@ export const PlaybackControls = () => {
 							}
 						>
 							{repeatMode === "one" ? (
-								<Repeat1 className='h-4 w-4' />
+								<Repeat1 className='h-3 w-3 sm:h-4 sm:w-4' />
 							) : (
-								<Repeat className='h-4 w-4' />
+								<Repeat className='h-3 w-3 sm:h-4 sm:w-4' />
 							)}
 						</Button>
 					</div>
