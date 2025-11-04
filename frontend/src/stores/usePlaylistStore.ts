@@ -11,7 +11,7 @@ interface PlaylistStore {
 
 	fetchPlaylists: () => Promise<void>;
 	fetchPlaylistById: (id: string) => Promise<void>;
-	createPlaylist: (name: string, description?: string) => Promise<void>;
+	createPlaylist: (name: string, description?: string, imageFile?: File | null) => Promise<void>;
 	updatePlaylist: (id: string, updates: Partial<Playlist>) => Promise<void>;
 	deletePlaylist: (id: string) => Promise<void>;
 	addSongToPlaylist: (playlistId: string, songId: string) => Promise<void>;
@@ -50,12 +50,21 @@ export const usePlaylistStore = create<PlaylistStore>((set) => ({
 		}
 	},
 
-	createPlaylist: async (name: string, description?: string) => {
+	createPlaylist: async (name: string, description?: string, imageFile?: File | null) => {
 		set({ isLoading: true, error: null });
 		try {
-			const response = await axiosInstance.post("/playlists", {
-				name,
-				description: description || "",
+			const formData = new FormData();
+			formData.append("name", name);
+			formData.append("description", description || "");
+
+			if (imageFile) {
+				formData.append("imageFile", imageFile);
+			}
+
+			const response = await axiosInstance.post("/playlists", formData, {
+				headers: {
+					"Content-Type": "multipart/form-data",
+				},
 			});
 			set((state) => ({
 				playlists: [response.data, ...state.playlists],

@@ -1,4 +1,29 @@
 import { Playlist } from "../models/playlist.model.js";
+import { v2 as cloudinary } from "cloudinary";
+
+// Helper function to upload file to Cloudinary
+const uploadToCloudinary = async (file, options = {}) => {
+	return new Promise((resolve, reject) => {
+		cloudinary.uploader
+			.upload_stream(
+				{
+					resource_type: options.resource_type || "auto",
+					folder: options.folder || "niemadidaphat/playlists",
+					public_id: options.public_id,
+				},
+				(error, result) => {
+					if (error) {
+						console.error("Cloudinary upload error:", error);
+						reject(error);
+					} else {
+						console.log("Cloudinary upload result:", result);
+						resolve(result.secure_url);
+					}
+				}
+			)
+			.end(file.buffer);
+	});
+};
 
 // Get all playlists for current user
 export const getUserPlaylists = async (req, res, next) => {
@@ -44,16 +69,34 @@ export const getPlaylistById = async (req, res, next) => {
 export const createPlaylist = async (req, res, next) => {
 	try {
 		const userId = req.auth.userId;
-		const { name, description, imageUrl } = req.body;
+		const { name, description } = req.body;
+		const imageFile = req.file;
 
 		if (!name) {
 			return res.status(400).json({ message: "Playlist name is required" });
 		}
 
+		let imageUrl = undefined;
+
+		// Upload image if provided
+		if (imageFile) {
+			try {
+				imageUrl = await uploadToCloudinary(imageFile, {
+					folder: "niemadidaphat/playlists",
+					public_id: `playlist_${Date.now()}`,
+					resource_type: "image",
+				});
+				console.log("Image uploaded successfully:", imageUrl);
+			} catch (error) {
+				console.error("Failed to upload image:", error);
+				return res.status(500).json({ message: "Failed to upload image: " + error.message });
+			}
+		}
+
 		const playlist = new Playlist({
 			name,
 			description: description || "",
-			imageUrl: imageUrl || undefined, // Will use default from schema
+			imageUrl: imageUrl || undefined, // Will use default from schema if not provided
 			userId,
 			songs: [],
 		});
