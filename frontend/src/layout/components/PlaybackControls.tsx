@@ -35,7 +35,7 @@ export const PlaybackControls = () => {
 		audio.addEventListener("loadedmetadata", updateDuration);
 
 		const handleEnded = () => {
-			const { repeatMode } = usePlayerStore.getState();
+			const { repeatMode, playNext: storePlayNext } = usePlayerStore.getState();
 
 			if (repeatMode === "one") {
 				// Repeat current song
@@ -43,7 +43,7 @@ export const PlaybackControls = () => {
 				audio.play();
 			} else {
 				// Play next song (will handle repeat all in playNext)
-				playNext();
+				storePlayNext();
 			}
 		};
 

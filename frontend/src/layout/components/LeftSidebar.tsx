@@ -126,7 +126,7 @@ const LeftSidebar = () => {
 										className='p-2 hover:bg-zinc-800 rounded-md flex items-center gap-3 group cursor-pointer'
 									>
 										<div className='size-12 rounded-md flex-shrink-0 bg-zinc-800 flex items-center justify-center'>
-											{playlist.imageUrl ? (
+											{playlist.imageUrl && playlist.imageUrl.trim() !== "" ? (
 												<img
 													src={getOptimizedImageUrl(playlist.imageUrl)}
 													alt={playlist.name}
