@@ -30,8 +30,12 @@ export const usePlaylistStore = create<PlaylistStore>((set) => ({
 			const response = await axiosInstance.get("/playlists");
 			set({ playlists: response.data });
 		} catch (error: any) {
+			const statusCode = error.response?.status;
 			set({ error: error.response?.data?.message || error.message });
-			toast.error("Không thể tải danh sách playlist");
+			// Don't show error toast for authentication errors (user not logged in)
+			if (statusCode !== 401 && statusCode !== 403) {
+				toast.error("Không thể tải danh sách playlist");
+			}
 		} finally {
 			set({ isLoading: false });
 		}

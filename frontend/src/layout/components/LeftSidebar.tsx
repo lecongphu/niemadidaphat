@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, getOptimizedImageUrl } from "@/lib/utils";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
-import { SignedIn } from "@clerk/clerk-react";
+import { SignedIn, useAuth } from "@clerk/clerk-react";
 import { HomeIcon, Library, ListMusic, MessageCircle, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -13,12 +13,18 @@ import { CreatePlaylistDialog } from "@/pages/playlist/components/CreatePlaylist
 const LeftSidebar = () => {
 	const { albums, fetchAlbums, isLoading } = useMusicStore();
 	const { playlists, fetchPlaylists, isLoading: isLoadingPlaylists } = usePlaylistStore();
+	const { isSignedIn } = useAuth();
 	const [showCreateDialog, setShowCreateDialog] = useState(false);
 
 	useEffect(() => {
 		fetchAlbums();
-		fetchPlaylists();
-	}, [fetchAlbums, fetchPlaylists]);
+	}, [fetchAlbums]);
+
+	useEffect(() => {
+		if (isSignedIn) {
+			fetchPlaylists();
+		}
+	}, [fetchPlaylists, isSignedIn]);
 
 	console.log({ albums });
 
