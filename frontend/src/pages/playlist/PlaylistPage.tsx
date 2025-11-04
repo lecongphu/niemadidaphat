@@ -23,6 +23,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { EditPlaylistDialog } from "./components/EditPlaylistDialog";
 
 export const formatDuration = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -36,6 +37,7 @@ const PlaylistPage = () => {
 	const { fetchPlaylistById, currentPlaylist, isLoading, deletePlaylist, removeSongFromPlaylist } = usePlaylistStore();
 	const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+	const [showEditDialog, setShowEditDialog] = useState(false);
 
 	useEffect(() => {
 		if (playlistId) fetchPlaylistById(playlistId);
@@ -128,7 +130,7 @@ const PlaylistPage = () => {
 									</Button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align='start'>
-									<DropdownMenuItem className='cursor-pointer'>
+									<DropdownMenuItem className='cursor-pointer' onClick={() => setShowEditDialog(true)}>
 										<Edit className='mr-2 h-4 w-4' />
 										<span>Chỉnh sửa playlist</span>
 									</DropdownMenuItem>
@@ -234,6 +236,13 @@ const PlaylistPage = () => {
 					</div>
 				</div>
 			</ScrollArea>
+
+			{/* Edit Playlist Dialog */}
+			<EditPlaylistDialog
+				open={showEditDialog}
+				onOpenChange={setShowEditDialog}
+				playlist={currentPlaylist}
+			/>
 
 			{/* Delete Confirmation Dialog */}
 			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
