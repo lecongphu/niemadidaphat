@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { getName, getOptimizedImageUrl } from "@/lib/utils";
-import { Download, Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
+import { Download, Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume1 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -13,7 +13,7 @@ const formatTime = (seconds: number) => {
 };
 
 export const PlaybackControls = () => {
-	const { currentSong, isPlaying, togglePlay, playNext, playPrevious } = usePlayerStore();
+	const { currentSong, isPlaying, togglePlay, playNext, playPrevious, repeatMode, toggleRepeatMode } = usePlayerStore();
 
 	const [volume, setVolume] = useState(75);
 	const [currentTime, setCurrentTime] = useState(0);
@@ -33,7 +33,16 @@ export const PlaybackControls = () => {
 		audio.addEventListener("loadedmetadata", updateDuration);
 
 		const handleEnded = () => {
-			usePlayerStore.setState({ isPlaying: false });
+			const { repeatMode } = usePlayerStore.getState();
+
+			if (repeatMode === "one") {
+				// Repeat current song
+				audio.currentTime = 0;
+				audio.play();
+			} else {
+				// Play next song (will handle repeat all in playNext)
+				playNext();
+			}
 		};
 
 		audio.addEventListener("ended", handleEnded);
@@ -158,9 +167,21 @@ export const PlaybackControls = () => {
 						<Button
 							size='icon'
 							variant='ghost'
-							className='hidden sm:inline-flex hover:text-white text-zinc-400'
+							className={`hidden sm:inline-flex hover:text-white ${
+								repeatMode !== "off" ? "text-green-500" : "text-zinc-400"
+							}`}
+							onClick={toggleRepeatMode}
+							title={
+								repeatMode === "off" ? "Tắt lặp lại" :
+								repeatMode === "all" ? "Lặp lại tất cả" :
+								"Lặp lại một bài"
+							}
 						>
-							<Repeat className='h-4 w-4' />
+							{repeatMode === "one" ? (
+								<Repeat1 className='h-4 w-4' />
+							) : (
+								<Repeat className='h-4 w-4' />
+							)}
 						</Button>
 					</div>
 

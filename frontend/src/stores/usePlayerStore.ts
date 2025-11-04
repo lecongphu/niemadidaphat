@@ -3,12 +3,15 @@ import { persist } from "zustand/middleware";
 import { Song } from "@/types";
 import { useChatStore } from "./useChatStore";
 
+export type RepeatMode = "off" | "all" | "one";
+
 interface PlayerStore {
 	currentSong: Song | null;
 	isPlaying: boolean;
 	queue: Song[];
 	currentIndex: number;
 	currentTime: number;
+	repeatMode: RepeatMode;
 
 	initializeQueue: (songs: Song[]) => void;
 	playAlbum: (songs: Song[], startIndex?: number) => void;
@@ -17,6 +20,7 @@ interface PlayerStore {
 	playNext: () => void;
 	playPrevious: () => void;
 	setCurrentTime: (time: number) => void;
+	toggleRepeatMode: () => void;
 }
 
 export const usePlayerStore = create<PlayerStore>()(
@@ -27,6 +31,7 @@ export const usePlayerStore = create<PlayerStore>()(
 			queue: [],
 			currentIndex: -1,
 			currentTime: 0,
+			repeatMode: "off",
 
 	initializeQueue: (songs: Song[]) => {
 		set({
@@ -94,7 +99,7 @@ export const usePlayerStore = create<PlayerStore>()(
 	},
 
 	playNext: () => {
-		const { currentIndex, queue } = get();
+		const { currentIndex, queue, repeatMode } = get();
 		const nextIndex = currentIndex + 1;
 
 		// if there is a next song to play, let's play it
@@ -115,15 +120,32 @@ export const usePlayerStore = create<PlayerStore>()(
 				isPlaying: true,
 			});
 		} else {
-			// no next song
-			set({ isPlaying: false });
-
-			const socket = useChatStore.getState().socket;
-			if (socket.auth) {
-				socket.emit("update_activity", {
-					userId: socket.auth.userId,
-					activity: `Idle`,
+			// no next song - check repeat mode
+			if (repeatMode === "all" && queue.length > 0) {
+				// restart from beginning
+				const firstSong = queue[0];
+				const socket = useChatStore.getState().socket;
+				if (socket.auth) {
+					socket.emit("update_activity", {
+						userId: socket.auth.userId,
+						activity: `Playing ${firstSong.title} by ${firstSong.teacher}`,
+					});
+				}
+				set({
+					currentSong: firstSong,
+					currentIndex: 0,
+					isPlaying: true,
 				});
+			} else {
+				set({ isPlaying: false });
+
+				const socket = useChatStore.getState().socket;
+				if (socket.auth) {
+					socket.emit("update_activity", {
+						userId: socket.auth.userId,
+						activity: `Idle`,
+					});
+				}
 			}
 		}
 	},
@@ -165,6 +187,15 @@ export const usePlayerStore = create<PlayerStore>()(
 	setCurrentTime: (time: number) => {
 		set({ currentTime: time });
 	},
+
+	toggleRepeatMode: () => {
+		const currentMode = get().repeatMode;
+		const nextMode: RepeatMode =
+			currentMode === "off" ? "all" :
+			currentMode === "all" ? "one" :
+			"off";
+		set({ repeatMode: nextMode });
+	},
 }),
 		{
 			name: "player-storage",
@@ -173,6 +204,7 @@ export const usePlayerStore = create<PlayerStore>()(
 				queue: state.queue,
 				currentIndex: state.currentIndex,
 				currentTime: state.currentTime,
+				repeatMode: state.repeatMode,
 				// Don't persist isPlaying - always start paused after refresh
 			}),
 		}
