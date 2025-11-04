@@ -12,8 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { Playlist } from "@/types";
-import { ImagePlus, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface EditPlaylistDialogProps {
 	open: boolean;
@@ -24,9 +23,7 @@ interface EditPlaylistDialogProps {
 export const EditPlaylistDialog = ({ open, onOpenChange, playlist }: EditPlaylistDialogProps) => {
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
-	const [imageFile, setImageFile] = useState<File | null>(null);
 	const [imagePreview, setImagePreview] = useState<string>("");
-	const imageInputRef = useRef<HTMLInputElement>(null);
 	const { updatePlaylist, isLoading } = usePlaylistStore();
 
 	// Initialize form with playlist data
@@ -35,29 +32,8 @@ export const EditPlaylistDialog = ({ open, onOpenChange, playlist }: EditPlaylis
 			setName(playlist.name);
 			setDescription(playlist.description || "");
 			setImagePreview(playlist.imageUrl || "");
-			setImageFile(null);
 		}
 	}, [playlist, open]);
-
-	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (file) {
-			setImageFile(file);
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				setImagePreview(reader.result as string);
-			};
-			reader.readAsDataURL(file);
-		}
-	};
-
-	const handleRemoveImage = () => {
-		setImageFile(null);
-		setImagePreview(playlist?.imageUrl || "");
-		if (imageInputRef.current) {
-			imageInputRef.current.value = "";
-		}
-	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
