@@ -20,10 +20,17 @@ declare global {
 const GoogleOneTap = () => {
 	const { isAuthenticated, login } = useAuthStore();
 	const hasInitialized = useRef(false);
+	const isPrompting = useRef(false);
 
 	useEffect(() => {
 		// Don't show One-Tap if user is already signed in
-		if (isAuthenticated) return;
+		if (isAuthenticated) {
+			// Cancel any pending prompts if user just logged in
+			if (window.google?.accounts?.id) {
+				window.google.accounts.id.cancel();
+			}
+			return;
+		}
 
 		// Prevent multiple initializations
 		if (hasInitialized.current || window.googleOneTapInitialized) return;
@@ -31,35 +38,37 @@ const GoogleOneTap = () => {
 		const initializeGoogleOneTap = () => {
 			if (!window.google) return;
 
+			// Check if already prompting
+			if (isPrompting.current) return;
+
 			// Get the Google Client ID from environment variable
 			const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+			if (!clientId) return;
 
-			if (!clientId) {
-				console.warn("Google Client ID not found. Please add VITE_GOOGLE_CLIENT_ID to your .env file");
-				return;
-			}
-
-			// Mark as initialized
+			// Mark as initialized BEFORE calling initialize to prevent race conditions
 			hasInitialized.current = true;
 			window.googleOneTapInitialized = true;
 
-			// Initialize Google One-Tap
-			window.google.accounts.id.initialize({
-				client_id: clientId,
-				callback: handleCredentialResponse,
-				auto_select: false,
-				cancel_on_tap_outside: true,
-				context: "signin",
-			});
+			try {
+				// Initialize Google One-Tap
+				window.google.accounts.id.initialize({
+					client_id: clientId,
+					callback: handleCredentialResponse,
+					auto_select: false,
+					cancel_on_tap_outside: true,
+					context: "signin",
+				});
 
-			// Display the One-Tap prompt
-			window.google.accounts.id.prompt((notification: any) => {
-				if (notification.isNotDisplayed()) {
-					console.log("One-Tap could not be displayed");
-				} else if (notification.isSkippedMoment()) {
-					console.log("One-Tap was skipped");
-				}
-			});
+				// Display the One-Tap prompt
+				isPrompting.current = true;
+				window.google.accounts.id.prompt((notification: any) => {
+					isPrompting.current = false;
+				});
+			} catch (error) {
+				hasInitialized.current = false;
+				window.googleOneTapInitialized = false;
+				isPrompting.current = false;
+			}
 		};
 
 		// Check if script is already loaded
@@ -89,8 +98,13 @@ const GoogleOneTap = () => {
 		// Cleanup
 		return () => {
 			// Cancel any pending One-Tap prompts
-			if (window.google?.accounts?.id) {
-				window.google.accounts.id.cancel();
+			if (window.google?.accounts?.id && isPrompting.current) {
+				try {
+					window.google.accounts.id.cancel();
+					isPrompting.current = false;
+				} catch {
+					// Ignore errors during cleanup
+				}
 			}
 		};
 	}, [isAuthenticated]);
@@ -99,8 +113,7 @@ const GoogleOneTap = () => {
 		try {
 			await login(response.credential);
 			toast.success("Đăng nhập thành công!");
-		} catch (error) {
-			console.error("Error handling Google One-Tap credential:", error);
+		} catch {
 			toast.error("Đăng nhập thất bại. Vui lòng thử lại.");
 		}
 	};

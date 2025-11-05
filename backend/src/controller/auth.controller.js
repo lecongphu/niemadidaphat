@@ -9,18 +9,13 @@ export const googleAuth = async (req, res, next) => {
 	try {
 		const { credential } = req.body;
 
-		console.log("Google Client ID:", process.env.GOOGLE_CLIENT_ID);
-		console.log("Received credential (first 50 chars):", credential?.substring(0, 50));
-
 		if (!process.env.GOOGLE_CLIENT_ID) {
-			console.error("GOOGLE_CLIENT_ID is not set in environment variables");
 			return res.status(500).json({ success: false, message: "Server configuration error" });
 		}
 
 		// Initialize OAuth2Client if not already initialized
 		if (!client) {
 			client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-			console.log("OAuth2Client initialized with Client ID");
 		}
 
 		// Verify Google credential
@@ -81,11 +76,6 @@ export const googleAuth = async (req, res, next) => {
 			token,
 		});
 	} catch (error) {
-		console.error("Error in Google auth:", error);
-		console.error("Error message:", error.message);
-		console.error("Error stack:", error.stack);
-
-		// Return more detailed error message
 		const errorMessage = error.message || "Invalid credential";
 		res.status(401).json({ success: false, message: errorMessage });
 	}
@@ -110,7 +100,6 @@ export const getMe = async (req, res, next) => {
 			},
 		});
 	} catch (error) {
-		console.log("Error in getMe", error);
 		next(error);
 	}
 };
@@ -131,7 +120,6 @@ export const logout = async (req, res) => {
 
 		res.status(200).json({ success: true, message: "Logged out successfully" });
 	} catch (error) {
-		console.log("Error in logout", error);
 		res.status(500).json({ success: false, message: "Internal server error" });
 	}
 };
