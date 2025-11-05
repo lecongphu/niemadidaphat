@@ -1,12 +1,13 @@
 import { useAuthStore } from "@/stores/useAuthStore";
 import Header from "./components/Header";
 import DashboardStats from "./components/DashboardStats";
-import { Album, Music, Users, UserCog } from "lucide-react";
+import { Album, Music, Users, UserCog, FolderTree } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SongsTabContent from "./components/SongsTabContent";
 import AlbumsTabContent from "./components/AlbumsTabContent";
 import TeachersTabContent from "./components/TeachersTabContent";
 import UsersTabContent from "./components/UsersTabContent";
+import CategoriesTabContent from "./components/CategoriesTabContent";
 import { useEffect } from "react";
 import { useMusicStore } from "@/stores/useMusicStore";
 
@@ -48,6 +49,10 @@ const AdminPage = () => {
 						<Users className='mr-2 size-4' />
 						Pháp Sư
 					</TabsTrigger>
+					<TabsTrigger value='categories' className='data-[state=active]:bg-zinc-700'>
+						<FolderTree className='mr-2 size-4' />
+						Chủ Đề
+					</TabsTrigger>
 					<TabsTrigger value='users' className='data-[state=active]:bg-zinc-700'>
 						<UserCog className='mr-2 size-4' />
 						Người Dùng
@@ -62,6 +67,9 @@ const AdminPage = () => {
 				</TabsContent>
 				<TabsContent value='teachers'>
 					<TeachersTabContent />
+				</TabsContent>
+				<TabsContent value='categories'>
+					<CategoriesTabContent />
 				</TabsContent>
 				<TabsContent value='users'>
 					<UsersTabContent />

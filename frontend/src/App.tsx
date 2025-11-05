@@ -5,6 +5,8 @@ import ChatPage from "./pages/chat/ChatPage";
 import AlbumPage from "./pages/album/AlbumPage";
 import AdminPage from "./pages/admin/AdminPage";
 import PlaylistPage from "./pages/playlist/PlaylistPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
@@ -16,6 +18,8 @@ function App() {
 			<GoogleOneTap />
 			<Routes>
 				<Route path='/admin' element={<AdminPage />} />
+				<Route path='/privacy-policy' element={<PrivacyPolicy />} />
+				<Route path='/terms-of-service' element={<TermsOfService />} />
 
 				<Route element={<MainLayout />}>
 					<Route path='/' element={<HomePage />} />

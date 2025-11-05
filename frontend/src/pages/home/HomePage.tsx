@@ -1,5 +1,6 @@
 import Topbar from "@/components/Topbar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Link } from "react-router-dom";
 
 const HomePage = () => {
 	return (
@@ -9,6 +10,29 @@ const HomePage = () => {
 				<div className='p-4 sm:p-6'>
 					<h1 className='text-2xl sm:text-3xl font-bold mb-6'>Nam Mô A Di Đà Phật</h1>
 				</div>
+
+				{/* Footer */}
+				<footer className='mt-12 py-8 px-4 sm:px-6 border-t border-zinc-700/50'>
+					<div className='flex flex-col sm:flex-row items-center justify-between gap-4'>
+						<p className='text-zinc-500 text-sm'>
+							© {new Date().getFullYear()} Niệm A Di Đà Phật.
+						</p>
+						<div className='flex items-center gap-6 text-sm'>
+							<Link
+								to='/privacy-policy'
+								className='text-zinc-400 hover:text-violet-400 transition-colors'
+							>
+								Chính Sách Bảo Mật
+							</Link>
+							<Link
+								to='/terms-of-service'
+								className='text-zinc-400 hover:text-violet-400 transition-colors'
+							>
+								Điều Khoản Dịch Vụ
+							</Link>
+						</div>
+					</div>
+				</footer>
 			</ScrollArea>
 		</main>
 	);

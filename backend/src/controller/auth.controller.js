@@ -2,11 +2,26 @@ import { User } from "../models/user.model.js";
 import { OAuth2Client } from "google-auth-library";
 import { generateToken, generateSessionToken } from "../lib/jwt.js";
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+// Initialize OAuth2Client - will be created on first use if CLIENT_ID is not available yet
+let client;
 
 export const googleAuth = async (req, res, next) => {
 	try {
 		const { credential } = req.body;
+
+		console.log("Google Client ID:", process.env.GOOGLE_CLIENT_ID);
+		console.log("Received credential (first 50 chars):", credential?.substring(0, 50));
+
+		if (!process.env.GOOGLE_CLIENT_ID) {
+			console.error("GOOGLE_CLIENT_ID is not set in environment variables");
+			return res.status(500).json({ success: false, message: "Server configuration error" });
+		}
+
+		// Initialize OAuth2Client if not already initialized
+		if (!client) {
+			client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+			console.log("OAuth2Client initialized with Client ID");
+		}
 
 		// Verify Google credential
 		const ticket = await client.verifyIdToken({
@@ -66,8 +81,13 @@ export const googleAuth = async (req, res, next) => {
 			token,
 		});
 	} catch (error) {
-		console.log("Error in Google auth", error);
-		res.status(401).json({ success: false, message: "Invalid credential" });
+		console.error("Error in Google auth:", error);
+		console.error("Error message:", error.message);
+		console.error("Error stack:", error.stack);
+
+		// Return more detailed error message
+		const errorMessage = error.message || "Invalid credential";
+		res.status(401).json({ success: false, message: errorMessage });
 	}
 };
 

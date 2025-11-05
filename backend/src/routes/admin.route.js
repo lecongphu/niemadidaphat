@@ -14,6 +14,9 @@ import {
 	getAllUsers,
 	forceLogoutUser,
 	deleteUser,
+	createCategory,
+	updateCategory,
+	deleteCategory,
 } from "../controller/admin.controller.js";
 import { protectRoute, requireAdmin } from "../middleware/auth.middleware.js";
 
@@ -36,6 +39,9 @@ router.delete("/teachers/:id", deleteTeacher);
 router.put("/teachers/:id", updateTeacher);
 
 router.get("/categories", getCategories);
+router.post("/categories", createCategory);
+router.put("/categories/:id", updateCategory);
+router.delete("/categories/:id", deleteCategory);
 
 // User management
 router.get("/users", getAllUsers);

@@ -466,6 +466,85 @@ export const updateSongsOrder = async (req, res, next) => {
 	}
 };
 
+// Create a new category (admin only)
+export const createCategory = async (req, res, next) => {
+	try {
+		const { name, description } = req.body;
+
+		if (!name) {
+			return res.status(400).json({ message: "Category name is required" });
+		}
+
+		// Check if category already exists
+		const existingCategory = await Category.findOne({ name });
+		if (existingCategory) {
+			return res.status(400).json({ message: "Category already exists" });
+		}
+
+		const category = await Category.create({ name, description });
+		res.status(201).json(category);
+	} catch (error) {
+		console.log("Error in createCategory", error);
+		next(error);
+	}
+};
+
+// Update a category (admin only)
+export const updateCategory = async (req, res, next) => {
+	try {
+		const { id } = req.params;
+		const { name, description } = req.body;
+
+		const category = await Category.findById(id);
+		if (!category) {
+			return res.status(404).json({ message: "Category not found" });
+		}
+
+		// Check if new name already exists (excluding current category)
+		if (name && name !== category.name) {
+			const existingCategory = await Category.findOne({ name });
+			if (existingCategory) {
+				return res.status(400).json({ message: "Category name already exists" });
+			}
+		}
+
+		if (name) category.name = name;
+		if (description !== undefined) category.description = description;
+
+		await category.save();
+		res.status(200).json(category);
+	} catch (error) {
+		console.log("Error in updateCategory", error);
+		next(error);
+	}
+};
+
+// Delete a category (admin only)
+export const deleteCategory = async (req, res, next) => {
+	try {
+		const { id } = req.params;
+
+		const category = await Category.findById(id);
+		if (!category) {
+			return res.status(404).json({ message: "Category not found" });
+		}
+
+		// Check if any songs are using this category
+		const songsUsingCategory = await Song.find({ category: id });
+		if (songsUsingCategory.length > 0) {
+			return res.status(400).json({
+				message: `Cannot delete category. ${songsUsingCategory.length} song(s) are using this category.`,
+			});
+		}
+
+		await Category.findByIdAndDelete(id);
+		res.status(200).json({ message: "Category deleted successfully" });
+	} catch (error) {
+		console.log("Error in deleteCategory", error);
+		next(error);
+	}
+};
+
 // Get all users with realtime status
 export const getAllUsers = async (req, res, next) => {
 	try {
