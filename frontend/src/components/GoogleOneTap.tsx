@@ -61,7 +61,7 @@ const GoogleOneTap = () => {
 
 				// Display the One-Tap prompt
 				isPrompting.current = true;
-				window.google.accounts.id.prompt((notification: any) => {
+				window.google.accounts.id.prompt((_notification: any) => {
 					isPrompting.current = false;
 				});
 			} catch (error) {
