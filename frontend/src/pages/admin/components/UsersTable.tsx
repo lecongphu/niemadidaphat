@@ -23,7 +23,7 @@ const UsersTable = () => {
 	const fetchUsers = async () => {
 		try {
 			const response = await axiosInstance.get("/admin/users");
-			setUsers(response.data.users);
+			setUsers(response.data || []);
 		} catch (error: any) {
 			console.error("Error fetching users:", error);
 			toast.error("Không thể tải danh sách người dùng");
@@ -93,6 +93,10 @@ const UsersTable = () => {
 
 	if (loading) {
 		return <div className="text-center py-8">Đang tải...</div>;
+	}
+
+	if (!users || users.length === 0) {
+		return <div className="text-center py-8 text-zinc-400">Không có người dùng nào</div>;
 	}
 
 	return (
