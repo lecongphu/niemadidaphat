@@ -30,6 +30,24 @@ const FriendsActivity = () => {
 						const activity = userActivities.get(user._id);
 						const isPlaying = activity && activity !== "Idle";
 
+						// Parse activity - có thể là string hoặc object
+						let songName = "";
+						let artistName = "";
+
+						if (isPlaying && activity) {
+							if (typeof activity === "string") {
+								// Nếu là string dạng "Playing Song by Artist"
+								const cleaned = activity.replace("Playing ", "");
+								const parts = cleaned.split(" by ");
+								songName = parts[0] || "";
+								artistName = parts[1] || "";
+							} else if (typeof activity === "object") {
+								// Nếu là object
+								songName = (activity as any).song || (activity as any).title || "";
+								artistName = (activity as any).artist || "";
+							}
+						}
+
 						return (
 							<div
 								key={user._id}
@@ -42,7 +60,7 @@ const FriendsActivity = () => {
 											<AvatarFallback>{user.fullName[0]}</AvatarFallback>
 										</Avatar>
 										<div
-											className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-zinc-900 
+											className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-zinc-900
 												${onlineUsers.has(user._id) ? "bg-green-500" : "bg-zinc-500"}
 												`}
 											aria-hidden='true'
@@ -58,10 +76,10 @@ const FriendsActivity = () => {
 										{isPlaying ? (
 											<div className='mt-1'>
 												<div className='mt-1 text-sm text-white font-medium truncate'>
-													{activity.replace("Playing ", "").split(" by ")[0]}
+													{songName}
 												</div>
 												<div className='text-xs text-zinc-400 truncate'>
-													{activity.split(" by ")[1]}
+													{artistName}
 												</div>
 											</div>
 										) : (

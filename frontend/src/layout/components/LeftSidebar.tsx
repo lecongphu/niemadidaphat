@@ -26,7 +26,6 @@ const LeftSidebar = () => {
 		}
 	}, [fetchPlaylists, isAuthenticated]);
 
-	console.log({ albums });
 
 	return (
 		<div className='h-full flex flex-col gap-2'>
