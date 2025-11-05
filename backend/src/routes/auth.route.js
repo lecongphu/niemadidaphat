@@ -1,8 +1,11 @@
 import { Router } from "express";
-import { authCallback } from "../controller/auth.controller.js";
+import { googleAuth, getMe, logout } from "../controller/auth.controller.js";
+import { protectRoute } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
-router.post("/callback", authCallback);
+router.post("/google", googleAuth);
+router.get("/me", protectRoute, getMe);
+router.post("/logout", logout);
 
 export default router;

@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import { clerkMiddleware } from "@clerk/express";
+import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
 import path from "path";
 import cors from "cors";
@@ -38,6 +38,7 @@ app.use(
 );
 
 app.use(express.json()); // to parse req.body
+app.use(cookieParser()); // to parse cookies
 
 // Request logging
 app.use((req, res, next) => {
@@ -45,7 +46,6 @@ app.use((req, res, next) => {
 	next();
 });
 
-app.use(clerkMiddleware()); // this will add auth to req obj => req.auth
 app.use(
 	fileUpload({
 		useTempFiles: true,

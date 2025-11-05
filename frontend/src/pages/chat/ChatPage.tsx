@@ -1,6 +1,6 @@
 import Topbar from "@/components/Topbar";
 import { useChatStore } from "@/stores/useChatStore";
-import { useUser } from "@clerk/clerk-react";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { useEffect } from "react";
 import UsersList from "./components/UsersList";
 import ChatHeader from "./components/ChatHeader";
@@ -17,7 +17,7 @@ const formatTime = (date: string) => {
 };
 
 const ChatPage = () => {
-	const { user } = useUser();
+	const { user } = useAuthStore();
 	const { messages, selectedUser, fetchUsers, fetchMessages } = useChatStore();
 
 	useEffect(() => {
@@ -57,7 +57,7 @@ const ChatPage = () => {
 												<AvatarImage
 													src={
 														message.senderId === user?.id
-															? user.imageUrl
+															? user?.imageUrl
 															: selectedUser.imageUrl
 													}
 												/>

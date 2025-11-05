@@ -1,7 +1,5 @@
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/home/HomePage";
-import AuthCallbackPage from "./pages/auth-callback/AuthCallbackPage";
-import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react";
 import MainLayout from "./layout/MainLayout";
 import ChatPage from "./pages/chat/ChatPage";
 import AlbumPage from "./pages/album/AlbumPage";
@@ -10,19 +8,13 @@ import PlaylistPage from "./pages/playlist/PlaylistPage";
 
 import { Toaster } from "react-hot-toast";
 import NotFoundPage from "./pages/404/NotFoundPage";
-// import GoogleOneTap from "./components/GoogleOneTap";
+import GoogleOneTap from "./components/GoogleOneTap";
 
 function App() {
 	return (
 		<>
-			{/* Temporarily disabled Google One Tap due to OAuth authorization issues */}
-			{/* <GoogleOneTap /> */}
+			<GoogleOneTap />
 			<Routes>
-				<Route
-					path='/sso-callback'
-					element={<AuthenticateWithRedirectCallback signUpForceRedirectUrl={"/auth-callback"} />}
-				/>
-				<Route path='/auth-callback' element={<AuthCallbackPage />} />
 				<Route path='/admin' element={<AdminPage />} />
 
 				<Route element={<MainLayout />}>

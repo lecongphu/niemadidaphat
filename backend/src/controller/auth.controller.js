@@ -1,24 +1,107 @@
 import { User } from "../models/user.model.js";
+import { OAuth2Client } from "google-auth-library";
+import { generateToken } from "../lib/jwt.js";
 
-export const authCallback = async (req, res, next) => {
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+export const googleAuth = async (req, res, next) => {
 	try {
-		const { id, firstName, lastName, imageUrl } = req.body;
+		const { credential } = req.body;
 
-		// check if user already exists
-		const user = await User.findOne({ clerkId: id });
+		// Verify Google credential
+		const ticket = await client.verifyIdToken({
+			idToken: credential,
+			audience: process.env.GOOGLE_CLIENT_ID,
+		});
+
+		const payload = ticket.getPayload();
+		const { sub: googleId, email, name, picture } = payload;
+
+		// Check if user exists
+		let user = await User.findOne({ googleId });
 
 		if (!user) {
-			// signup
-			await User.create({
-				clerkId: id,
-				fullName: `${firstName || ""} ${lastName || ""}`.trim(),
-				imageUrl,
+			// Create new user
+			user = await User.create({
+				googleId,
+				email,
+				fullName: name,
+				imageUrl: picture,
 			});
+		} else {
+			// Update user info if changed
+			user.fullName = name;
+			user.imageUrl = picture;
+			await user.save();
 		}
 
-		res.status(200).json({ success: true });
+		// Check if user is admin
+		const isAdmin = email === process.env.ADMIN_EMAIL;
+
+		// Generate JWT token
+		const token = generateToken(user._id.toString(), email, isAdmin);
+
+		// Set cookie
+		res.cookie("token", token, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+			maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+		});
+
+		res.status(200).json({
+			success: true,
+			user: {
+				id: user._id.toString(),
+				email: user.email,
+				fullName: user.fullName,
+				imageUrl: user.imageUrl,
+				isAdmin,
+			},
+			token,
+		});
 	} catch (error) {
-		console.log("Error in auth callback", error);
+		console.log("Error in Google auth", error);
+		res.status(401).json({ success: false, message: "Invalid credential" });
+	}
+};
+
+export const getMe = async (req, res, next) => {
+	try {
+		const user = await User.findById(req.userId);
+
+		if (!user) {
+			return res.status(404).json({ success: false, message: "User not found" });
+		}
+
+		res.status(200).json({
+			success: true,
+			user: {
+				id: user._id.toString(),
+				email: user.email,
+				fullName: user.fullName,
+				imageUrl: user.imageUrl,
+				isAdmin: req.isAdmin,
+			},
+		});
+	} catch (error) {
+		console.log("Error in getMe", error);
 		next(error);
+	}
+};
+
+export const logout = async (req, res) => {
+	try {
+		res.cookie("token", "", {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "strict",
+			maxAge: 0,
+		});
+
+		res.status(200).json({ success: true, message: "Logged out successfully" });
+	} catch (error) {
+		console.log("Error in logout", error);
+		res.status(500).json({ success: false, message: "Internal server error" });
 	}
 };

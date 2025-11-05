@@ -2,18 +2,19 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { getName, getOptimizedImageUrl, formatDuration } from "@/lib/utils";
 import { Clock, ListPlus, Pause, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import PlayingIndicator from "@/components/PlayingIndicator";
 import { AddToPlaylistDialog } from "@/pages/playlist/components/AddToPlaylistDialog";
-import { SignedIn } from "@clerk/clerk-react";
 
 const AlbumPage = () => {
 	const { albumId } = useParams();
 	const { fetchAlbumById, currentAlbum, isLoading } = useMusicStore();
 	const { currentSong, isPlaying, playAlbum, togglePlay } = usePlayerStore();
+	const { isAuthenticated } = useAuthStore();
 	const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
 	const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
 
@@ -173,7 +174,7 @@ const AlbumPage = () => {
 
 												{/* Add to playlist button */}
 												<div className='flex items-center justify-center'>
-													<SignedIn>
+													{isAuthenticated && (
 														<Button
 															size='icon'
 															variant='ghost'
@@ -186,7 +187,7 @@ const AlbumPage = () => {
 														>
 															<ListPlus className='h-4 w-4' />
 														</Button>
-													</SignedIn>
+													)}
 												</div>
 											</div>
 										);

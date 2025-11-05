@@ -1,4 +1,4 @@
-import { UserButton } from "@clerk/clerk-react";
+import UserButton from "@/components/UserButton";
 import { Link } from "react-router-dom";
 
 const Header = () => {

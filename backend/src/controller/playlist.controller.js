@@ -20,7 +20,7 @@ const uploadToCloudinary = async (file, options = {}) => {
 // Get all playlists for current user
 export const getUserPlaylists = async (req, res, next) => {
 	try {
-		const userId = req.auth.userId; // From Clerk middleware
+		const userId = req.userId;
 		const playlists = await Playlist.find({ userId }).sort({ updatedAt: -1 });
 		res.status(200).json(playlists);
 	} catch (error) {
@@ -32,7 +32,7 @@ export const getUserPlaylists = async (req, res, next) => {
 export const getPlaylistById = async (req, res, next) => {
 	try {
 		const { playlistId } = req.params;
-		const userId = req.auth.userId;
+		const userId = req.userId;
 
 		const playlist = await Playlist.findById(playlistId).populate({
 			path: "songs",
@@ -60,7 +60,7 @@ export const getPlaylistById = async (req, res, next) => {
 // Create new playlist
 export const createPlaylist = async (req, res, next) => {
 	try {
-		const userId = req.auth.userId;
+		const userId = req.userId;
 		const { name, description } = req.body;
 
 		if (!name) {
@@ -104,7 +104,7 @@ export const createPlaylist = async (req, res, next) => {
 export const updatePlaylist = async (req, res, next) => {
 	try {
 		const { playlistId } = req.params;
-		const userId = req.auth.userId;
+		const userId = req.userId;
 		const { name, description, imageUrl, isPublic } = req.body;
 
 		const playlist = await Playlist.findById(playlistId);
@@ -134,7 +134,7 @@ export const updatePlaylist = async (req, res, next) => {
 export const deletePlaylist = async (req, res, next) => {
 	try {
 		const { playlistId } = req.params;
-		const userId = req.auth.userId;
+		const userId = req.userId;
 
 		const playlist = await Playlist.findById(playlistId);
 
@@ -158,7 +158,7 @@ export const addSongToPlaylist = async (req, res, next) => {
 	try {
 		const { playlistId } = req.params;
 		const { songId } = req.body;
-		const userId = req.auth.userId;
+		const userId = req.userId;
 
 		if (!songId) {
 			return res.status(400).json({ message: "Song ID is required" });
@@ -201,7 +201,7 @@ export const addSongToPlaylist = async (req, res, next) => {
 export const removeSongFromPlaylist = async (req, res, next) => {
 	try {
 		const { playlistId, songId } = req.params;
-		const userId = req.auth.userId;
+		const userId = req.userId;
 
 		const playlist = await Playlist.findById(playlistId);
 

@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, getOptimizedImageUrl } from "@/lib/utils";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
-import { SignedIn, useAuth } from "@clerk/clerk-react";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { HomeIcon, Library, ListMusic, MessageCircle, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -13,7 +13,7 @@ import { CreatePlaylistDialog } from "@/pages/playlist/components/CreatePlaylist
 const LeftSidebar = () => {
 	const { albums, fetchAlbums, isLoading } = useMusicStore();
 	const { playlists, fetchPlaylists, isLoading: isLoadingPlaylists } = usePlaylistStore();
-	const { isSignedIn } = useAuth();
+	const { isAuthenticated } = useAuthStore();
 	const [showCreateDialog, setShowCreateDialog] = useState(false);
 
 	useEffect(() => {
@@ -21,10 +21,10 @@ const LeftSidebar = () => {
 	}, [fetchAlbums]);
 
 	useEffect(() => {
-		if (isSignedIn) {
+		if (isAuthenticated) {
 			fetchPlaylists();
 		}
-	}, [fetchPlaylists, isSignedIn]);
+	}, [fetchPlaylists, isAuthenticated]);
 
 	console.log({ albums });
 
@@ -47,7 +47,7 @@ const LeftSidebar = () => {
 						<span className='hidden md:inline'>Trang Chủ</span>
 					</Link>
 
-					<SignedIn>
+					{isAuthenticated && (
 						<Link
 							to={"/chat"}
 							className={cn(
@@ -60,7 +60,7 @@ const LeftSidebar = () => {
 							<MessageCircle className='mr-2 size-5' />
 							<span className='hidden md:inline'>Đàm đạo</span>
 						</Link>
-					</SignedIn>
+					)}
 				</div>
 			</div>
 
@@ -104,7 +104,7 @@ const LeftSidebar = () => {
 			</div>
 
 			{/* Playlists section */}
-			<SignedIn>
+			{isAuthenticated && (
 				<div className='rounded-lg bg-zinc-900 p-4'>
 					<div className='flex items-center justify-between mb-4'>
 						<div className='flex items-center text-white px-2'>
@@ -160,7 +160,7 @@ const LeftSidebar = () => {
 						</div>
 					</ScrollArea>
 				</div>
-			</SignedIn>
+			)}
 
 			<CreatePlaylistDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
 		</div>

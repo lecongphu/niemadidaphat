@@ -3,8 +3,8 @@ import { Message } from "../models/message.model.js";
 
 export const getAllUsers = async (req, res, next) => {
 	try {
-		const currentUserId = req.auth.userId;
-		const users = await User.find({ clerkId: { $ne: currentUserId } });
+		const currentUserId = req.userId;
+		const users = await User.find({ _id: { $ne: currentUserId } });
 		res.status(200).json(users);
 	} catch (error) {
 		next(error);
@@ -13,7 +13,7 @@ export const getAllUsers = async (req, res, next) => {
 
 export const getMessages = async (req, res, next) => {
 	try {
-		const myId = req.auth.userId;
+		const myId = req.userId;
 		const { userId } = req.params;
 
 		const messages = await Message.find({

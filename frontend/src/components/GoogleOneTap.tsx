@@ -1,5 +1,6 @@
-import { useEffect } from "react";
-import { useSignIn, useUser } from "@clerk/clerk-react";
+import { useEffect, useRef } from "react";
+import { useAuthStore } from "@/stores/useAuthStore";
+import toast from "react-hot-toast";
 
 declare global {
 	interface Window {
@@ -12,24 +13,22 @@ declare global {
 				};
 			};
 		};
+		googleOneTapInitialized?: boolean;
 	}
 }
 
 const GoogleOneTap = () => {
-	const { signIn, isLoaded: signInLoaded } = useSignIn();
-	const { isSignedIn } = useUser();
+	const { isAuthenticated, login } = useAuthStore();
+	const hasInitialized = useRef(false);
 
 	useEffect(() => {
-		// Don't show One-Tap if user is already signed in or Clerk is not loaded
-		if (isSignedIn || !signInLoaded) return;
+		// Don't show One-Tap if user is already signed in
+		if (isAuthenticated) return;
 
-		// Load Google Identity Services script
-		const script = document.createElement("script");
-		script.src = "https://accounts.google.com/gsi/client";
-		script.async = true;
-		script.defer = true;
+		// Prevent multiple initializations
+		if (hasInitialized.current || window.googleOneTapInitialized) return;
 
-		script.onload = () => {
+		const initializeGoogleOneTap = () => {
 			if (!window.google) return;
 
 			// Get the Google Client ID from environment variable
@@ -39,6 +38,10 @@ const GoogleOneTap = () => {
 				console.warn("Google Client ID not found. Please add VITE_GOOGLE_CLIENT_ID to your .env file");
 				return;
 			}
+
+			// Mark as initialized
+			hasInitialized.current = true;
+			window.googleOneTapInitialized = true;
 
 			// Initialize Google One-Tap
 			window.google.accounts.id.initialize({
@@ -59,38 +62,46 @@ const GoogleOneTap = () => {
 			});
 		};
 
-		document.body.appendChild(script);
+		// Check if script is already loaded
+		if (window.google) {
+			initializeGoogleOneTap();
+			return;
+		}
+
+		// Check if script is already being loaded
+		const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+		if (existingScript) {
+			existingScript.addEventListener("load", initializeGoogleOneTap);
+			return () => {
+				existingScript.removeEventListener("load", initializeGoogleOneTap);
+			};
+		}
+
+		// Load Google Identity Services script
+		const script = document.createElement("script");
+		script.src = "https://accounts.google.com/gsi/client";
+		script.async = true;
+		script.defer = true;
+		script.onload = initializeGoogleOneTap;
+
+		document.head.appendChild(script);
 
 		// Cleanup
 		return () => {
-			if (document.body.contains(script)) {
-				document.body.removeChild(script);
-			}
 			// Cancel any pending One-Tap prompts
 			if (window.google?.accounts?.id) {
 				window.google.accounts.id.cancel();
 			}
 		};
-	}, [isSignedIn, signInLoaded]);
+	}, [isAuthenticated]);
 
-	const handleCredentialResponse = async (_response: { credential: string }) => {
+	const handleCredentialResponse = async (response: { credential: string }) => {
 		try {
-			if (!signIn) return;
-
-			// Since Clerk handles OAuth separately, we'll redirect to Google OAuth
-			// The credential from One-Tap can't be used directly with Clerk
-			// So we trigger the standard OAuth flow
-			const signInAttempt = await signIn.authenticateWithRedirect({
-				strategy: "oauth_google",
-				redirectUrl: window.location.origin + "/sso-callback",
-				redirectUrlComplete: window.location.origin + "/auth-callback",
-			});
-
-			console.log("Sign in attempt:", signInAttempt);
+			await login(response.credential);
+			toast.success("Đăng nhập thành công!");
 		} catch (error) {
 			console.error("Error handling Google One-Tap credential:", error);
-			// Fallback: reload page to show regular sign in
-			window.location.reload();
+			toast.error("Đăng nhập thất bại. Vui lòng thử lại.");
 		}
 	};
 
