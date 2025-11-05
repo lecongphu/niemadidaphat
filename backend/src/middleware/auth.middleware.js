@@ -1,4 +1,5 @@
 import { verifyToken } from "../lib/jwt.js";
+import { User } from "../models/user.model.js";
 
 export const authenticate = async (req, res, next) => {
 	try {
@@ -19,6 +20,12 @@ export const authenticate = async (req, res, next) => {
 		const decoded = verifyToken(token);
 		if (!decoded) {
 			return res.status(401).json({ message: "Unauthorized - invalid token" });
+		}
+
+		// Verify session token (single device login)
+		const user = await User.findById(decoded.userId);
+		if (!user || user.sessionToken !== decoded.sessionToken) {
+			return res.status(401).json({ message: "Session expired - please login again" });
 		}
 
 		// Attach user info to request

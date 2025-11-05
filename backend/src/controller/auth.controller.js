@@ -1,6 +1,6 @@
 import { User } from "../models/user.model.js";
 import { OAuth2Client } from "google-auth-library";
-import { generateToken } from "../lib/jwt.js";
+import { generateToken, generateSessionToken } from "../lib/jwt.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -20,6 +20,9 @@ export const googleAuth = async (req, res, next) => {
 		// Check if user exists
 		let user = await User.findOne({ googleId });
 
+		// Generate new session token (this will invalidate all other sessions)
+		const sessionToken = generateSessionToken();
+
 		if (!user) {
 			// Create new user
 			user = await User.create({
@@ -27,19 +30,21 @@ export const googleAuth = async (req, res, next) => {
 				email,
 				fullName: name,
 				imageUrl: picture,
+				sessionToken,
 			});
 		} else {
-			// Update user info if changed
+			// Update user info and session token (invalidates old sessions)
 			user.fullName = name;
 			user.imageUrl = picture;
+			user.sessionToken = sessionToken;
 			await user.save();
 		}
 
 		// Check if user is admin
 		const isAdmin = email === process.env.ADMIN_EMAIL;
 
-		// Generate JWT token
-		const token = generateToken(user._id.toString(), email, isAdmin);
+		// Generate JWT token with session token
+		const token = generateToken(user._id.toString(), email, isAdmin, sessionToken);
 
 		// Set cookie
 		res.cookie("token", token, {
@@ -92,6 +97,11 @@ export const getMe = async (req, res, next) => {
 
 export const logout = async (req, res) => {
 	try {
+		// Clear session token in database
+		if (req.userId) {
+			await User.findByIdAndUpdate(req.userId, { sessionToken: null });
+		}
+
 		res.cookie("token", "", {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",

@@ -20,6 +20,18 @@ const userSchema = new mongoose.Schema(
 			required: true,
 			unique: true,
 		},
+		sessionToken: {
+			type: String,
+			default: null,
+		},
+		isOnline: {
+			type: Boolean,
+			default: false,
+		},
+		lastActive: {
+			type: Date,
+			default: Date.now,
+		},
 	},
 	{ timestamps: true } //  createdAt, updatedAt
 );

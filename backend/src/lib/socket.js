@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import { Message } from "../models/message.model.js";
+import { User } from "../models/user.model.js";
 
 export const initializeSocket = (server) => {
 	const io = new Server(server, {
@@ -13,9 +14,19 @@ export const initializeSocket = (server) => {
 	const userActivities = new Map(); // {userId: activity}
 
 	io.on("connection", (socket) => {
-		socket.on("user_connected", (userId) => {
+		socket.on("user_connected", async (userId) => {
 			userSockets.set(userId, socket.id);
 			userActivities.set(userId, "Idle");
+
+			// Update user online status in database
+			try {
+				await User.findByIdAndUpdate(userId, {
+					isOnline: true,
+					lastActive: new Date(),
+				});
+			} catch (error) {
+				console.error("Error updating user online status:", error);
+			}
 
 			// broadcast to all connected sockets that this user just logged in
 			io.emit("user_connected", userId);
@@ -54,7 +65,7 @@ export const initializeSocket = (server) => {
 			}
 		});
 
-		socket.on("disconnect", () => {
+		socket.on("disconnect", async () => {
 			let disconnectedUserId;
 			for (const [userId, socketId] of userSockets.entries()) {
 				// find disconnected user
@@ -66,6 +77,16 @@ export const initializeSocket = (server) => {
 				}
 			}
 			if (disconnectedUserId) {
+				// Update user offline status in database
+				try {
+					await User.findByIdAndUpdate(disconnectedUserId, {
+						isOnline: false,
+						lastActive: new Date(),
+					});
+				} catch (error) {
+					console.error("Error updating user offline status:", error);
+				}
+
 				io.emit("user_disconnected", disconnectedUserId);
 			}
 		});

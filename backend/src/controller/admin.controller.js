@@ -2,6 +2,7 @@ import { Song } from "../models/song.model.js";
 import { Album } from "../models/album.model.js";
 import { Teacher } from "../models/teacher.model.js";
 import { Category } from "../models/category.model.js";
+import { User } from "../models/user.model.js";
 import cloudinary from "../lib/cloudinary.js";
 
 // helper function for cloudinary uploads
@@ -460,6 +461,52 @@ export const updateSongsOrder = async (req, res, next) => {
 		res.status(200).json({ message: "Songs order updated successfully" });
 	} catch (error) {
 		console.log("Error in updateSongsOrder", error);
+		next(error);
+	}
+};
+
+// Get all users with realtime status
+export const getAllUsers = async (req, res, next) => {
+	try {
+		const users = await User.find()
+			.select("-sessionToken -googleId")
+			.sort({ lastActive: -1 });
+
+		const usersWithStats = users.map((user) => ({
+			id: user._id,
+			fullName: user.fullName,
+			email: user.email,
+			imageUrl: user.imageUrl,
+			isOnline: user.isOnline,
+			lastActive: user.lastActive,
+			createdAt: user.createdAt,
+		}));
+
+		res.status(200).json(usersWithStats);
+	} catch (error) {
+		console.log("Error in getAllUsers", error);
+		next(error);
+	}
+};
+
+// Force logout a user (admin only)
+export const forceLogoutUser = async (req, res, next) => {
+	try {
+		const { userId } = req.params;
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		// Clear session token to force logout
+		user.sessionToken = null;
+		user.isOnline = false;
+		await user.save();
+
+		res.status(200).json({ message: "User logged out successfully" });
+	} catch (error) {
+		console.log("Error in forceLogoutUser", error);
 		next(error);
 	}
 };

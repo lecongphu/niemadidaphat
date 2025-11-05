@@ -10,7 +10,9 @@ import {
 	deleteTeacher,
 	updateTeacher,
 	getCategories,
-	updateSongsOrder
+	updateSongsOrder,
+	getAllUsers,
+	forceLogoutUser,
 } from "../controller/admin.controller.js";
 import { protectRoute, requireAdmin } from "../middleware/auth.middleware.js";
 
@@ -33,5 +35,9 @@ router.delete("/teachers/:id", deleteTeacher);
 router.put("/teachers/:id", updateTeacher);
 
 router.get("/categories", getCategories);
+
+// User management
+router.get("/users", getAllUsers);
+router.post("/users/:userId/logout", forceLogoutUser);
 
 export default router;
