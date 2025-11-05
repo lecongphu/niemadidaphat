@@ -4,6 +4,7 @@ import { Teacher } from "../models/teacher.model.js";
 import { Category } from "../models/category.model.js";
 import { User } from "../models/user.model.js";
 import cloudinary from "../lib/cloudinary.js";
+import { getIO } from "../lib/socket.js";
 
 // helper function for cloudinary uploads
 const uploadToCloudinary = async (file, options = {}) => {
@@ -473,7 +474,7 @@ export const getAllUsers = async (req, res, next) => {
 			.sort({ lastActive: -1 });
 
 		const usersWithStats = users.map((user) => ({
-			id: user._id,
+			_id: user._id.toString(),
 			fullName: user.fullName,
 			email: user.email,
 			imageUrl: user.imageUrl,
@@ -507,6 +508,38 @@ export const forceLogoutUser = async (req, res, next) => {
 		res.status(200).json({ message: "User logged out successfully" });
 	} catch (error) {
 		console.log("Error in forceLogoutUser", error);
+		next(error);
+	}
+};
+
+// Delete a user (admin only)
+export const deleteUser = async (req, res, next) => {
+	try {
+		const { userId } = req.params;
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		// Prevent admin from deleting themselves
+		if (userId === req.userId) {
+			return res.status(400).json({ message: "You cannot delete yourself" });
+		}
+
+		await User.findByIdAndDelete(userId);
+
+		// Broadcast user deletion to all connected clients
+		try {
+			const io = getIO();
+			io.emit("user_deleted", userId);
+		} catch (error) {
+			console.error("Error broadcasting user deletion:", error);
+		}
+
+		res.status(200).json({ message: "User deleted successfully", userId });
+	} catch (error) {
+		console.log("Error in deleteUser", error);
 		next(error);
 	}
 };

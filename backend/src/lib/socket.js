@@ -2,8 +2,10 @@ import { Server } from "socket.io";
 import { Message } from "../models/message.model.js";
 import { User } from "../models/user.model.js";
 
+let io;
+
 export const initializeSocket = (server) => {
-	const io = new Server(server, {
+	io = new Server(server, {
 		cors: {
 			origin: "http://localhost:3000",
 			credentials: true,
@@ -91,4 +93,14 @@ export const initializeSocket = (server) => {
 			}
 		});
 	});
+
+	return io;
+};
+
+// Export function to get io instance
+export const getIO = () => {
+	if (!io) {
+		throw new Error("Socket.io not initialized");
+	}
+	return io;
 };

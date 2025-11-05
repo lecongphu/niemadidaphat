@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { LogOut, Circle } from "lucide-react";
+import { LogOut, Circle, Trash2 } from "lucide-react";
 import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useChatStore } from "@/stores/useChatStore";
@@ -55,12 +55,19 @@ const UsersTable = () => {
 			);
 		};
 
+		const handleUserDeleted = (userId: string) => {
+			setUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));
+			toast.success("Người dùng đã được xóa");
+		};
+
 		socket.on("user_connected", handleUserConnected);
 		socket.on("user_disconnected", handleUserDisconnected);
+		socket.on("user_deleted", handleUserDeleted);
 
 		return () => {
 			socket.off("user_connected", handleUserConnected);
 			socket.off("user_disconnected", handleUserDisconnected);
+			socket.off("user_deleted", handleUserDeleted);
 		};
 	}, [socket]);
 
@@ -77,6 +84,20 @@ const UsersTable = () => {
 		} catch (error: any) {
 			console.error("Error forcing logout:", error);
 			toast.error("Không thể đăng xuất người dùng");
+		}
+	};
+
+	const handleDeleteUser = async (userId: string, fullName: string) => {
+		if (!confirm(`Bạn có chắc chắn muốn xóa ${fullName}? Hành động này không thể hoàn tác!`)) return;
+
+		try {
+			await axiosInstance.delete(`/admin/users/${userId}`);
+			toast.success(`Đã xóa ${fullName}`);
+			// Update local state
+			setUsers((prevUsers) => prevUsers.filter((user) => user._id !== userId));
+		} catch (error: any) {
+			console.error("Error deleting user:", error);
+			toast.error(error.response?.data?.message || "Không thể xóa người dùng");
 		}
 	};
 
@@ -133,17 +154,28 @@ const UsersTable = () => {
 						<TableCell>{user.email}</TableCell>
 						<TableCell>{formatLastActive(user.lastActive)}</TableCell>
 						<TableCell className="text-right">
-							{user.isOnline && (
+							<div className="flex items-center justify-end gap-2">
+								{user.isOnline && (
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => handleForceLogout(user._id, user.fullName)}
+										className="text-orange-400 hover:text-orange-300 hover:bg-orange-400/10"
+									>
+										<LogOut className="size-4 mr-2" />
+										Đăng xuất
+									</Button>
+								)}
 								<Button
 									variant="ghost"
 									size="sm"
-									onClick={() => handleForceLogout(user._id, user.fullName)}
+									onClick={() => handleDeleteUser(user._id, user.fullName)}
 									className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
 								>
-									<LogOut className="size-4 mr-2" />
-									Đăng xuất
+									<Trash2 className="size-4 mr-2" />
+									Xóa
 								</Button>
-							)}
+							</div>
 						</TableCell>
 					</TableRow>
 				))}
