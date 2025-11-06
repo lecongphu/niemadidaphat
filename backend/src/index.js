@@ -20,6 +20,7 @@ import statRoutes from "./routes/stat.route.js";
 import teacherRoutes from "./routes/teacher.route.js";
 import categoryRoutes from "./routes/category.route.js";
 import playlistRoutes from "./routes/playlist.route.js";
+import sitemapRoutes from "./routes/sitemap.route.js";
 
 dotenv.config();
 
@@ -80,6 +81,9 @@ if (process.env.NODE_ENV === "production") {
 	console.log("Frontend dist path:", frontendDistPath);
 	app.use(express.static(frontendDistPath));
 }
+
+// Sitemap route - must be BEFORE API routes to avoid auth
+app.use("/", sitemapRoutes);
 
 // API routes
 app.use("/api/users", userRoutes);
