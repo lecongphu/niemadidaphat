@@ -6,7 +6,7 @@ const AudioPlayer = () => {
 	const prevSongRef = useRef<string | null>(null);
 	const isRestoredRef = useRef(false);
 
-	const { currentSong, isPlaying, playNext, currentTime, setCurrentTime } = usePlayerStore();
+	const { currentSong, isPlaying, setCurrentTime } = usePlayerStore();
 
 	// handle play/pause logic
 	useEffect(() => {
@@ -22,18 +22,8 @@ const AudioPlayer = () => {
 		}
 	}, [isPlaying]);
 
-	// handle song ends
-	useEffect(() => {
-		const audio = audioRef.current;
-
-		const handleEnded = () => {
-			playNext();
-		};
-
-		audio?.addEventListener("ended", handleEnded);
-
-		return () => audio?.removeEventListener("ended", handleEnded);
-	}, [playNext]);
+	// handle song ends - Note: This is handled by PlaybackControls to respect repeat mode
+	// Removed duplicate ended listener to prevent conflicts
 
 	// Save current time periodically
 	useEffect(() => {
@@ -69,12 +59,15 @@ const AudioPlayer = () => {
 		if (isSongChange) {
 			audio.src = currentSong?.audioUrl;
 
+			// Get current stored time for restoration
+			const storedTime = usePlayerStore.getState().currentTime;
+
 			// Restore saved position on first load or reset to 0 for new song
-			if (!isRestoredRef.current && currentTime > 0) {
+			if (!isRestoredRef.current && storedTime > 0) {
 				// Wait for metadata to load before setting time
 				const handleLoadedMetadata = () => {
-					if (audio.duration >= currentTime) {
-						audio.currentTime = currentTime;
+					if (audio.duration >= storedTime) {
+						audio.currentTime = storedTime;
 						isRestoredRef.current = true;
 					}
 				};
@@ -96,7 +89,7 @@ const AudioPlayer = () => {
 				});
 			}
 		}
-	}, [currentSong, isPlaying, currentTime, setCurrentTime]);
+	}, [currentSong, isPlaying, setCurrentTime]);
 
 	return <audio ref={audioRef} />;
 };

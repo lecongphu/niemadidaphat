@@ -28,8 +28,17 @@ export const PlaybackControls = () => {
 		const audio = audioRef.current;
 		if (!audio) return;
 
-		const updateTime = () => setCurrentTime(audio.currentTime);
-		const updateDuration = () => setDuration(audio.duration);
+		const updateTime = () => {
+			if (audio && !isNaN(audio.currentTime)) {
+				setCurrentTime(audio.currentTime);
+			}
+		};
+
+		const updateDuration = () => {
+			if (audio && !isNaN(audio.duration)) {
+				setDuration(audio.duration);
+			}
+		};
 
 		audio.addEventListener("timeupdate", updateTime);
 		audio.addEventListener("loadedmetadata", updateDuration);
@@ -39,8 +48,14 @@ export const PlaybackControls = () => {
 
 			if (repeatMode === "one") {
 				// Repeat current song
-				audio.currentTime = 0;
-				audio.play();
+				if (audio && audio.currentTime !== undefined) {
+					audio.currentTime = 0;
+					audio.play().catch((error) => {
+						if (error.name !== 'AbortError') {
+							console.error('Error repeating audio:', error);
+						}
+					});
+				}
 			} else {
 				// Play next song (will handle repeat all in playNext)
 				storePlayNext();
@@ -50,9 +65,12 @@ export const PlaybackControls = () => {
 		audio.addEventListener("ended", handleEnded);
 
 		return () => {
-			audio.removeEventListener("timeupdate", updateTime);
-			audio.removeEventListener("loadedmetadata", updateDuration);
-			audio.removeEventListener("ended", handleEnded);
+			// Safely remove event listeners even if audio element was removed
+			if (audio) {
+				audio.removeEventListener("timeupdate", updateTime);
+				audio.removeEventListener("loadedmetadata", updateDuration);
+				audio.removeEventListener("ended", handleEnded);
+			}
 		};
 	}, [currentSong]);
 

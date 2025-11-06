@@ -208,6 +208,151 @@ export const createSongFromUrl = async (req, res, next) => {
 	}
 };
 
+export const updateSong = async (req, res, next) => {
+	try {
+		const { id } = req.params;
+		const { title, teacher, albumId, duration, category } = req.body;
+
+		// Find existing song
+		const song = await Song.findById(id);
+		if (!song) {
+			return res.status(404).json({ message: "Song not found" });
+		}
+
+		// Validate required fields
+		if (!title) {
+			return res.status(400).json({ message: "Title is required" });
+		}
+
+		if (!teacher) {
+			return res.status(400).json({ message: "Teacher is required" });
+		}
+
+		if (!albumId) {
+			return res.status(400).json({ message: "Album is required" });
+		}
+
+		if (!category) {
+			return res.status(400).json({ message: "Category is required" });
+		}
+
+		// Validate teacher exists
+		const teacherExists = await Teacher.findById(teacher);
+		if (!teacherExists) {
+			return res.status(404).json({ message: "Teacher not found" });
+		}
+
+		// Validate category exists
+		const categoryExists = await Category.findById(category);
+		if (!categoryExists) {
+			return res.status(404).json({ message: "Category not found" });
+		}
+
+		// Get album info
+		const album = await Album.findById(albumId);
+		if (!album) {
+			return res.status(404).json({ message: "Album not found" });
+		}
+
+		// Handle album change - update old and new albums
+		if (song.albumId && song.albumId.toString() !== albumId) {
+			// Remove from old album
+			await Album.findByIdAndUpdate(song.albumId, {
+				$pull: { songs: song._id },
+			});
+
+			// Add to new album
+			await Album.findByIdAndUpdate(albumId, {
+				$push: { songs: song._id },
+			});
+
+			// Reorder songs in old album
+			const remainingSongs = await Song.find({
+				albumId: song.albumId,
+				order: { $gt: song.order }
+			});
+
+			const reorderPromises = remainingSongs.map((s) => {
+				return Song.findByIdAndUpdate(s._id, { order: s.order - 1 });
+			});
+
+			await Promise.all(reorderPromises);
+
+			// Set order for new album
+			const songsCount = await Song.countDocuments({ albumId });
+			song.order = songsCount;
+		}
+
+		// Handle audio file upload if provided
+		let audioUrl = song.audioUrl;
+		if (req.files && req.files.audioFile) {
+			const audioFile = req.files.audioFile;
+			console.log("Updating audio file, size:", audioFile.size, "bytes");
+
+			const folderPath = `niemadidaphat/${album.title}`;
+			const songFileName = title;
+
+			try {
+				// Upload new audio
+				audioUrl = await uploadToCloudinary(audioFile, {
+					folder: folderPath,
+					public_id: `audios/${songFileName}`,
+					resource_type: "video",
+				});
+				console.log("New audio uploaded successfully");
+
+				// Delete old audio from Cloudinary if it exists
+				if (song.audioUrl) {
+					const extractPublicId = (url) => {
+						const parts = url.split('/');
+						const uploadIndex = parts.indexOf('upload');
+						if (uploadIndex !== -1 && uploadIndex + 2 < parts.length) {
+							const pathAfterUpload = parts.slice(uploadIndex + 2).join('/');
+							return pathAfterUpload.substring(0, pathAfterUpload.lastIndexOf('.'));
+						}
+						return null;
+					};
+
+					const audioPublicId = extractPublicId(song.audioUrl);
+					if (audioPublicId) {
+						try {
+							await cloudinary.uploader.destroy(audioPublicId, { resource_type: 'video' });
+							console.log('Old audio file deleted from Cloudinary');
+						} catch (err) {
+							console.log('Error deleting old audio from Cloudinary:', err.message);
+						}
+					}
+				}
+			} catch (error) {
+				console.error("Failed to upload audio:", error.message);
+				return res.status(500).json({ message: `Failed to upload audio: ${error.message}` });
+			}
+		}
+
+		// Update song with new album's image
+		const imageUrl = album.imageUrl;
+
+		// Update song fields
+		song.title = title;
+		song.teacher = teacher;
+		song.albumId = albumId;
+		song.category = category;
+		song.duration = duration ? parseInt(duration) : song.duration;
+		song.audioUrl = audioUrl;
+		song.imageUrl = imageUrl;
+
+		await song.save();
+
+		console.log("Song updated successfully");
+
+		res.status(200).json(song);
+	} catch (error) {
+		console.error("Error in updateSong:", error);
+		console.error("Error stack:", error.stack);
+		res.status(500).json({ message: error.message || "Internal server error" });
+	}
+};
+
 export const deleteSong = async (req, res, next) => {
 	try {
 		const { id } = req.params;

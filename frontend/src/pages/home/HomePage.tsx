@@ -1,10 +1,26 @@
 import Topbar from "@/components/Topbar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
 
 const HomePage = () => {
 	return (
 		<main className='rounded-md overflow-hidden h-full bg-gradient-to-b from-zinc-800 to-zinc-900'>
+			<SEO
+				title="Trang Chủ"
+				description="Niệm A Di Đà Phật - Thư viện bài pháp Phật giáo online. Nghe kinh Phật, bài giảng Phật pháp, thiền học miễn phí. Hướng dẫn tu hành, niệm Phật, tụng kinh."
+				type="website"
+				url="/"
+				keywords={[
+					"niệm phật online",
+					"kinh phật audio",
+					"bài giảng phật pháp",
+					"tu hành phật giáo",
+					"thiền học",
+					"tụng kinh",
+					"a di đà phật",
+				]}
+			/>
 			<Topbar />
 			<ScrollArea className='h-[calc(100vh-180px)]'>
 				<div className='p-4 sm:p-6'>

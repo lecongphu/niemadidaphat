@@ -83,7 +83,7 @@ const FriendsActivity = () => {
 												</div>
 											</div>
 										) : (
-											<div className='mt-1 text-xs text-zinc-400'>Đang nghỉ ngơi</div>
+											<div className='mt-1 text-xs text-zinc-400'>Đang niệm A Di Đà Phật</div>
 										)}
 									</div>
 								</div>

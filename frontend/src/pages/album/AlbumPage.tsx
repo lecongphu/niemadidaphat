@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import PlayingIndicator from "@/components/PlayingIndicator";
 import { AddToPlaylistDialog } from "@/pages/playlist/components/AddToPlaylistDialog";
+import SEO from "@/components/SEO";
 
 const AlbumPage = () => {
 	const { albumId } = useParams();
@@ -46,8 +47,25 @@ const AlbumPage = () => {
 		setShowAddToPlaylist(true);
 	};
 
+	// SEO data
+	const teacherName = currentAlbum ? getName(currentAlbum.teacher) : "";
+	const albumDescription = currentAlbum
+		? `Nghe bộ kinh "${currentAlbum.title}" của ${teacherName}. ${currentAlbum.songs.length} bài pháp. Phát hành năm ${currentAlbum.releaseYear}. Niệm A Di Đà Phật - Thư viện bài pháp Phật giáo online.`
+		: "";
+
 	return (
 		<div className='h-full'>
+			{currentAlbum && (
+				<SEO
+					title={`${currentAlbum.title} - Bộ Kinh`}
+					description={albumDescription}
+					type="music.album"
+					image={currentAlbum.imageUrl}
+					url={`/albums/${currentAlbum._id}`}
+					keywords={[currentAlbum.title, teacherName, "bộ kinh", "kinh phật", "audio phật pháp"]}
+					author={teacherName}
+				/>
+			)}
 			<ScrollArea className='h-full rounded-md'>
 				{/* Main Content */}
 				<div className='relative min-h-full'>

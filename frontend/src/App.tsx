@@ -5,6 +5,7 @@ import ChatPage from "./pages/chat/ChatPage";
 import AlbumPage from "./pages/album/AlbumPage";
 import AdminPage from "./pages/admin/AdminPage";
 import PlaylistPage from "./pages/playlist/PlaylistPage";
+import SongDetailPage from "./pages/song/SongDetailPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 
@@ -25,6 +26,7 @@ function App() {
 					<Route path='/' element={<HomePage />} />
 					<Route path='/chat' element={<ChatPage />} />
 					<Route path='/albums/:albumId' element={<AlbumPage />} />
+					<Route path='/songs/:songId' element={<SongDetailPage />} />
 					<Route path='/playlists/:playlistId' element={<PlaylistPage />} />
 					<Route path='*' element={<NotFoundPage />} />
 				</Route>

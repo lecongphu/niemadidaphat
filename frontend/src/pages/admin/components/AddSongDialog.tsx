@@ -25,7 +25,7 @@ interface NewSong {
 }
 
 const AddSongDialog = () => {
-	const { albums, teachers, categories } = useMusicStore();
+	const { albums, teachers, categories, fetchSongs } = useMusicStore();
 	const [songDialogOpen, setSongDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
@@ -106,6 +106,9 @@ const AddSongDialog = () => {
 					setUploadProgress(progress);
 				},
 			});
+
+			// Refresh the songs list
+			await fetchSongs();
 
 			// Only reset form if keepFormData is false
 			if (!keepFormData) {

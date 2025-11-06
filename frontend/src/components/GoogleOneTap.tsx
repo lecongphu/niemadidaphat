@@ -36,14 +36,20 @@ const GoogleOneTap = () => {
 		if (hasInitialized.current || window.googleOneTapInitialized) return;
 
 		const initializeGoogleOneTap = () => {
-			if (!window.google) return;
+			if (!window.google?.accounts?.id) {
+				console.warn("Google Identity Services not loaded yet");
+				return;
+			}
 
 			// Check if already prompting
 			if (isPrompting.current) return;
 
 			// Get the Google Client ID from environment variable
 			const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-			if (!clientId) return;
+			if (!clientId) {
+				console.error("VITE_GOOGLE_CLIENT_ID is not configured");
+				return;
+			}
 
 			// Mark as initialized BEFORE calling initialize to prevent race conditions
 			hasInitialized.current = true;
@@ -55,16 +61,34 @@ const GoogleOneTap = () => {
 					client_id: clientId,
 					callback: handleCredentialResponse,
 					auto_select: false,
-					cancel_on_tap_outside: true,
+					cancel_on_tap_outside: false,
 					context: "signin",
+					ux_mode: "popup",
+					itp_support: true,
 				});
 
-				// Display the One-Tap prompt
-				isPrompting.current = true;
-				window.google.accounts.id.prompt((_notification: any) => {
-					isPrompting.current = false;
-				});
+				// Display the One-Tap prompt with a slight delay to ensure DOM is ready
+				setTimeout(() => {
+					if (!window.google?.accounts?.id) return;
+
+					isPrompting.current = true;
+					window.google.accounts.id.prompt((notification: any) => {
+						isPrompting.current = false;
+
+						// Log notification for debugging
+						if (notification.isNotDisplayed()) {
+							console.warn("One-Tap not displayed:", notification.getNotDisplayedReason());
+						}
+						if (notification.isSkippedMoment()) {
+							console.warn("One-Tap skipped:", notification.getSkippedReason());
+						}
+						if (notification.isDismissedMoment()) {
+							console.log("One-Tap dismissed:", notification.getDismissedReason());
+						}
+					});
+				}, 500);
 			} catch (error) {
+				console.error("Error initializing Google One-Tap:", error);
 				hasInitialized.current = false;
 				window.googleOneTapInitialized = false;
 				isPrompting.current = false;
@@ -72,7 +96,7 @@ const GoogleOneTap = () => {
 		};
 
 		// Check if script is already loaded
-		if (window.google) {
+		if (window.google?.accounts?.id) {
 			initializeGoogleOneTap();
 			return;
 		}
@@ -92,6 +116,11 @@ const GoogleOneTap = () => {
 		script.async = true;
 		script.defer = true;
 		script.onload = initializeGoogleOneTap;
+		script.onerror = () => {
+			console.error("Failed to load Google Identity Services script");
+			hasInitialized.current = false;
+			window.googleOneTapInitialized = false;
+		};
 
 		document.head.appendChild(script);
 
