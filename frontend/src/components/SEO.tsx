@@ -1,5 +1,3 @@
-import { Helmet } from "react-helmet-async";
-
 interface SEOProps {
 	title: string;
 	description: string;
@@ -24,7 +22,7 @@ const SEO = ({
 	modifiedTime,
 }: SEOProps) => {
 	const siteName = "Niệm A Di Đà Phật";
-	const defaultImage = "/og-image.png"; // You should add a default OG image
+	const defaultImage = "/og-image.png";
 	const siteUrl = window.location.origin;
 	const fullUrl = url ? `${siteUrl}${url}` : window.location.href;
 	const fullImage = image ? (image.startsWith("http") ? image : `${siteUrl}${image}`) : `${siteUrl}${defaultImage}`;
@@ -46,7 +44,7 @@ const SEO = ({
 	const allKeywords = [...new Set([...keywords, ...defaultKeywords])];
 
 	return (
-		<Helmet>
+		<>
 			{/* Primary Meta Tags */}
 			<title>{fullTitle}</title>
 			<meta name="title" content={fullTitle} />
@@ -75,7 +73,6 @@ const SEO = ({
 			<link rel="canonical" href={fullUrl} />
 			<meta name="robots" content="index, follow" />
 			<meta name="googlebot" content="index, follow" />
-			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 			<meta httpEquiv="Content-Language" content="vi" />
 			<meta name="language" content="Vietnamese" />
 
@@ -92,7 +89,7 @@ const SEO = ({
 					<meta property="music:musician" content={author} />
 				</>
 			)}
-		</Helmet>
+		</>
 	);
 };
 
