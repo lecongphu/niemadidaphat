@@ -4,7 +4,7 @@ let socket: Socket | null = null;
 
 export const getSocket = (): Socket => {
 	if (!socket) {
-		const socketURL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+		const socketURL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "/";
 		socket = io(socketURL, {
 			autoConnect: true,
 			reconnection: true,
