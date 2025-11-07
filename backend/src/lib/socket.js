@@ -1,5 +1,4 @@
 import { Server } from "socket.io";
-import { Message } from "../models/message.model.js";
 import { User } from "../models/user.model.js";
 
 let io;
@@ -44,29 +43,6 @@ export const initializeSocket = (server) => {
 			console.log("activity updated", userId, activity);
 			userActivities.set(userId, activity);
 			io.emit("activity_updated", { userId, activity });
-		});
-
-		socket.on("send_message", async (data) => {
-			try {
-				const { senderId, receiverId, content } = data;
-
-				const message = await Message.create({
-					senderId,
-					receiverId,
-					content,
-				});
-
-				// send to receiver in realtime, if they're online
-				const receiverSocketId = userSockets.get(receiverId);
-				if (receiverSocketId) {
-					io.to(receiverSocketId).emit("receive_message", message);
-				}
-
-				socket.emit("message_sent", message);
-			} catch (error) {
-				console.error("Message error:", error);
-				socket.emit("message_error", error.message);
-			}
 		});
 
 		socket.on("disconnect", async () => {

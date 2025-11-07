@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, getOptimizedImageUrl } from "@/lib/utils";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { HomeIcon, ListMusic, MessageCircle, Plus } from "lucide-react";
+import { HomeIcon, ListMusic, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { CreatePlaylistDialog } from "@/pages/playlist/components/CreatePlaylistDialog";
@@ -40,21 +40,6 @@ const LeftSidebar = () => {
 						<HomeIcon className='mr-2 size-5' />
 						<span className='hidden md:inline'>Trang Chủ</span>
 					</Link>
-
-					{isAuthenticated && (
-						<Link
-							to={"/chat"}
-							className={cn(
-								buttonVariants({
-									variant: "ghost",
-									className: "w-full justify-start text-white hover:bg-zinc-800",
-								})
-							)}
-						>
-							<MessageCircle className='mr-2 size-5' />
-							<span className='hidden md:inline'>Đàm đạo</span>
-						</Link>
-					)}
 				</div>
 			</div>
 

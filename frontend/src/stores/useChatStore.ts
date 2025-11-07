@@ -1,5 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
-import { Message, User } from "@/types";
+import { User } from "@/types";
 import { create } from "zustand";
 import { io } from "socket.io-client";
 
@@ -11,15 +11,10 @@ interface ChatStore {
 	isConnected: boolean;
 	onlineUsers: Set<string>;
 	userActivities: Map<string, string>;
-	messages: Message[];
-	selectedUser: User | null;
 
 	fetchUsers: () => Promise<void>;
 	initSocket: (userId: string) => void;
 	disconnectSocket: () => void;
-	sendMessage: (receiverId: string, senderId: string, content: string) => void;
-	fetchMessages: (userId: string) => Promise<void>;
-	setSelectedUser: (user: User | null) => void;
 }
 
 const baseURL = import.meta.env.MODE === "development" ? "http://localhost:5000" : "/";
@@ -37,10 +32,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 	isConnected: false,
 	onlineUsers: new Set(),
 	userActivities: new Map(),
-	messages: [],
-	selectedUser: null,
-
-	setSelectedUser: (user) => set({ selectedUser: user }),
 
 	fetchUsers: async () => {
 		set({ isLoading: true, error: null });
@@ -83,18 +74,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 				});
 			});
 
-			socket.on("receive_message", (message: Message) => {
-				set((state) => ({
-					messages: [...state.messages, message],
-				}));
-			});
-
-			socket.on("message_sent", (message: Message) => {
-				set((state) => ({
-					messages: [...state.messages, message],
-				}));
-			});
-
 			socket.on("activity_updated", ({ userId, activity }) => {
 				set((state) => {
 					const newActivities = new Map(state.userActivities);
@@ -111,25 +90,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 		if (get().isConnected) {
 			socket.disconnect();
 			set({ isConnected: false });
-		}
-	},
-
-	sendMessage: async (receiverId, senderId, content) => {
-		const socket = get().socket;
-		if (!socket) return;
-
-		socket.emit("send_message", { receiverId, senderId, content });
-	},
-
-	fetchMessages: async (userId: string) => {
-		set({ isLoading: true, error: null });
-		try {
-			const response = await axiosInstance.get(`/users/messages/${userId}`);
-			set({ messages: response.data });
-		} catch (error: any) {
-			set({ error: error.response.data.message });
-		} finally {
-			set({ isLoading: false });
 		}
 	},
 }));
