@@ -2,23 +2,18 @@ import PlaylistSkeleton from "@/components/skeletons/PlaylistSkeleton";
 import { buttonVariants } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, getOptimizedImageUrl } from "@/lib/utils";
-import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { HomeIcon, Library, ListMusic, MessageCircle, Plus } from "lucide-react";
+import { HomeIcon, ListMusic, MessageCircle, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { CreatePlaylistDialog } from "@/pages/playlist/components/CreatePlaylistDialog";
+import TopListenedSongs from "@/components/TopListenedSongs";
 
 const LeftSidebar = () => {
-	const { albums, fetchAlbums, isLoading } = useMusicStore();
 	const { playlists, fetchPlaylists, isLoading: isLoadingPlaylists } = usePlaylistStore();
 	const { isAuthenticated } = useAuthStore();
 	const [showCreateDialog, setShowCreateDialog] = useState(false);
-
-	useEffect(() => {
-		fetchAlbums();
-	}, [fetchAlbums]);
 
 	useEffect(() => {
 		if (isAuthenticated) {
@@ -63,43 +58,9 @@ const LeftSidebar = () => {
 				</div>
 			</div>
 
-			{/* Library section */}
-			<div className='flex-1 rounded-lg bg-zinc-900 p-4'>
-				<div className='flex items-center justify-between mb-4'>
-					<div className='flex items-center text-white px-2'>
-						<Library className='size-5 mr-2' />
-						<span className='hidden md:inline'>Bộ Kinh</span>
-					</div>
-				</div>
-
-				<ScrollArea className='h-[calc(100vh-500px)]'>
-					<div className='space-y-2'>
-						{isLoading ? (
-							<PlaylistSkeleton />
-						) : (
-							albums.map((album) => (
-								<Link
-									to={`/albums/${album._id}`}
-									key={album._id}
-									className='p-2 hover:bg-zinc-800 rounded-md flex items-center gap-3 group cursor-pointer'
-								>
-									<img
-										src={getOptimizedImageUrl(album.imageUrl)}
-										alt='Hình ảnh bộ kinh'
-										className='size-12 rounded-md flex-shrink-0 object-cover'
-									/>
-
-									<div className='flex-1 min-w-0 hidden md:block'>
-										<p className='font-medium truncate'>{album.title}</p>
-										<p className='text-sm text-zinc-400 truncate'>
-											Bộ Kinh • {typeof album.teacher === 'string' ? album.teacher : album.teacher.name}
-										</p>
-									</div>
-								</Link>
-							))
-						)}
-					</div>
-				</ScrollArea>
+			{/* Top Listened Songs section */}
+			<div className='flex-1 rounded-lg overflow-hidden'>
+				<TopListenedSongs />
 			</div>
 
 			{/* Playlists section */}
