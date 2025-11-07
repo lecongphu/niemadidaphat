@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChatStore } from "@/stores/useChatStore";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { HeadphonesIcon, Music, Users } from "lucide-react";
+import { HeadphonesIcon, Music, Users, Crown } from "lucide-react";
 import { useEffect } from "react";
 
 const FriendsActivity = () => {
@@ -70,6 +70,12 @@ const FriendsActivity = () => {
 									<div className='flex-1 min-w-0'>
 										<div className='flex items-center gap-2'>
 											<span className='font-medium text-sm text-white'>{user.fullName}</span>
+											{user.isAdmin && (
+												<span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
+													<Crown className="size-3" />
+													Admin
+												</span>
+											)}
 											{isPlaying && <Music className='size-3.5 text-emerald-400 shrink-0' />}
 										</div>
 
