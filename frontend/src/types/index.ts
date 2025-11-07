@@ -72,4 +72,5 @@ export interface User {
 	_id: string;
 	fullName: string;
 	imageUrl: string;
+	isAdmin?: boolean;
 }

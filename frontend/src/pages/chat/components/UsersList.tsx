@@ -2,6 +2,7 @@ import UsersListSkeleton from "@/components/skeletons/UsersListSkeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChatStore } from "@/stores/useChatStore";
+import { Crown } from "lucide-react";
 
 const UsersList = () => {
 	const { users, selectedUser, isLoading, setSelectedUser, onlineUsers } = useChatStore();
@@ -35,7 +36,15 @@ const UsersList = () => {
 									</div>
 
 									<div className='flex-1 min-w-0 lg:block hidden'>
-										<span className='font-medium truncate'>{user.fullName}</span>
+										<div className='flex items-center gap-2'>
+											<span className='font-medium truncate'>{user.fullName}</span>
+											{user.isAdmin && (
+												<span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
+													<Crown className="size-3" />
+													Admin
+												</span>
+											)}
+										</div>
 									</div>
 								</div>
 							))
