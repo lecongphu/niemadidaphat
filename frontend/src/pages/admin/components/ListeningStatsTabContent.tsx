@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { axiosInstance } from "@/lib/axios";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, Headphones, TrendingUp, Users } from "lucide-react";
-import { getOptimizedImageUrl, getName } from "@/lib/utils";
+import { Clock, Headphones, TrendingUp, Users, RefreshCw } from "lucide-react";
+import { getOptimizedImageUrl } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface PopularSong {
 	_id: string;
@@ -32,21 +33,60 @@ interface GlobalStats {
 const ListeningStatsTabContent = () => {
 	const [stats, setStats] = useState<GlobalStats | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [isRefreshing, setIsRefreshing] = useState(false);
+	const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+	const [, setTick] = useState(0); // Force re-render for time update
+	const intervalRef = useRef<NodeJS.Timeout | null>(null);
+	const tickIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
+		// Initial fetch
 		fetchGlobalStats();
+
+		// Set up auto-refresh every 30 seconds
+		intervalRef.current = setInterval(() => {
+			fetchGlobalStats(true); // Silent refresh
+		}, 30000);
+
+		// Update "time ago" every second
+		tickIntervalRef.current = setInterval(() => {
+			setTick((prev) => prev + 1);
+		}, 1000);
+
+		// Cleanup intervals on unmount
+		return () => {
+			if (intervalRef.current) {
+				clearInterval(intervalRef.current);
+			}
+			if (tickIntervalRef.current) {
+				clearInterval(tickIntervalRef.current);
+			}
+		};
 	}, []);
 
-	const fetchGlobalStats = async () => {
+	const fetchGlobalStats = async (silent = false) => {
 		try {
-			setLoading(true);
+			if (!silent) {
+				setLoading(true);
+			} else {
+				setIsRefreshing(true);
+			}
 			const response = await axiosInstance.get("/listening/stats/global");
 			setStats(response.data);
+			setLastUpdate(new Date());
 		} catch (error) {
 			console.error("Error fetching global stats:", error);
 		} finally {
-			setLoading(false);
+			if (!silent) {
+				setLoading(false);
+			} else {
+				setIsRefreshing(false);
+			}
 		}
+	};
+
+	const handleManualRefresh = () => {
+		fetchGlobalStats();
 	};
 
 	if (loading) {
@@ -74,13 +114,57 @@ const ListeningStatsTabContent = () => {
 	// Calculate total stats from last 7 days
 	const last7Days = stats.dailyStats.slice(-7);
 	const last7DaysTotal = last7Days.reduce((sum, day) => sum + day.completedSongs, 0);
-	const last7DaysListeners = last7Days.reduce((sum, day) => sum + day.uniqueUsersCount, 0);
+
+	// Format last update time
+	const getTimeSinceUpdate = () => {
+		const seconds = Math.floor((new Date().getTime() - lastUpdate.getTime()) / 1000);
+		if (seconds < 60) return `${seconds} giây trước`;
+		const minutes = Math.floor(seconds / 60);
+		if (minutes < 60) return `${minutes} phút trước`;
+		const hours = Math.floor(minutes / 60);
+		return `${hours} giờ trước`;
+	};
 
 	return (
 		<div className="space-y-6">
+			{/* Header with Refresh Button */}
+			<div className="flex items-center justify-between">
+				<div className="flex items-center gap-3">
+					<h2 className="text-2xl font-bold">Thống Kê Realtime</h2>
+					<div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20">
+						<span className="relative flex h-2 w-2">
+							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+							<span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+						</span>
+						<span className="text-xs font-medium text-red-500">LIVE</span>
+					</div>
+					{isRefreshing && (
+						<div className="flex items-center gap-2 text-sm text-emerald-500">
+							<RefreshCw className="h-4 w-4 animate-spin" />
+							<span>Đang cập nhật...</span>
+						</div>
+					)}
+				</div>
+				<div className="flex items-center gap-4">
+					<span className="text-sm text-zinc-400">
+						Cập nhật lần cuối: {getTimeSinceUpdate()}
+					</span>
+					<Button
+						onClick={handleManualRefresh}
+						disabled={loading || isRefreshing}
+						size="sm"
+						variant="outline"
+						className="gap-2"
+					>
+						<RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+						Làm mới
+					</Button>
+				</div>
+			</div>
+
 			{/* Overview Cards */}
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-				<Card className="bg-zinc-800/50 border-zinc-700">
+				<Card className="bg-zinc-800/50 border-zinc-700 transition-all duration-300 hover:border-zinc-600">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">Tổng Thời Gian Nghe</CardTitle>
 						<Clock className="h-4 w-4 text-emerald-500" />
@@ -93,7 +177,7 @@ const ListeningStatsTabContent = () => {
 					</CardContent>
 				</Card>
 
-				<Card className="bg-zinc-800/50 border-zinc-700">
+				<Card className="bg-zinc-800/50 border-zinc-700 transition-all duration-300 hover:border-zinc-600">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">Người Nghe</CardTitle>
 						<Users className="h-4 w-4 text-blue-500" />
@@ -104,7 +188,7 @@ const ListeningStatsTabContent = () => {
 					</CardContent>
 				</Card>
 
-				<Card className="bg-zinc-800/50 border-zinc-700">
+				<Card className="bg-zinc-800/50 border-zinc-700 transition-all duration-300 hover:border-zinc-600">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">7 Ngày Qua</CardTitle>
 						<TrendingUp className="h-4 w-4 text-purple-500" />
@@ -115,7 +199,7 @@ const ListeningStatsTabContent = () => {
 					</CardContent>
 				</Card>
 
-				<Card className="bg-zinc-800/50 border-zinc-700">
+				<Card className="bg-zinc-800/50 border-zinc-700 transition-all duration-300 hover:border-zinc-600">
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">Trung Bình/Người</CardTitle>
 						<Headphones className="h-4 w-4 text-orange-500" />
