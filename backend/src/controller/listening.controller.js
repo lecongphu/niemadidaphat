@@ -1,11 +1,12 @@
 import { ListeningHistory } from "../models/listeningHistory.model.js";
 import { Song } from "../models/song.model.js";
+import { getIO } from "../lib/socket.js";
 
 // Track listening progress
 export const trackListening = async (req, res, next) => {
 	try {
 		const { songId, currentTime, duration, completed } = req.body;
-		const userId = req.auth.userId;
+		const userId = req.userId;
 
 		if (!songId || currentTime === undefined || !duration) {
 			return res.status(400).json({ message: "Missing required fields" });
@@ -29,6 +30,17 @@ export const trackListening = async (req, res, next) => {
 			completedAt: isCompleted ? new Date() : null,
 		});
 
+		// Emit socket event when listening is completed
+		if (isCompleted) {
+			try {
+				const io = getIO();
+				// Broadcast to all clients that listening stats have been updated
+				io.emit("listening_stats_updated");
+			} catch (error) {
+				console.log("Socket.io not available:", error.message);
+			}
+		}
+
 		res.json({
 			message: "Listening tracked successfully",
 			completed: isCompleted,
@@ -43,7 +55,7 @@ export const trackListening = async (req, res, next) => {
 // Get user's listening statistics
 export const getUserListeningStats = async (req, res, next) => {
 	try {
-		const userId = req.auth.userId;
+		const userId = req.userId;
 
 		// Total listening time (in seconds)
 		const totalListeningTime = await ListeningHistory.aggregate([
@@ -242,6 +254,76 @@ export const getGlobalListeningStats = async (req, res, next) => {
 		});
 	} catch (error) {
 		console.log("Error getting global listening stats:", error);
+		next(error);
+	}
+};
+
+// Get top listened songs (public endpoint)
+export const getTopListenedSongs = async (req, res, next) => {
+	try {
+		const limit = parseInt(req.query.limit) || 10;
+
+		// Get most listened songs
+		const topSongs = await ListeningHistory.aggregate([
+			{ $match: { completed: true } },
+			{ $group: { _id: "$song", listens: { $sum: 1 } } },
+			{ $sort: { listens: -1 } },
+			{ $limit: limit },
+			{
+				$lookup: {
+					from: "songs",
+					localField: "_id",
+					foreignField: "_id",
+					as: "songDetails",
+				},
+			},
+			{ $unwind: "$songDetails" },
+			{
+				$lookup: {
+					from: "teachers",
+					localField: "songDetails.teacher",
+					foreignField: "_id",
+					as: "teacherDetails",
+				},
+			},
+			{ $unwind: "$teacherDetails" },
+			{
+				$lookup: {
+					from: "albums",
+					localField: "songDetails.albumId",
+					foreignField: "_id",
+					as: "albumDetails",
+				},
+			},
+			{
+				$project: {
+					_id: "$songDetails._id",
+					title: "$songDetails.title",
+					imageUrl: "$songDetails.imageUrl",
+					audioUrl: "$songDetails.audioUrl",
+					duration: "$songDetails.duration",
+					listens: 1,
+					teacher: {
+						_id: "$teacherDetails._id",
+						name: "$teacherDetails.name",
+					},
+					album: {
+						$cond: {
+							if: { $gt: [{ $size: "$albumDetails" }, 0] },
+							then: {
+								_id: { $arrayElemAt: ["$albumDetails._id", 0] },
+								title: { $arrayElemAt: ["$albumDetails.title", 0] },
+							},
+							else: null,
+						},
+					},
+				},
+			},
+		]);
+
+		res.json(topSongs);
+	} catch (error) {
+		console.log("Error getting top listened songs:", error);
 		next(error);
 	}
 };

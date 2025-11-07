@@ -37,7 +37,7 @@ const AudioPlayer = () => {
 		};
 
 		// Save time every 2 seconds
-		const interval = setInterval(saveCurrentTime, 2000);
+		const interval = setInterval(saveCurrentTime, 1000);
 
 		// Also save on pause
 		audio.addEventListener("pause", saveCurrentTime);

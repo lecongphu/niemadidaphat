@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Clock, Headphones, TrendingUp, Users, RefreshCw } from "lucide-react";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useSocket } from "@/hooks/useSocket";
 
 interface PopularSong {
 	_id: string;
@@ -36,28 +37,27 @@ const ListeningStatsTabContent = () => {
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 	const [, setTick] = useState(0); // Force re-render for time update
-	const intervalRef = useRef<NodeJS.Timeout | null>(null);
 	const tickIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+	// Socket.IO realtime updates - replace polling
+	useSocket({
+		onListeningStatsUpdated: () => {
+			console.log("Listening stats updated via Socket.IO");
+			fetchGlobalStats(true); // Silent refresh when socket event received
+		},
+	});
 
 	useEffect(() => {
 		// Initial fetch
 		fetchGlobalStats();
-
-		// Set up auto-refresh every 30 seconds
-		intervalRef.current = setInterval(() => {
-			fetchGlobalStats(true); // Silent refresh
-		}, 30000);
 
 		// Update "time ago" every second
 		tickIntervalRef.current = setInterval(() => {
 			setTick((prev) => prev + 1);
 		}, 1000);
 
-		// Cleanup intervals on unmount
+		// Cleanup interval on unmount
 		return () => {
-			if (intervalRef.current) {
-				clearInterval(intervalRef.current);
-			}
 			if (tickIntervalRef.current) {
 				clearInterval(tickIntervalRef.current);
 			}

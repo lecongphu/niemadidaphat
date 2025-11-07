@@ -2,6 +2,7 @@ import Topbar from "@/components/Topbar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
+import TopListenedSongs from "@/components/TopListenedSongs";
 
 const HomePage = () => {
 	return (
@@ -23,8 +24,11 @@ const HomePage = () => {
 			/>
 			<Topbar />
 			<ScrollArea className='h-[calc(100vh-180px)]'>
-				<div className='p-4 sm:p-6'>
-					<h1 className='text-2xl sm:text-3xl font-bold mb-6'>Nam Mô A Di Đà Phật</h1>
+				<div className='p-4 sm:p-6 space-y-8'>
+					<h1 className='text-2xl sm:text-3xl font-bold'>Nam Mô A Di Đà Phật</h1>
+
+					{/* Top Listened Songs */}
+					<TopListenedSongs />
 				</div>
 
 				{/* Footer */}
