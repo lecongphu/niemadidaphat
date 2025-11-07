@@ -485,6 +485,15 @@ export const createAlbum = async (req, res, next) => {
 
 		await album.save();
 
+		// Emit Socket.IO event for realtime update
+		try {
+			const io = getIO();
+			io.emit("album_created", album);
+			console.log("Socket.IO: album_created event emitted");
+		} catch (error) {
+			console.log("Socket.IO not available for album_created event");
+		}
+
 		res.status(201).json(album);
 	} catch (error) {
 		console.log("Error in createAlbum", error);
@@ -497,6 +506,16 @@ export const deleteAlbum = async (req, res, next) => {
 		const { id } = req.params;
 		await Song.deleteMany({ albumId: id });
 		await Album.findByIdAndDelete(id);
+
+		// Emit Socket.IO event for realtime update
+		try {
+			const io = getIO();
+			io.emit("album_deleted", { albumId: id });
+			console.log("Socket.IO: album_deleted event emitted");
+		} catch (error) {
+			console.log("Socket.IO not available for album_deleted event");
+		}
+
 		res.status(200).json({ message: "Album deleted successfully" });
 	} catch (error) {
 		console.log("Error in deleteAlbum", error);
@@ -525,6 +544,15 @@ export const createTeacher = async (req, res, next) => {
 
 		await teacher.save();
 
+		// Emit Socket.IO event for realtime update
+		try {
+			const io = getIO();
+			io.emit("teacher_created", teacher);
+			console.log("Socket.IO: teacher_created event emitted");
+		} catch (error) {
+			console.log("Socket.IO not available for teacher_created event");
+		}
+
 		res.status(201).json(teacher);
 	} catch (error) {
 		console.log("Error in createTeacher", error);
@@ -536,6 +564,16 @@ export const deleteTeacher = async (req, res, next) => {
 	try {
 		const { id } = req.params;
 		await Teacher.findByIdAndDelete(id);
+
+		// Emit Socket.IO event for realtime update
+		try {
+			const io = getIO();
+			io.emit("teacher_deleted", { teacherId: id });
+			console.log("Socket.IO: teacher_deleted event emitted");
+		} catch (error) {
+			console.log("Socket.IO not available for teacher_deleted event");
+		}
+
 		res.status(200).json({ message: "Teacher deleted successfully" });
 	} catch (error) {
 		console.log("Error in deleteTeacher", error);
@@ -567,6 +605,15 @@ export const updateTeacher = async (req, res, next) => {
 
 		if (!teacher) {
 			return res.status(404).json({ message: "Teacher not found" });
+		}
+
+		// Emit Socket.IO event for realtime update
+		try {
+			const io = getIO();
+			io.emit("teacher_updated", teacher);
+			console.log("Socket.IO: teacher_updated event emitted");
+		} catch (error) {
+			console.log("Socket.IO not available for teacher_updated event");
 		}
 
 		res.status(200).json(teacher);
@@ -702,6 +749,7 @@ export const getAllUsers = async (req, res, next) => {
 			fullName: user.fullName,
 			email: user.email,
 			imageUrl: user.imageUrl,
+			isAdmin: user.isAdmin,
 			isOnline: user.isOnline,
 			lastActive: user.lastActive,
 			createdAt: user.createdAt,
@@ -764,6 +812,91 @@ export const deleteUser = async (req, res, next) => {
 		res.status(200).json({ message: "User deleted successfully", userId });
 	} catch (error) {
 		console.log("Error in deleteUser", error);
+		next(error);
+	}
+};
+
+// Grant admin rights to a user
+export const grantAdminRights = async (req, res, next) => {
+	try {
+		const { userId } = req.params;
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		if (user.isAdmin) {
+			return res.status(400).json({ message: "User is already an admin" });
+		}
+
+		user.isAdmin = true;
+		await user.save();
+
+		// Broadcast admin rights granted
+		try {
+			const io = getIO();
+			io.emit("admin_rights_updated", { userId, isAdmin: true });
+		} catch (error) {
+			console.error("Error broadcasting admin rights update:", error);
+		}
+
+		res.status(200).json({
+			message: "Admin rights granted successfully",
+			user: {
+				_id: user._id,
+				email: user.email,
+				fullName: user.fullName,
+				isAdmin: user.isAdmin,
+			}
+		});
+	} catch (error) {
+		console.log("Error in grantAdminRights", error);
+		next(error);
+	}
+};
+
+// Revoke admin rights from a user
+export const revokeAdminRights = async (req, res, next) => {
+	try {
+		const { userId } = req.params;
+
+		// Prevent admin from revoking their own rights
+		if (userId === req.userId) {
+			return res.status(400).json({ message: "You cannot revoke your own admin rights" });
+		}
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		if (!user.isAdmin) {
+			return res.status(400).json({ message: "User is not an admin" });
+		}
+
+		user.isAdmin = false;
+		await user.save();
+
+		// Broadcast admin rights revoked
+		try {
+			const io = getIO();
+			io.emit("admin_rights_updated", { userId, isAdmin: false });
+		} catch (error) {
+			console.error("Error broadcasting admin rights update:", error);
+		}
+
+		res.status(200).json({
+			message: "Admin rights revoked successfully",
+			user: {
+				_id: user._id,
+				email: user.email,
+				fullName: user.fullName,
+				isAdmin: user.isAdmin,
+			}
+		});
+	} catch (error) {
+		console.log("Error in revokeAdminRights", error);
 		next(error);
 	}
 };

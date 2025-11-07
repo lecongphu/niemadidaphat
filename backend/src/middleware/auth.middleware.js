@@ -28,10 +28,10 @@ export const authenticate = async (req, res, next) => {
 			return res.status(401).json({ message: "Session expired - please login again" });
 		}
 
-		// Attach user info to request
+		// Attach user info to request - use database isAdmin value for security
 		req.userId = decoded.userId;
 		req.userEmail = decoded.email;
-		req.isAdmin = decoded.isAdmin;
+		req.isAdmin = user.isAdmin; // Always check database for latest admin status
 
 		next();
 	} catch (error) {

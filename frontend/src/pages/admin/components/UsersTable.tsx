@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { LogOut, Circle, Trash2 } from "lucide-react";
+import { LogOut, Circle, Trash2, Shield, ShieldOff, Crown } from "lucide-react";
 import { axiosInstance } from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useChatStore } from "@/stores/useChatStore";
@@ -11,6 +11,7 @@ interface User {
 	email: string;
 	fullName: string;
 	imageUrl: string;
+	isAdmin: boolean;
 	isOnline: boolean;
 	lastActive: string;
 }
@@ -60,14 +61,23 @@ const UsersTable = () => {
 			toast.success("Người dùng đã được xóa");
 		};
 
+		const handleAdminRightsUpdated = ({ userId, isAdmin }: { userId: string; isAdmin: boolean }) => {
+			setUsers((prevUsers) =>
+				prevUsers.map((user) => (user._id === userId ? { ...user, isAdmin } : user))
+			);
+			toast.success(isAdmin ? "Đã cấp quyền admin" : "Đã thu hồi quyền admin");
+		};
+
 		socket.on("user_connected", handleUserConnected);
 		socket.on("user_disconnected", handleUserDisconnected);
 		socket.on("user_deleted", handleUserDeleted);
+		socket.on("admin_rights_updated", handleAdminRightsUpdated);
 
 		return () => {
 			socket.off("user_connected", handleUserConnected);
 			socket.off("user_disconnected", handleUserDisconnected);
 			socket.off("user_deleted", handleUserDeleted);
+			socket.off("admin_rights_updated", handleAdminRightsUpdated);
 		};
 	}, [socket]);
 
@@ -101,6 +111,38 @@ const UsersTable = () => {
 		}
 	};
 
+	const handleGrantAdmin = async (userId: string, fullName: string) => {
+		if (!confirm(`Bạn có chắc chắn muốn cấp quyền admin cho ${fullName}?`)) return;
+
+		try {
+			await axiosInstance.post(`/admin/users/${userId}/grant-admin`);
+			toast.success(`Đã cấp quyền admin cho ${fullName}`);
+			// Update local state
+			setUsers((prevUsers) =>
+				prevUsers.map((user) => (user._id === userId ? { ...user, isAdmin: true } : user))
+			);
+		} catch (error: any) {
+			console.error("Error granting admin:", error);
+			toast.error(error.response?.data?.message || "Không thể cấp quyền admin");
+		}
+	};
+
+	const handleRevokeAdmin = async (userId: string, fullName: string) => {
+		if (!confirm(`Bạn có chắc chắn muốn thu hồi quyền admin của ${fullName}?`)) return;
+
+		try {
+			await axiosInstance.post(`/admin/users/${userId}/revoke-admin`);
+			toast.success(`Đã thu hồi quyền admin của ${fullName}`);
+			// Update local state
+			setUsers((prevUsers) =>
+				prevUsers.map((user) => (user._id === userId ? { ...user, isAdmin: false } : user))
+			);
+		} catch (error: any) {
+			console.error("Error revoking admin:", error);
+			toast.error(error.response?.data?.message || "Không thể thu hồi quyền admin");
+		}
+	};
+
 	const formatLastActive = (lastActive: string) => {
 		const date = new Date(lastActive);
 		const now = new Date();
@@ -127,6 +169,7 @@ const UsersTable = () => {
 					<TableHead className="w-[50px]">Trạng thái</TableHead>
 					<TableHead>Người dùng</TableHead>
 					<TableHead>Email</TableHead>
+					<TableHead>Vai trò</TableHead>
 					<TableHead>Hoạt động gần nhất</TableHead>
 					<TableHead className="text-right">Hành động</TableHead>
 				</TableRow>
@@ -152,9 +195,40 @@ const UsersTable = () => {
 							</div>
 						</TableCell>
 						<TableCell>{user.email}</TableCell>
+						<TableCell>
+							{user.isAdmin ? (
+								<span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
+									<Crown className="size-3" />
+									Admin
+								</span>
+							) : (
+								<span className="text-zinc-500 text-sm">Người dùng</span>
+							)}
+						</TableCell>
 						<TableCell>{formatLastActive(user.lastActive)}</TableCell>
 						<TableCell className="text-right">
 							<div className="flex items-center justify-end gap-2">
+								{user.isAdmin ? (
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => handleRevokeAdmin(user._id, user.fullName)}
+										className="text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/10"
+									>
+										<ShieldOff className="size-4 mr-2" />
+										Thu hồi Admin
+									</Button>
+								) : (
+									<Button
+										variant="ghost"
+										size="sm"
+										onClick={() => handleGrantAdmin(user._id, user.fullName)}
+										className="text-violet-400 hover:text-violet-300 hover:bg-violet-400/10"
+									>
+										<Shield className="size-4 mr-2" />
+										Cấp Admin
+									</Button>
+								)}
 								{user.isOnline && (
 									<Button
 										variant="ghost"

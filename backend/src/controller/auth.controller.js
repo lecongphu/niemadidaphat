@@ -35,12 +35,18 @@ export const googleAuth = async (req, res, next) => {
 
 		if (!user) {
 			// Create new user
+			// Check if this is the first user or if email matches ADMIN_EMAIL (for backward compatibility)
+			const userCount = await User.countDocuments();
+			const isFirstUser = userCount === 0;
+			const isAdminEmail = email === process.env.ADMIN_EMAIL;
+
 			user = await User.create({
 				googleId,
 				email,
 				fullName: name,
 				imageUrl: picture,
 				sessionToken,
+				isAdmin: isFirstUser || isAdminEmail, // First user or ADMIN_EMAIL gets admin rights
 			});
 		} else {
 			// Update user info and session token (invalidates old sessions)
@@ -50,8 +56,8 @@ export const googleAuth = async (req, res, next) => {
 			await user.save();
 		}
 
-		// Check if user is admin
-		const isAdmin = email === process.env.ADMIN_EMAIL;
+		// Get isAdmin from database
+		const isAdmin = user.isAdmin;
 
 		// Generate JWT token with session token
 		const token = generateToken(user._id.toString(), email, isAdmin, sessionToken);

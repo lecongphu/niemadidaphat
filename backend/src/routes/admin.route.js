@@ -18,6 +18,8 @@ import {
 	createCategory,
 	updateCategory,
 	deleteCategory,
+	grantAdminRights,
+	revokeAdminRights,
 } from "../controller/admin.controller.js";
 import { protectRoute, requireAdmin } from "../middleware/auth.middleware.js";
 
@@ -49,5 +51,9 @@ router.delete("/categories/:id", deleteCategory);
 router.get("/users", getAllUsers);
 router.post("/users/:userId/logout", forceLogoutUser);
 router.delete("/users/:userId", deleteUser);
+
+// Admin rights management
+router.post("/users/:userId/grant-admin", grantAdminRights);
+router.post("/users/:userId/revoke-admin", revokeAdminRights);
 
 export default router;

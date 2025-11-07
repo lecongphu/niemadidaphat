@@ -1,17 +1,37 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import PlaylistSkeleton from "@/components/skeletons/PlaylistSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Library } from "lucide-react";
+import { Library, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useSocket } from "@/hooks/useSocket";
 
 const AlbumsList = () => {
 	const { albums, fetchAlbums, isLoading } = useMusicStore();
+	const [isRefreshing, setIsRefreshing] = useState(false);
+
+	// Socket.IO realtime updates for albums
+	useSocket({
+		onAlbumCreated: () => {
+			console.log("Album created via Socket.IO");
+			fetchAlbums(); // Refresh when album created
+		},
+		onAlbumDeleted: () => {
+			console.log("Album deleted via Socket.IO");
+			fetchAlbums(); // Refresh when album deleted
+		},
+	});
 
 	useEffect(() => {
 		fetchAlbums();
 	}, [fetchAlbums]);
+
+	const handleManualRefresh = () => {
+		setIsRefreshing(true);
+		fetchAlbums().finally(() => setIsRefreshing(false));
+	};
 
 	if (isLoading) {
 		return (
@@ -48,9 +68,27 @@ const AlbumsList = () => {
 	return (
 		<Card className="bg-zinc-900/50 border-zinc-800">
 			<CardHeader>
-				<div className="flex items-center gap-2">
-					<Library className="h-5 w-5 text-violet-500" />
-					<CardTitle>Bộ Kinh</CardTitle>
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2">
+						<Library className="h-5 w-5 text-violet-500" />
+						<CardTitle>Bộ Kinh</CardTitle>
+						<div className="flex items-center gap-2 ml-3">
+							<span className="relative flex h-2 w-2">
+								<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+								<span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
+							</span>
+							<span className="text-xs font-medium text-violet-500">LIVE</span>
+						</div>
+					</div>
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={handleManualRefresh}
+						disabled={isRefreshing}
+						className="h-8 w-8"
+					>
+						<RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+					</Button>
 				</div>
 			</CardHeader>
 			<CardContent>
