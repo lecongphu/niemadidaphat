@@ -5,6 +5,7 @@ import { getName, getOptimizedImageUrl } from "@/lib/utils";
 import { Download, Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { useListeningTracker } from "@/hooks/useListeningTracker";
 
 const formatTime = (seconds: number) => {
 	const minutes = Math.floor(seconds / 60);
@@ -21,6 +22,7 @@ export const PlaybackControls = () => {
 	const [isMuted, setIsMuted] = useState(false);
 	const [previousVolume, setPreviousVolume] = useState(75);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const { trackListening } = useListeningTracker();
 
 	useEffect(() => {
 		audioRef.current = document.querySelector("audio");
@@ -30,7 +32,16 @@ export const PlaybackControls = () => {
 
 		const updateTime = () => {
 			if (audio && !isNaN(audio.currentTime)) {
-				setCurrentTime(audio.currentTime);
+				const current = audio.currentTime;
+				setCurrentTime(current);
+
+				// Track listening if progress >= 90%
+				if (audio.duration > 0) {
+					const progress = (current / audio.duration) * 100;
+					if (progress >= 90) {
+						trackListening(current, audio.duration, false);
+					}
+				}
 			}
 		};
 
@@ -45,6 +56,11 @@ export const PlaybackControls = () => {
 
 		const handleEnded = () => {
 			const { repeatMode, playNext: storePlayNext } = usePlayerStore.getState();
+
+			// Track listening when song ends (100% completed)
+			if (audio && duration > 0) {
+				trackListening(duration, duration, true);
+			}
 
 			if (repeatMode === "one") {
 				// Repeat current song
@@ -72,7 +88,7 @@ export const PlaybackControls = () => {
 				audio.removeEventListener("ended", handleEnded);
 			}
 		};
-	}, [currentSong]);
+	}, [currentSong, duration, trackListening]);
 
 	const handleSeek = (value: number[]) => {
 		if (audioRef.current) {
