@@ -3,7 +3,7 @@ import { axiosInstance } from "@/lib/axios";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 
 export const useListeningTracker = () => {
-	const { currentSong, isPlaying } = usePlayerStore();
+	const { currentSong } = usePlayerStore();
 	const startTimeRef = useRef<number>(0);
 	const hasTrackedRef = useRef<boolean>(false);
 	const currentSongIdRef = useRef<string | null>(null);
