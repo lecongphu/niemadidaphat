@@ -1,0 +1,22 @@
+{
+  "name": "Niệm A Di Đà Phật",
+  "short_name": "ADiDaPhat",
+  "description": "Thư viện bài pháp Phật giáo online - Nghe kinh Phật, thiền học, tu hành",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#18181b",
+  "theme_color": "#18181b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/sen.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/sen.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
