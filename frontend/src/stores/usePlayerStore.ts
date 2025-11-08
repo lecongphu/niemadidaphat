@@ -15,6 +15,7 @@ interface PlayerStore {
 	isShuffled: boolean;
 	originalQueue: Song[];
 	originalIndex: number;
+	volume: number;
 
 	initializeQueue: (songs: Song[]) => void;
 	playAlbum: (songs: Song[], startIndex?: number) => void;
@@ -23,6 +24,7 @@ interface PlayerStore {
 	playNext: () => void;
 	playPrevious: () => void;
 	setCurrentTime: (time: number) => void;
+	setVolume: (volume: number) => void;
 	toggleRepeatMode: () => void;
 	toggleShuffle: () => void;
 }
@@ -39,6 +41,7 @@ export const usePlayerStore = create<PlayerStore>()(
 			isShuffled: false,
 			originalQueue: [],
 			originalIndex: -1,
+			volume: 75,
 
 	initializeQueue: (songs: Song[]) => {
 		set({
@@ -201,6 +204,10 @@ export const usePlayerStore = create<PlayerStore>()(
 		set({ currentTime: time });
 	},
 
+	setVolume: (volume: number) => {
+		set({ volume });
+	},
+
 	toggleRepeatMode: () => {
 		const currentMode = get().repeatMode;
 		const nextMode: RepeatMode =
@@ -258,6 +265,7 @@ export const usePlayerStore = create<PlayerStore>()(
 				isShuffled: state.isShuffled,
 				originalQueue: state.originalQueue,
 				originalIndex: state.originalIndex,
+				volume: state.volume,
 				// Don't persist isPlaying - always start paused after refresh
 			}),
 		}

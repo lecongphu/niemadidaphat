@@ -501,6 +501,67 @@ export const createAlbum = async (req, res, next) => {
 	}
 };
 
+export const updateAlbum = async (req, res, next) => {
+	try {
+		const { id } = req.params;
+		const { title, teacher, releaseYear } = req.body;
+
+		const album = await Album.findById(id);
+		if (!album) {
+			return res.status(404).json({ message: "Album not found" });
+		}
+
+		// Update basic fields
+		if (title) album.title = title;
+		if (teacher) album.teacher = teacher;
+		if (releaseYear) album.releaseYear = releaseYear;
+
+		// Update image if new one is provided
+		if (req.files && req.files.imageFile) {
+			const { imageFile } = req.files;
+
+			// Create folder path with new title (or keep old title)
+			const folderPath = `niemadidaphat/audios/${title || album.title}`;
+			const albumFileName = title || album.title;
+
+			// Delete old image from Cloudinary if it exists
+			if (album.imageUrl) {
+				const imagePublicId = album.imageUrl.split('/').slice(-2).join('/').split('.')[0];
+				try {
+					await cloudinary.uploader.destroy(imagePublicId, { resource_type: 'image' });
+					console.log('✓ Old album image deleted from Cloudinary');
+				} catch (err) {
+					console.log('✗ Error deleting old album image:', err.message);
+				}
+			}
+
+			// Upload new image
+			const imageUrl = await uploadToCloudinary(imageFile, {
+				folder: folderPath,
+				public_id: albumFileName,
+				resource_type: "image",
+			});
+			album.imageUrl = imageUrl;
+		}
+
+		await album.save();
+
+		// Emit Socket.IO event for realtime update
+		try {
+			const io = getIO();
+			io.emit("album_updated", album);
+			console.log("Socket.IO: album_updated event emitted");
+		} catch (error) {
+			console.log("Socket.IO not available for album_updated event");
+		}
+
+		res.status(200).json(album);
+	} catch (error) {
+		console.log("Error in updateAlbum", error);
+		next(error);
+	}
+};
+
 export const deleteAlbum = async (req, res, next) => {
 	try {
 		const { id } = req.params;

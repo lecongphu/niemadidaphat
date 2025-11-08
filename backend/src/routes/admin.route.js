@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
 	checkAdmin,
 	createAlbum,
+	updateAlbum,
 	createSong,
 	createSongFromUrl,
 	deleteAlbum,
@@ -36,6 +37,7 @@ router.delete("/songs/:id", deleteSong);
 router.put("/songs/order", updateSongsOrder);
 
 router.post("/albums", createAlbum);
+router.put("/albums/:id", updateAlbum);
 router.delete("/albums/:id", deleteAlbum);
 
 router.post("/teachers", createTeacher);

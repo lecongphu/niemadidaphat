@@ -13,17 +13,21 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { getName, getOptimizedImageUrl } from "@/lib/utils";
-import { Calendar, Music, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { Calendar, Music, Trash2, Pencil } from "lucide-react";
+import { useEffect, useState } from "react";
+import EditAlbumDialog from "./EditAlbumDialog";
+import { Album } from "@/types";
 
 const AlbumsTable = () => {
 	const { albums, deleteAlbum, fetchAlbums } = useMusicStore();
+	const [editAlbum, setEditAlbum] = useState<Album | null>(null);
 
 	useEffect(() => {
 		fetchAlbums();
 	}, [fetchAlbums]);
 
 	return (
+		<>
 		<Table>
 			<TableHeader>
 				<TableRow className='hover:bg-zinc-800/50'>
@@ -57,6 +61,14 @@ const AlbumsTable = () => {
 						</TableCell>
 						<TableCell className='text-right'>
 							<div className='flex gap-2 justify-end'>
+								<Button
+									variant='ghost'
+									size='sm'
+									className='text-blue-400 hover:text-blue-300 hover:bg-blue-400/10'
+									onClick={() => setEditAlbum(album)}
+								>
+									<Pencil className='h-4 w-4' />
+								</Button>
 								<AlertDialog>
 									<AlertDialogTrigger asChild>
 										<Button
@@ -95,6 +107,14 @@ const AlbumsTable = () => {
 				))}
 			</TableBody>
 		</Table>
+		{editAlbum && (
+			<EditAlbumDialog
+				album={editAlbum}
+				open={!!editAlbum}
+				onOpenChange={(open) => !open && setEditAlbum(null)}
+			/>
+		)}
+		</>
 	);
 };
 export default AlbumsTable;

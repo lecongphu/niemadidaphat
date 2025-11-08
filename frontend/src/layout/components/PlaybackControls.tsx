@@ -14,9 +14,8 @@ const formatTime = (seconds: number) => {
 };
 
 export const PlaybackControls = () => {
-	const { currentSong, isPlaying, togglePlay, playNext, playPrevious, repeatMode, toggleRepeatMode, isShuffled, toggleShuffle } = usePlayerStore();
+	const { currentSong, isPlaying, togglePlay, playNext, playPrevious, repeatMode, toggleRepeatMode, isShuffled, toggleShuffle, volume, setVolume: setStoreVolume } = usePlayerStore();
 
-	const [volume, setVolume] = useState(75);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 	const [isMuted, setIsMuted] = useState(false);
@@ -102,13 +101,13 @@ export const PlaybackControls = () => {
 		if (isMuted) {
 			// Unmute: restore previous volume
 			const volumeToRestore = previousVolume > 0 ? previousVolume : 75;
-			setVolume(volumeToRestore);
+			setStoreVolume(volumeToRestore);
 			audioRef.current.volume = volumeToRestore / 100;
 			setIsMuted(false);
 		} else {
 			// Mute: save current volume and set to 0
 			setPreviousVolume(volume);
-			setVolume(0);
+			setStoreVolume(0);
 			audioRef.current.volume = 0;
 			setIsMuted(true);
 		}
@@ -292,7 +291,7 @@ export const PlaybackControls = () => {
 							className='w-24 hover:cursor-grab active:cursor-grabbing'
 							onValueChange={(value) => {
 								const newVolume = value[0];
-								setVolume(newVolume);
+								setStoreVolume(newVolume);
 								if (audioRef.current) {
 									audioRef.current.volume = newVolume / 100;
 								}

@@ -12,10 +12,14 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useMusicStore } from "@/stores/useMusicStore";
-import { Calendar, Trash2 } from "lucide-react";
+import { Calendar, Trash2, Pencil } from "lucide-react";
+import { useState } from "react";
+import EditTeacherDialog from "./EditTeacherDialog";
+import { Teacher } from "@/types";
 
 const TeachersTable = () => {
 	const { teachers, isLoading, error, deleteTeacher } = useMusicStore();
+	const [editTeacher, setEditTeacher] = useState<Teacher | null>(null);
 
 	if (isLoading) {
 		return (
@@ -34,6 +38,7 @@ const TeachersTable = () => {
 	}
 
 	return (
+		<>
 		<Table>
 			<TableHeader>
 				<TableRow className='hover:bg-zinc-800/50'>
@@ -64,6 +69,14 @@ const TeachersTable = () => {
 
 						<TableCell className='text-right'>
 							<div className='flex gap-2 justify-end'>
+								<Button
+									variant='ghost'
+									size='sm'
+									className='text-blue-400 hover:text-blue-300 hover:bg-blue-400/10'
+									onClick={() => setEditTeacher(teacher)}
+								>
+									<Pencil className='h-4 w-4' />
+								</Button>
 								<AlertDialog>
 									<AlertDialogTrigger asChild>
 										<Button
@@ -101,6 +114,14 @@ const TeachersTable = () => {
 				))}
 			</TableBody>
 		</Table>
+		{editTeacher && (
+			<EditTeacherDialog
+				teacher={editTeacher}
+				open={!!editTeacher}
+				onOpenChange={(open) => !open && setEditTeacher(null)}
+			/>
+		)}
+		</>
 	);
 };
 export default TeachersTable;
