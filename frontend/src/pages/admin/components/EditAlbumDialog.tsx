@@ -15,7 +15,6 @@ import { Upload } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Album } from "@/types";
-import { getName } from "@/lib/utils";
 
 interface EditAlbumDialogProps {
 	album: Album;
