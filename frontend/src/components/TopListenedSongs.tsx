@@ -211,7 +211,7 @@ const TopListenedSongs = () => {
 									>
 										{song.title}
 									</div>
-									<div className="text-sm text-zinc-400 truncate">{song.teacher.name}</div>
+									<div className="text-sm text-zinc-400">{song.teacher.name}</div>
 								</div>
 
 								{/* Listen Count */}
