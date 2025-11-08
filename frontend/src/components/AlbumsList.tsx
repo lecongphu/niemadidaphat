@@ -107,10 +107,10 @@ const AlbumsList = () => {
 								/>
 							</div>
 							<div className="space-y-1">
-								<p className="font-medium truncate text-white group-hover:text-violet-400 transition-colors">
+								<p className="font-medium text-white group-hover:text-violet-400 transition-colors">
 									{album.title}
 								</p>
-								<p className="text-sm text-zinc-400 truncate">
+								<p className="text-sm text-zinc-400">
 									Bộ Kinh • {typeof album.teacher === 'string' ? album.teacher : album.teacher.name}
 								</p>
 							</div>

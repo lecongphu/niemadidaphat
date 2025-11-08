@@ -166,8 +166,8 @@ const AlbumPage = () => {
 													<img src={getOptimizedImageUrl(song.imageUrl)} alt={song.title} className='size-10 flex-shrink-0' />
 
 													<div className='min-w-0 flex-1'>
-														<div className={`font-medium text-white truncate`}>{song.title}</div>
-														<div className='truncate sm:hidden'>{getName(song.teacher)}</div>
+														<div className={`font-medium text-white`}>{song.title}</div>
+														<div className='sm:hidden'>{getName(song.teacher)}</div>
 														<div className='text-xs sm:hidden text-zinc-500'>
 															{song.createdAt.split("T")[0]} • {formatDuration(song.duration)}
 														</div>

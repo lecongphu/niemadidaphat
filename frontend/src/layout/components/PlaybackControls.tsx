@@ -147,8 +147,8 @@ export const PlaybackControls = () => {
 	};
 
 	return (
-		<footer className='h-20 sm:h-24 bg-zinc-900 border-t border-zinc-800 px-4'>
-			<div className='flex justify-between items-center h-full max-w-[1800px] mx-auto'>
+		<footer className='h-24 sm:h-24 bg-zinc-900 border-t border-zinc-800 px-2 sm:px-4'>
+			<div className='flex flex-col sm:flex-row justify-between items-center h-full max-w-[1800px] mx-auto gap-1 sm:gap-0'>
 				{/* currently playing song */}
 				<div className='hidden sm:flex items-center gap-4 min-w-[180px] w-[30%]'>
 					{currentSong && (
@@ -180,52 +180,52 @@ export const PlaybackControls = () => {
 				</div>
 
 				{/* player controls*/}
-				<div className='flex flex-col items-center gap-2 flex-1 max-w-full sm:max-w-[45%]'>
-					<div className='flex items-center gap-2 sm:gap-6'>
+				<div className='flex flex-col items-center gap-1 sm:gap-2 flex-1 max-w-full sm:max-w-[45%] w-full sm:w-auto'>
+					<div className='flex items-center gap-1 sm:gap-2 md:gap-6 justify-center w-full'>
 						<Button
 							size='icon'
 							variant='ghost'
-							className={`hover:text-white ${
+							className={`hover:text-white h-9 w-9 sm:h-8 sm:w-8 ${
 								isShuffled ? "text-green-500" : "text-zinc-400"
 							}`}
 							onClick={toggleShuffle}
 							disabled={!currentSong}
 							title={isShuffled ? "Tắt phát ngẫu nhiên" : "Bật phát ngẫu nhiên"}
 						>
-							<Shuffle className='h-3 w-3 sm:h-4 sm:w-4' />
+							<Shuffle className='h-4 w-4' />
 						</Button>
 
 						<Button
 							size='icon'
 							variant='ghost'
-							className='hover:text-white text-zinc-400'
+							className='hover:text-white text-zinc-400 h-9 w-9 sm:h-8 sm:w-8'
 							onClick={playPrevious}
 							disabled={!currentSong}
 						>
-							<SkipBack className='h-4 w-4' />
+							<SkipBack className='h-4 w-4 sm:h-5 sm:w-5' />
 						</Button>
 
 						<Button
 							size='icon'
-							className='bg-white hover:bg-white/80 text-black rounded-full h-8 w-8'
+							className='bg-white hover:bg-white/80 text-black rounded-full h-10 w-10 sm:h-8 sm:w-8'
 							onClick={togglePlay}
 							disabled={!currentSong}
 						>
-							{isPlaying ? <Pause className='h-5 w-5' /> : <Play className='h-5 w-5' />}
+							{isPlaying ? <Pause className='h-5 w-5 sm:h-4 sm:w-4' /> : <Play className='h-5 w-5 sm:h-4 sm:w-4' />}
 						</Button>
 						<Button
 							size='icon'
 							variant='ghost'
-							className='hover:text-white text-zinc-400'
+							className='hover:text-white text-zinc-400 h-9 w-9 sm:h-8 sm:w-8'
 							onClick={playNext}
 							disabled={!currentSong}
 						>
-							<SkipForward className='h-4 w-4' />
+							<SkipForward className='h-4 w-4 sm:h-5 sm:w-5' />
 						</Button>
 						<Button
 							size='icon'
 							variant='ghost'
-							className={`hover:text-white ${
+							className={`hover:text-white h-9 w-9 sm:h-8 sm:w-8 ${
 								repeatMode !== "off" ? "text-green-500" : "text-zinc-400"
 							}`}
 							onClick={toggleRepeatMode}
@@ -236,14 +236,14 @@ export const PlaybackControls = () => {
 							}
 						>
 							{repeatMode === "one" ? (
-								<Repeat1 className='h-3 w-3 sm:h-4 sm:w-4' />
+								<Repeat1 className='h-4 w-4' />
 							) : (
-								<Repeat className='h-3 w-3 sm:h-4 sm:w-4' />
+								<Repeat className='h-4 w-4' />
 							)}
 						</Button>
 					</div>
 
-					<div className='hidden sm:flex items-center gap-2 w-full'>
+					<div className='flex items-center gap-2 w-full px-2 sm:px-0'>
 						<div className='text-xs text-zinc-400'>{formatTime(currentTime)}</div>
 						<Slider
 							value={[currentTime]}

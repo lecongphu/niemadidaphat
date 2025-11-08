@@ -8,7 +8,6 @@ import { HomeIcon, ListMusic, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { CreatePlaylistDialog } from "@/pages/playlist/components/CreatePlaylistDialog";
-import TopListenedSongs from "@/components/TopListenedSongs";
 
 const LeftSidebar = () => {
 	const { playlists, fetchPlaylists, isLoading: isLoadingPlaylists } = usePlaylistStore();
@@ -41,11 +40,6 @@ const LeftSidebar = () => {
 						<span className='hidden md:inline'>Trang Chủ</span>
 					</Link>
 				</div>
-			</div>
-
-			{/* Top Listened Songs section */}
-			<div className='flex-1 rounded-lg overflow-hidden'>
-				<TopListenedSongs />
 			</div>
 
 			{/* Playlists section */}

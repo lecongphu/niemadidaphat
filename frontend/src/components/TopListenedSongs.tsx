@@ -205,7 +205,7 @@ const TopListenedSongs = () => {
 								{/* Song Info */}
 								<div className="flex-1 min-w-0">
 									<div
-										className={`font-medium truncate ${
+										className={`font-medium ${
 											isCurrentSong ? "text-emerald-500" : "text-white"
 										}`}
 									>

@@ -13,8 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { axiosInstance } from "@/lib/axios";
 import { useMusicStore } from "@/stores/useMusicStore";
-import { Plus } from "lucide-react";
-import { useRef, useState } from "react";
+import { Plus, AlertCircle } from "lucide-react";
+import { useRef, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 
 interface NewSong {
@@ -25,7 +25,7 @@ interface NewSong {
 }
 
 const AddSongDialog = () => {
-	const { albums, teachers, categories, fetchSongs } = useMusicStore();
+	const { albums, teachers, categories, songs, fetchSongs } = useMusicStore();
 	const [songDialogOpen, setSongDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
@@ -43,11 +43,35 @@ const AddSongDialog = () => {
 
 	const audioInputRef = useRef<HTMLInputElement>(null);
 
+	// Check for duplicate titles in the same album
+	const duplicateWarning = useMemo(() => {
+		if (!newSong.title.trim() || !newSong.album) return null;
+
+		const duplicatesInAlbum = songs.filter(
+			(song) =>
+				song.title.toLowerCase().trim() === newSong.title.toLowerCase().trim() &&
+				song.albumId === newSong.album
+		);
+
+		if (duplicatesInAlbum.length > 0) {
+			return `Cảnh báo: Đã tồn tại ${duplicatesInAlbum.length} bài pháp cùng tên trong bộ kinh này`;
+		}
+
+		return null;
+	}, [newSong.title, newSong.album, songs]);
+
 	const handleAudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 
 		setAudioFile(file);
+
+		// Extract filename without extension and set as default title if title is empty
+		if (!newSong.title) {
+			const fileName = file.name;
+			const fileNameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.')) || fileName;
+			setNewSong({ ...newSong, title: fileNameWithoutExtension });
+		}
 
 		// Calculate audio duration
 		const audio = new Audio();
@@ -120,6 +144,12 @@ const AddSongDialog = () => {
 				});
 
 				setSongDialogOpen(false);
+			} else {
+				// Keep form open and keep teacher/album/category, but clear title
+				setNewSong({
+					...newSong,
+					title: "",
+				});
 			}
 
 			// Always reset audio file and progress
@@ -184,8 +214,14 @@ const AddSongDialog = () => {
 						<Input
 							value={newSong.title}
 							onChange={(e) => setNewSong({ ...newSong, title: e.target.value })}
-							className='bg-zinc-800 border-zinc-700'
+							className={`bg-zinc-800 border-zinc-700 ${duplicateWarning ? 'border-yellow-500/50' : ''}`}
 						/>
+						{duplicateWarning && (
+							<div className='flex items-start gap-2 p-3 rounded-md bg-yellow-500/10 border border-yellow-500/20'>
+								<AlertCircle className='h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0' />
+								<p className='text-xs text-yellow-500'>{duplicateWarning}</p>
+							</div>
+						)}
 					</div>
 
 					<div className='space-y-2'>

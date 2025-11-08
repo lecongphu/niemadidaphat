@@ -3,7 +3,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
 import AlbumsList from "@/components/AlbumsList";
-import TeachersList from "@/components/TeachersList";
 
 const HomePage = () => {
 	return (
@@ -32,9 +31,6 @@ const HomePage = () => {
 
 					{/* Albums List */}
 					<AlbumsList />
-
-					{/* Teachers List */}
-					<TeachersList />
 				</div>
 
 				{/* Footer */}
