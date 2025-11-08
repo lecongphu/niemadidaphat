@@ -10,17 +10,19 @@ const HomePage = () => {
 		<main className='rounded-md overflow-hidden h-full bg-gradient-to-b from-zinc-800 to-zinc-900'>
 			<SEO
 				title="Trang Chủ"
-				description="Niệm A Di Đà Phật - Thư viện bài pháp Phật giáo online. Nghe kinh Phật, bài giảng Phật pháp, thiền học miễn phí. Hướng dẫn tu hành, niệm Phật, tụng kinh."
+				description="Niệm A Di Đà Phật - Bài pháp về Tịnh Độ tông. Nghe kinh Phật, bài giảng Phật pháp."
 				type="website"
 				url="/"
 				keywords={[
-					"niệm phật online",
+					"niệm phật",
 					"kinh phật audio",
 					"bài giảng phật pháp",
 					"tu hành phật giáo",
 					"thiền học",
 					"tụng kinh",
 					"a di đà phật",
+					"tịnh độ tông",
+					"tây phương cực lạc"
 				]}
 			/>
 			<Topbar />
