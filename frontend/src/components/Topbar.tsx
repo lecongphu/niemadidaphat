@@ -1,4 +1,4 @@
-import { LayoutDashboardIcon } from "lucide-react";
+import { LayoutDashboardIcon, HomeIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import SignInOAuthButtons from "./SignInOAuthButtons";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -18,8 +18,10 @@ const Topbar = () => {
     '
 		>
 			<div className='flex gap-2 items-center flex-shrink-0'>
-				<img src='/sen.png' className='size-8' alt='ADiDaPhat logo' />
-				<span className='hidden sm:inline'>Tam Thánh Đường</span>
+				<Link to={"/"} className={cn(buttonVariants({ variant: "ghost" }))}>
+					<HomeIcon className='size-5 mr-2' />
+					<span className='hidden sm:inline'>Trang Chủ</span>
+				</Link>
 			</div>
 
 			{/* Search Bar - centered and flexible */}

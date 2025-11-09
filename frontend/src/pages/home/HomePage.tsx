@@ -3,6 +3,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
 import AlbumsList from "@/components/AlbumsList";
+import LunarCalendar from "@/components/LunarCalendar";
+import PlaylistsList from "@/components/PlaylistsList";
 
 const HomePage = () => {
 	return (
@@ -31,27 +33,38 @@ const HomePage = () => {
 
 					{/* Albums List */}
 					<AlbumsList />
+
+					{/* Playlists List */}
+					<PlaylistsList />
 				</div>
 
 				{/* Footer */}
 				<footer className='mt-12 py-8 px-4 sm:px-6 border-t border-zinc-700/50'>
-					<div className='flex flex-col sm:flex-row items-center justify-between gap-4'>
-						<p className='text-zinc-500 text-sm'>
-							© {new Date().getFullYear()} Niệm A Di Đà Phật.
-						</p>
-						<div className='flex items-center gap-6 text-sm'>
-							<Link
-								to='/privacy-policy'
-								className='text-zinc-400 hover:text-violet-400 transition-colors'
-							>
-								Chính Sách Bảo Mật
-							</Link>
-							<Link
-								to='/terms-of-service'
-								className='text-zinc-400 hover:text-violet-400 transition-colors'
-							>
-								Điều Khoản Dịch Vụ
-							</Link>
+					<div className='space-y-6'>
+						{/* Lunar Calendar */}
+						<div className='flex justify-center'>
+							<LunarCalendar />
+						</div>
+
+						{/* Copyright and Links */}
+						<div className='flex flex-col sm:flex-row items-center justify-between gap-4'>
+							<p className='text-zinc-500 text-sm'>
+								© {new Date().getFullYear()} Niệm A Di Đà Phật.
+							</p>
+							<div className='flex items-center gap-6 text-sm'>
+								<Link
+									to='/privacy-policy'
+									className='text-zinc-400 hover:text-violet-400 transition-colors'
+								>
+									Chính Sách Bảo Mật
+								</Link>
+								<Link
+									to='/terms-of-service'
+									className='text-zinc-400 hover:text-violet-400 transition-colors'
+								>
+									Điều Khoản Dịch Vụ
+								</Link>
+							</div>
 						</div>
 					</div>
 				</footer>
