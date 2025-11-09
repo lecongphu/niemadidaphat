@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { getName, getOptimizedImageUrl } from "@/lib/utils";
-import { Download, Laptop2, ListMusic, Mic2, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume1, Volume2, VolumeX } from "lucide-react";
+import { Download, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, Volume1, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useListeningTracker } from "@/hooks/useListeningTracker";
@@ -257,15 +257,6 @@ export const PlaybackControls = () => {
 				</div>
 				{/* volume controls */}
 				<div className='hidden sm:flex items-center gap-4 min-w-[180px] w-[30%] justify-end'>
-					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
-						<Mic2 className='h-4 w-4' />
-					</Button>
-					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
-						<ListMusic className='h-4 w-4' />
-					</Button>
-					<Button size='icon' variant='ghost' className='hover:text-white text-zinc-400'>
-						<Laptop2 className='h-4 w-4' />
-					</Button>
 
 					<div className='flex items-center gap-2'>
 						<Button
