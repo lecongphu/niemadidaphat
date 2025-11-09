@@ -13,7 +13,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	useEffect(() => {
 		if (isAuthenticated && user) {
-			initSocket(user.id);
+			initSocket(user._id);
 		} else {
 			disconnectSocket();
 		}

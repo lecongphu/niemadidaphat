@@ -73,7 +73,7 @@ export const googleAuth = async (req, res, next) => {
 		res.status(200).json({
 			success: true,
 			user: {
-				id: user._id.toString(),
+				_id: user._id.toString(),
 				email: user.email,
 				fullName: user.fullName,
 				imageUrl: user.imageUrl,
@@ -98,7 +98,7 @@ export const getMe = async (req, res, next) => {
 		res.status(200).json({
 			success: true,
 			user: {
-				id: user._id.toString(),
+				_id: user._id.toString(),
 				email: user.email,
 				fullName: user.fullName,
 				imageUrl: user.imageUrl,

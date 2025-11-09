@@ -2,7 +2,7 @@ import { axiosInstance } from "@/lib/axios";
 import { create } from "zustand";
 
 interface User {
-	id: string;
+	_id: string;
 	email: string;
 	fullName: string;
 	imageUrl: string;
