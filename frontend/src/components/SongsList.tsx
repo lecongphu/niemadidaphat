@@ -6,7 +6,6 @@ import PlaylistSkeleton from "@/components/skeletons/PlaylistSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Music, RefreshCw, Play, ListPlus, ChevronLeft, ChevronRight } from "lucide-react";
-import { useSocket } from "@/hooks/useSocket";
 import PlayingIndicator from "@/components/PlayingIndicator";
 import { AddToPlaylistDialog } from "@/pages/playlist/components/AddToPlaylistDialog";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -21,18 +20,6 @@ const SongsList = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
 	const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
-
-	// Socket.IO realtime updates for songs
-	useSocket({
-		onSongCreated: () => {
-			console.log("Song created via Socket.IO");
-			fetchSongs(); // Refresh when song created
-		},
-		onSongDeleted: () => {
-			console.log("Song deleted via Socket.IO");
-			fetchSongs(); // Refresh when song deleted
-		},
-	});
 
 	useEffect(() => {
 		fetchSongs();
@@ -151,13 +138,6 @@ const SongsList = () => {
 						<div className="flex items-center gap-2">
 							<Music className="h-5 w-5 text-orange-500 dark:text-violet-500" />
 							<CardTitle className="text-amber-900 dark:text-white">Tất Cả Bài Pháp</CardTitle>
-							<div className="flex items-center gap-2 ml-3">
-								<span className="relative flex h-2 w-2">
-									<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 dark:bg-violet-400 opacity-75"></span>
-									<span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500 dark:bg-violet-500"></span>
-								</span>
-								<span className="text-xs font-medium text-orange-500 dark:text-violet-500">LIVE</span>
-							</div>
 							<span className="text-sm text-amber-700 dark:text-zinc-400 ml-2">
 								({songs.length} bài)
 							</span>

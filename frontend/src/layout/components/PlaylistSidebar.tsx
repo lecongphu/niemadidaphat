@@ -2,7 +2,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { useMusicStore } from "@/stores/useMusicStore";
-import { HeadphonesIcon, ListMusic, Plus, Users } from "lucide-react";
+import { ListMusic, Plus, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { CreatePlaylistDialog } from "@/pages/playlist/components/CreatePlaylist
 import { getOptimizedImageUrl } from "@/lib/utils";
 
 const PlaylistSidebar = () => {
-	const { user, isAuthenticated } = useAuthStore();
+	const { isAuthenticated } = useAuthStore();
 	const { playlists, fetchPlaylists, isLoading: isLoadingPlaylists } = usePlaylistStore();
 	const { teachers, fetchTeachers, isLoading: isLoadingTeachers } = useMusicStore();
 	const [showCreateDialog, setShowCreateDialog] = useState(false);
