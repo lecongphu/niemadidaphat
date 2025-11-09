@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
 import AlbumsList from "@/components/AlbumsList";
 import LunarCalendar from "@/components/LunarCalendar";
-import PlaylistsList from "@/components/PlaylistsList";
+import SongsList from "@/components/SongsList";
 
 const HomePage = () => {
 	return (
@@ -34,8 +34,8 @@ const HomePage = () => {
 					{/* Albums List */}
 					<AlbumsList />
 
-					{/* Playlists List */}
-					<PlaylistsList />
+					{/* Songs List */}
+					<SongsList />
 				</div>
 
 				{/* Footer */}

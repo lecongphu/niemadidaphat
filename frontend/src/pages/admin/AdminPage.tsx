@@ -9,6 +9,7 @@ import TeachersTabContent from "./components/TeachersTabContent";
 import UsersTabContent from "./components/UsersTabContent";
 import CategoriesTabContent from "./components/CategoriesTabContent";
 import ListeningStatsTabContent from "./components/ListeningStatsTabContent";
+import FriendsActivity from "@/layout/components/FriendsActivity";
 import { useEffect } from "react";
 import { useMusicStore } from "@/stores/useMusicStore";
 
@@ -58,6 +59,10 @@ const AdminPage = () => {
 						<Headphones className='mr-2 size-4' />
 						Thống Kê Nghe
 					</TabsTrigger>
+					<TabsTrigger value='activity' className='data-[state=active]:bg-zinc-700'>
+						<Users className='mr-2 size-4' />
+						Hoạt Động
+					</TabsTrigger>
 					<TabsTrigger value='users' className='data-[state=active]:bg-zinc-700'>
 						<UserCog className='mr-2 size-4' />
 						Người Dùng
@@ -78,6 +83,11 @@ const AdminPage = () => {
 				</TabsContent>
 				<TabsContent value='listening'>
 					<ListeningStatsTabContent />
+				</TabsContent>
+				<TabsContent value='activity'>
+					<div className='max-w-2xl mx-auto'>
+						<FriendsActivity />
+					</div>
 				</TabsContent>
 				<TabsContent value='users'>
 					<UsersTabContent />
