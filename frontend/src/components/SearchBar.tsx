@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Search, X, Loader2 } from "lucide-react";
+import { Search, X, Loader2, ListPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { axiosInstance } from "@/lib/axios";
@@ -7,6 +7,8 @@ import { Song, Album, Teacher } from "@/types";
 import { getName, getOptimizedImageUrl } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { AddToPlaylistDialog } from "@/pages/playlist/components/AddToPlaylistDialog";
 
 interface SearchResult {
 	songs: Song[];
@@ -20,10 +22,13 @@ const SearchBar = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isFocused, setIsFocused] = useState(false);
 	const [selectedIndex, setSelectedIndex] = useState(-1);
+	const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
+	const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
 	const searchRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const navigate = useNavigate();
 	const { setCurrentSong } = usePlayerStore();
+	const { isAuthenticated } = useAuthStore();
 
 	// Debounce search
 	useEffect(() => {
@@ -121,6 +126,12 @@ const SearchBar = () => {
 		setSelectedIndex(-1);
 	};
 
+	const handleAddToPlaylist = (e: React.MouseEvent, songId: string) => {
+		e.stopPropagation();
+		setSelectedSongId(songId);
+		setShowAddToPlaylist(true);
+	};
+
 	const showResults = isFocused && results && query.trim().length > 0;
 
 	return (
@@ -160,26 +171,41 @@ const SearchBar = () => {
 						<div className="p-2">
 							<div className="text-xs font-semibold text-zinc-400 px-2 py-1 uppercase">Bài Pháp</div>
 							{results.songs.map((song, index) => (
-								<button
+								<div
 									key={song._id}
-									className={`w-full flex items-center gap-3 p-2 rounded-md hover:bg-zinc-800 transition-colors ${
+									className={`group flex items-center gap-3 p-2 rounded-md hover:bg-zinc-800 transition-colors ${
 										selectedIndex === index ? "bg-zinc-800" : ""
 									}`}
-									onClick={() => {
-										setCurrentSong(song);
-										clearSearch();
-									}}
 								>
-									<img
-										src={getOptimizedImageUrl(song.imageUrl)}
-										alt={song.title}
-										className="w-12 h-12 rounded object-cover flex-shrink-0"
-									/>
-									<div className="flex-1 text-left min-w-0">
-										<div className="font-medium text-white truncate">{song.title}</div>
-										<div className="text-sm text-zinc-400 truncate">{getName(song.teacher)}</div>
-									</div>
-								</button>
+									<button
+										className="flex items-center gap-3 flex-1 min-w-0 text-left"
+										onClick={() => {
+											setCurrentSong(song);
+											clearSearch();
+										}}
+									>
+										<img
+											src={getOptimizedImageUrl(song.imageUrl)}
+											alt={song.title}
+											className="w-12 h-12 rounded object-cover flex-shrink-0"
+										/>
+										<div className="flex-1 min-w-0">
+											<div className="font-medium text-white truncate">{song.title}</div>
+											<div className="text-sm text-zinc-400 truncate">{getName(song.teacher)}</div>
+										</div>
+									</button>
+									{isAuthenticated && (
+										<Button
+											size="icon"
+											variant="ghost"
+											className="h-8 w-8 opacity-0 group-hover:opacity-100 flex-shrink-0 text-white hover:bg-zinc-700"
+											onClick={(e) => handleAddToPlaylist(e, song._id)}
+											title="Thêm vào playlist"
+										>
+											<ListPlus className="h-4 w-4" />
+										</Button>
+									)}
+								</div>
 							))}
 						</div>
 					)}
@@ -258,6 +284,13 @@ const SearchBar = () => {
 					)}
 				</div>
 			)}
+
+			{/* Add to Playlist Dialog */}
+			<AddToPlaylistDialog
+				open={showAddToPlaylist}
+				onOpenChange={setShowAddToPlaylist}
+				songId={selectedSongId}
+			/>
 		</div>
 	);
 };
