@@ -5,6 +5,7 @@ import AlbumPage from "./pages/album/AlbumPage";
 import AdminPage from "./pages/admin/AdminPage";
 import PlaylistPage from "./pages/playlist/PlaylistPage";
 import SongDetailPage from "./pages/song/SongDetailPage";
+import TeacherPage from "./pages/teacher/TeacherPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 
@@ -26,6 +27,7 @@ function App() {
 					<Route path='/albums/:albumId' element={<AlbumPage />} />
 					<Route path='/songs/:songId' element={<SongDetailPage />} />
 					<Route path='/playlists/:playlistId' element={<PlaylistPage />} />
+					<Route path='/teachers/:teacherId' element={<TeacherPage />} />
 					<Route path='*' element={<NotFoundPage />} />
 				</Route>
 			</Routes>

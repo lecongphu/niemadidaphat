@@ -107,9 +107,8 @@ const SearchBar = () => {
 
 		// Teachers
 		if (results.teachers && index < currentIndex + results.teachers.length) {
-			// TODO: Navigate to teacher page when it's implemented
-			// const teacher = results.teachers[index - currentIndex];
-			// navigate(`/teachers/${teacher._id}`);
+			const teacher = results.teachers[index - currentIndex];
+			navigate(`/teachers/${teacher._id}`);
 			clearSearch();
 			return;
 		}
@@ -228,10 +227,13 @@ const SearchBar = () => {
 								return (
 									<button
 										key={teacher._id}
-										className={`w-full flex items-center gap-3 p-2 rounded-md hover:bg-zinc-800 transition-colors ${
-											selectedIndex === globalIndex ? "bg-zinc-800" : ""
+										className={`w-full flex items-center gap-3 p-2 rounded-md hover:bg-amber-100 dark:hover:bg-zinc-800 transition-colors ${
+											selectedIndex === globalIndex ? "bg-amber-100 dark:bg-zinc-800" : ""
 										}`}
-										onClick={clearSearch}
+										onClick={() => {
+											navigate(`/teachers/${teacher._id}`);
+											clearSearch();
+										}}
 									>
 										<img
 											src={getOptimizedImageUrl(teacher.imageUrl)}
@@ -239,8 +241,8 @@ const SearchBar = () => {
 											className="w-12 h-12 rounded-full object-cover flex-shrink-0"
 										/>
 										<div className="flex-1 text-left min-w-0">
-											<div className="font-medium text-white truncate">{teacher.name}</div>
-											<div className="text-sm text-zinc-400 truncate">{teacher.specialization}</div>
+											<div className="font-medium text-amber-900 dark:text-white truncate">{teacher.name}</div>
+											<div className="text-sm text-amber-700 dark:text-zinc-400 truncate">{teacher.specialization}</div>
 										</div>
 									</button>
 								);

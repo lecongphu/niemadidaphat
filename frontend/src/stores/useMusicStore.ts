@@ -11,6 +11,7 @@ interface MusicStore {
 	isLoading: boolean;
 	error: string | null;
 	currentAlbum: Album | null;
+	currentTeacher: Teacher | null;
 	stats: Stats;
 
 	fetchAlbums: () => Promise<void>;
@@ -18,6 +19,7 @@ interface MusicStore {
 	fetchStats: () => Promise<void>;
 	fetchSongs: () => Promise<void>;
 	fetchTeachers: () => Promise<void>;
+	fetchTeacherById: (id: string) => Promise<void>;
 	fetchCategories: () => Promise<void>;
 	deleteAlbum: (id: string) => Promise<void>;
 	deleteSong: (id: string) => Promise<void>;
@@ -32,6 +34,7 @@ export const useMusicStore = create<MusicStore>((set) => ({
 	isLoading: false,
 	error: null,
 	currentAlbum: null,
+	currentTeacher: null,
 	stats: {
 		totalSongs: 0,
 		totalAlbums: 0,
@@ -126,6 +129,18 @@ export const useMusicStore = create<MusicStore>((set) => ({
 		try {
 			const response = await axiosInstance.get("/teachers");
 			set({ teachers: response.data });
+		} catch (error: any) {
+			set({ error: error.response?.data?.message || error.message });
+		} finally {
+			set({ isLoading: false });
+		}
+	},
+
+	fetchTeacherById: async (id) => {
+		set({ isLoading: true, error: null });
+		try {
+			const response = await axiosInstance.get(`/teachers/${id}`);
+			set({ currentTeacher: response.data });
 		} catch (error: any) {
 			set({ error: error.response?.data?.message || error.message });
 		} finally {

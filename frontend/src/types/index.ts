@@ -50,6 +50,8 @@ export interface Teacher {
 	yearsOfExperience: number;
 	createdAt: string;
 	updatedAt: string;
+	albums?: Album[];
+	songs?: Song[];
 }
 
 export interface Stats {
