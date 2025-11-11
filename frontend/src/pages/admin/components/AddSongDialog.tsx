@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { axiosInstance } from "@/lib/axios";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { Plus, AlertCircle } from "lucide-react";
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo, useEffect } from "react";
 import toast from "react-hot-toast";
 
 interface NewSong {
@@ -42,6 +42,26 @@ const AddSongDialog = () => {
 	const [audioDuration, setAudioDuration] = useState<number>(0);
 
 	const audioInputRef = useRef<HTMLInputElement>(null);
+
+	// Filter albums by selected teacher
+	const filteredAlbums = useMemo(() => {
+		if (!newSong.teacher) return albums;
+		return albums.filter((album) => {
+			const teacherId = typeof album.teacher === "string" ? album.teacher : album.teacher._id;
+			return teacherId === newSong.teacher;
+		});
+	}, [albums, newSong.teacher]);
+
+	// Reset album when teacher changes
+	useEffect(() => {
+		if (newSong.teacher && newSong.album) {
+			// Check if current album belongs to the selected teacher
+			const albumBelongsToTeacher = filteredAlbums.some((album) => album._id === newSong.album);
+			if (!albumBelongsToTeacher) {
+				setNewSong({ ...newSong, album: "" });
+			}
+		}
+	}, [newSong.teacher]); // Only depend on teacher changes
 
 	// Check for duplicate titles in the same album
 	const duplicateWarning = useMemo(() => {
@@ -248,16 +268,23 @@ const AddSongDialog = () => {
 						<Select
 							value={newSong.album}
 							onValueChange={(value) => setNewSong({ ...newSong, album: value })}
+							disabled={!newSong.teacher}
 						>
 							<SelectTrigger className='bg-zinc-800 border-zinc-700'>
-								<SelectValue placeholder='Chọn bộ kinh' />
+								<SelectValue placeholder={newSong.teacher ? 'Chọn bộ kinh' : 'Vui lòng chọn pháp sư trước'} />
 							</SelectTrigger>
 							<SelectContent className='bg-zinc-800 border-zinc-700'>
-								{albums.map((album) => (
-									<SelectItem key={album._id} value={album._id}>
-										{album.title}
-									</SelectItem>
-								))}
+								{filteredAlbums.length > 0 ? (
+									filteredAlbums.map((album) => (
+										<SelectItem key={album._id} value={album._id}>
+											{album.title}
+										</SelectItem>
+									))
+								) : (
+									<div className='px-2 py-6 text-center text-sm text-zinc-400'>
+										Pháp sư này chưa có bộ kinh nào
+									</div>
+								)}
 							</SelectContent>
 						</Select>
 					</div>

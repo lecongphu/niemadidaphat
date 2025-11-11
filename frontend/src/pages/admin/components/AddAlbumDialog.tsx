@@ -17,7 +17,7 @@ import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 const AddAlbumDialog = () => {
-	const { teachers } = useMusicStore();
+	const { teachers, fetchAlbums } = useMusicStore();
 	const [albumDialogOpen, setAlbumDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -60,6 +60,9 @@ const AddAlbumDialog = () => {
 					"Content-Type": "multipart/form-data",
 				},
 			});
+
+			// Refresh albums list
+			await fetchAlbums();
 
 			setNewAlbum({
 				title: "",
