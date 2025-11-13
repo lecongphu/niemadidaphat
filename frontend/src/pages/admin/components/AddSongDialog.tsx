@@ -25,7 +25,7 @@ interface NewSong {
 }
 
 const AddSongDialog = () => {
-	const { albums, teachers, categories, songs, fetchSongs } = useMusicStore();
+	const { albums, teachers, categories, fetchSongs } = useMusicStore();
 	const [songDialogOpen, setSongDialogOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
@@ -63,22 +63,55 @@ const AddSongDialog = () => {
 		}
 	}, [newSong.teacher]); // Only depend on teacher changes
 
-	// Check for duplicate titles in the same album
-	const duplicateWarning = useMemo(() => {
-		if (!newSong.title.trim() || !newSong.album) return null;
+	// Check for duplicate titles in the same album via API
+	const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+	const [invalidCharsWarning, setInvalidCharsWarning] = useState<string | null>(null);
 
-		const duplicatesInAlbum = songs.filter(
-			(song) =>
-				song.title.toLowerCase().trim() === newSong.title.toLowerCase().trim() &&
-				song.albumId === newSong.album
-		);
-
-		if (duplicatesInAlbum.length > 0) {
-			return `Cảnh báo: Đã tồn tại ${duplicatesInAlbum.length} bài pháp cùng tên trong bộ kinh này`;
+	// Check for invalid characters in title
+	useEffect(() => {
+		if (!newSong.title) {
+			setInvalidCharsWarning(null);
+			return;
 		}
 
-		return null;
-	}, [newSong.title, newSong.album, songs]);
+		const invalidChars = /[?&#\\%<>+]/;
+		if (invalidChars.test(newSong.title)) {
+			setInvalidCharsWarning("Tên bài pháp không được chứa các ký tự: ? & # \\ % < > +");
+		} else {
+			setInvalidCharsWarning(null);
+		}
+	}, [newSong.title]);
+
+	useEffect(() => {
+		const checkDuplicate = async () => {
+			if (!newSong.title.trim() || !newSong.album) {
+				setDuplicateWarning(null);
+				return;
+			}
+
+			try {
+				const response = await axiosInstance.get("/songs/check-duplicate", {
+					params: {
+						title: newSong.title.trim(),
+						albumId: newSong.album,
+					}
+				});
+
+				if (response.data.hasDuplicates) {
+					setDuplicateWarning(`Cảnh báo: Đã tồn tại ${response.data.count} bài pháp cùng tên trong bộ kinh này`);
+				} else {
+					setDuplicateWarning(null);
+				}
+			} catch (error) {
+				console.error("Error checking duplicate:", error);
+				setDuplicateWarning(null);
+			}
+		};
+
+		// Debounce the API call
+		const timeoutId = setTimeout(checkDuplicate, 500);
+		return () => clearTimeout(timeoutId);
+	}, [newSong.title, newSong.album]);
 
 	const handleAudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -234,9 +267,15 @@ const AddSongDialog = () => {
 						<Input
 							value={newSong.title}
 							onChange={(e) => setNewSong({ ...newSong, title: e.target.value })}
-							className={`bg-zinc-800 border-zinc-700 ${duplicateWarning ? 'border-yellow-500/50' : ''}`}
+							className={`bg-zinc-800 border-zinc-700 ${invalidCharsWarning ? 'border-red-500/50' : duplicateWarning ? 'border-yellow-500/50' : ''}`}
 						/>
-						{duplicateWarning && (
+						{invalidCharsWarning && (
+							<div className='flex items-start gap-2 p-3 rounded-md bg-red-500/10 border border-red-500/20'>
+								<AlertCircle className='h-4 w-4 text-red-500 mt-0.5 flex-shrink-0' />
+								<p className='text-xs text-red-500'>{invalidCharsWarning}</p>
+							</div>
+						)}
+						{duplicateWarning && !invalidCharsWarning && (
 							<div className='flex items-start gap-2 p-3 rounded-md bg-yellow-500/10 border border-yellow-500/20'>
 								<AlertCircle className='h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0' />
 								<p className='text-xs text-yellow-500'>{duplicateWarning}</p>
@@ -345,7 +384,7 @@ const AddSongDialog = () => {
 					<Button variant='outline' onClick={() => setSongDialogOpen(false)} disabled={isLoading}>
 						Hủy
 					</Button>
-					<Button onClick={handleSubmit} disabled={isLoading}>
+					<Button onClick={handleSubmit} disabled={isLoading || !!invalidCharsWarning}>
 						{isLoading ? `Đang tải lên... ${uploadProgress}%` : "Thêm Bài Pháp"}
 					</Button>
 				</DialogFooter>

@@ -12,8 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { axiosInstance } from "@/lib/axios";
 import { useMusicStore } from "@/stores/useMusicStore";
-import { Plus, Upload } from "lucide-react";
-import { useRef, useState } from "react";
+import { Plus, Upload, AlertCircle } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
 const AddAlbumDialog = () => {
@@ -29,6 +29,22 @@ const AddAlbumDialog = () => {
 	});
 
 	const [imageFile, setImageFile] = useState<File | null>(null);
+	const [invalidCharsWarning, setInvalidCharsWarning] = useState<string | null>(null);
+
+	// Check for invalid characters in title
+	useEffect(() => {
+		if (!newAlbum.title) {
+			setInvalidCharsWarning(null);
+			return;
+		}
+
+		const invalidChars = /[?&#\\%<>+]/;
+		if (invalidChars.test(newAlbum.title)) {
+			setInvalidCharsWarning("Tên bộ kinh không được chứa các ký tự: ? & # \\ % < > +");
+		} else {
+			setInvalidCharsWarning(null);
+		}
+	}, [newAlbum.title]);
 
 	const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -121,9 +137,15 @@ const AddAlbumDialog = () => {
 						<Input
 							value={newAlbum.title}
 							onChange={(e) => setNewAlbum({ ...newAlbum, title: e.target.value })}
-							className='bg-zinc-800 border-zinc-700'
+							className={`bg-zinc-800 border-zinc-700 ${invalidCharsWarning ? 'border-red-500/50' : ''}`}
 							placeholder='Nhập tên bộ kinh'
 						/>
+						{invalidCharsWarning && (
+							<div className='flex items-start gap-2 p-3 rounded-md bg-red-500/10 border border-red-500/20'>
+								<AlertCircle className='h-4 w-4 text-red-500 mt-0.5 flex-shrink-0' />
+								<p className='text-xs text-red-500'>{invalidCharsWarning}</p>
+							</div>
+						)}
 					</div>
 					<div className='space-y-2'>
 						<label className='text-sm font-medium'>Pháp Sư *</label>
@@ -163,7 +185,7 @@ const AddAlbumDialog = () => {
 					<Button
 						onClick={handleSubmit}
 						className='bg-violet-500 hover:bg-violet-600'
-						disabled={isLoading || !imageFile || !newAlbum.title || !newAlbum.teacher}
+						disabled={isLoading || !imageFile || !newAlbum.title || !newAlbum.teacher || !!invalidCharsWarning}
 					>
 						{isLoading ? "Đang tạo..." : "Thêm Bộ Kinh"}
 					</Button>

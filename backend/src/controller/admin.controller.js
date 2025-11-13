@@ -3,27 +3,12 @@ import { Album } from "../models/album.model.js";
 import { Teacher } from "../models/teacher.model.js";
 import { Category } from "../models/category.model.js";
 import { User } from "../models/user.model.js";
-import cloudinary from "../lib/cloudinary.js";
 import { getIO } from "../lib/socket.js";
-
-// helper function for cloudinary uploads
-const uploadToCloudinary = async (file, options = {}) => {
-	try {
-
-		const result = await cloudinary.uploader.upload(file.tempFilePath, {
-			resource_type: "auto",
-			...options,
-		});
-
-		console.log("Upload successful:", result.secure_url);
-		return result.secure_url;
-	} catch (error) {
-		console.log("Error in uploadToCloudinary:", error);
-		console.log("Error message:", error.message);
-		console.log("Error details:", error.error);
-		throw new Error(`Error uploading to cloudinary: ${error.message}`);
-	}
-};
+import {
+	uploadToCloudinary,
+	deleteFromCloudinary,
+	deleteMultipleFromCloudinary
+} from "../lib/cloudinaryHelper.js";
 
 export const createSong = async (req, res, next) => {
 	try {
@@ -40,6 +25,12 @@ export const createSong = async (req, res, next) => {
 		// Validate required fields
 		if (!title) {
 			return res.status(400).json({ message: "Title is required" });
+		}
+
+		// Validate title for invalid characters
+		const invalidChars = /[?&#\\%<>+]/;
+		if (invalidChars.test(title)) {
+			return res.status(400).json({ message: "Tên bài pháp không được chứa các ký tự: ? & # \\ % < > +" });
 		}
 
 		if (!teacher) {
@@ -138,6 +129,12 @@ export const createSongFromUrl = async (req, res, next) => {
 			return res.status(400).json({ message: "Title is required" });
 		}
 
+		// Validate title for invalid characters
+		const invalidChars = /[?&#\\%<>+]/;
+		if (invalidChars.test(title)) {
+			return res.status(400).json({ message: "Tên bài pháp không được chứa các ký tự: ? & # \\ % < > +" });
+		}
+
 		if (!teacher) {
 			return res.status(400).json({ message: "Teacher is required" });
 		}
@@ -224,6 +221,12 @@ export const updateSong = async (req, res, next) => {
 			return res.status(400).json({ message: "Title is required" });
 		}
 
+		// Validate title for invalid characters
+		const invalidChars = /[?&#\\%<>+]/;
+		if (invalidChars.test(title)) {
+			return res.status(400).json({ message: "Tên bài pháp không được chứa các ký tự: ? & # \\ % < > +" });
+		}
+
 		if (!teacher) {
 			return res.status(400).json({ message: "Teacher is required" });
 		}
@@ -303,25 +306,7 @@ export const updateSong = async (req, res, next) => {
 
 				// Delete old audio from Cloudinary if it exists
 				if (song.audioUrl) {
-					const extractPublicId = (url) => {
-						const parts = url.split('/');
-						const uploadIndex = parts.indexOf('upload');
-						if (uploadIndex !== -1 && uploadIndex + 2 < parts.length) {
-							const pathAfterUpload = parts.slice(uploadIndex + 2).join('/');
-							return pathAfterUpload.substring(0, pathAfterUpload.lastIndexOf('.'));
-						}
-						return null;
-					};
-
-					const audioPublicId = extractPublicId(song.audioUrl);
-					if (audioPublicId) {
-						try {
-							await cloudinary.uploader.destroy(audioPublicId, { resource_type: 'video' });
-							console.log('Old audio file deleted from Cloudinary');
-						} catch (err) {
-							console.log('Error deleting old audio from Cloudinary:', err.message);
-						}
-					}
+					await deleteFromCloudinary(song.audioUrl, 'video');
 				}
 			} catch (error) {
 				console.error("Failed to upload audio:", error.message);
@@ -363,72 +348,13 @@ export const deleteSong = async (req, res, next) => {
 			return res.status(404).json({ message: "Song not found" });
 		}
 
-		// Extract public_id from Cloudinary URLs to delete the files
-		// URL format: https://res.cloudinary.com/{cloud_name}/{resource_type}/upload/{version}/{public_id}.{format}
-		const extractPublicId = (url) => {
-			const parts = url.split('/');
-			const uploadIndex = parts.indexOf('upload');
-			if (uploadIndex !== -1 && uploadIndex + 2 < parts.length) {
-				// Get everything after 'upload/{version}/' and before the file extension
-				const pathAfterUpload = parts.slice(uploadIndex + 2).join('/');
-				// Remove file extension
-				return pathAfterUpload.substring(0, pathAfterUpload.lastIndexOf('.'));
-			}
-			return null;
-		};
-
-		// Delete audio file from Cloudinary (only if it's hosted on Cloudinary)
+		// Delete audio and image files from Cloudinary
 		if (song.audioUrl) {
-			console.log('Attempting to delete audio from Cloudinary...');
-			console.log('Audio URL:', song.audioUrl);
-			const audioPublicId = extractPublicId(song.audioUrl);
-			console.log('Extracted audio public_id:', audioPublicId);
-			if (audioPublicId) {
-				try {
-					const result = await cloudinary.uploader.destroy(audioPublicId, { resource_type: 'video' });
-					console.log('Audio file deletion result:', result);
-					if (result.result === 'ok') {
-						console.log('✓ Audio file deleted from Cloudinary:', audioPublicId);
-					} else if (result.result === 'not found') {
-						console.log('✗ Audio file not found on Cloudinary:', audioPublicId);
-					} else {
-						console.log('✗ Audio file deletion failed:', result);
-					}
-				} catch (err) {
-					console.log('✗ Error deleting audio from Cloudinary:', err.message);
-				}
-			} else {
-				console.log('✗ Could not extract public_id from audio URL');
-			}
-		} else if (song.audioUrl) {
-			console.log('Audio URL is not from Cloudinary, skipping deletion:', song.audioUrl);
+			await deleteFromCloudinary(song.audioUrl, 'video');
 		}
 
-		// Delete image file from Cloudinary (only if it's hosted on Cloudinary)
 		if (song.imageUrl) {
-			console.log('Attempting to delete image from Cloudinary...');
-			console.log('Image URL:', song.imageUrl);
-			const imagePublicId = extractPublicId(song.imageUrl);
-			console.log('Extracted image public_id:', imagePublicId);
-			if (imagePublicId) {
-				try {
-					const result = await cloudinary.uploader.destroy(imagePublicId, { resource_type: 'image' });
-					console.log('Image file deletion result:', result);
-					if (result.result === 'ok') {
-						console.log('✓ Image file deleted from Cloudinary:', imagePublicId);
-					} else if (result.result === 'not found') {
-						console.log('✗ Image file not found on Cloudinary:', imagePublicId);
-					} else {
-						console.log('✗ Image file deletion failed:', result);
-					}
-				} catch (err) {
-					console.log('✗ Error deleting image from Cloudinary:', err.message);
-				}
-			} else {
-				console.log('✗ Could not extract public_id from image URL');
-			}
-		} else if (song.imageUrl) {
-			console.log('Image URL is not from Cloudinary, skipping deletion:', song.imageUrl);
+			await deleteFromCloudinary(song.imageUrl, 'image');
 		}
 
 		// if song belongs to an album, update the album's songs array
@@ -464,6 +390,12 @@ export const createAlbum = async (req, res, next) => {
 	try {
 		const { title, teacher, releaseYear } = req.body;
 		const { imageFile } = req.files;
+
+		// Validate title for invalid characters
+		const invalidChars = /[?&#\\%<>+]/;
+		if (invalidChars.test(title)) {
+			return res.status(400).json({ message: "Tên bộ kinh không được chứa các ký tự: ? & # \\ % < > +" });
+		}
 
 		// Create folder path: niemadidaphat/{Album Title}/{Album Title}
 		const folderPath = `niemadidaphat/audios/${title}`;
@@ -511,6 +443,14 @@ export const updateAlbum = async (req, res, next) => {
 			return res.status(404).json({ message: "Album not found" });
 		}
 
+		// Validate title for invalid characters if title is being updated
+		if (title) {
+			const invalidChars = /[?&#\\%<>+]/;
+			if (invalidChars.test(title)) {
+				return res.status(400).json({ message: "Tên bộ kinh không được chứa các ký tự: ? & # \\ % < > +" });
+			}
+		}
+
 		// Update basic fields
 		if (title) album.title = title;
 		if (teacher) album.teacher = teacher;
@@ -526,13 +466,7 @@ export const updateAlbum = async (req, res, next) => {
 
 			// Delete old image from Cloudinary if it exists
 			if (album.imageUrl) {
-				const imagePublicId = album.imageUrl.split('/').slice(-2).join('/').split('.')[0];
-				try {
-					await cloudinary.uploader.destroy(imagePublicId, { resource_type: 'image' });
-					console.log('✓ Old album image deleted from Cloudinary');
-				} catch (err) {
-					console.log('✗ Error deleting old album image:', err.message);
-				}
+				await deleteFromCloudinary(album.imageUrl, 'image');
 			}
 
 			// Upload new image
@@ -565,7 +499,40 @@ export const updateAlbum = async (req, res, next) => {
 export const deleteAlbum = async (req, res, next) => {
 	try {
 		const { id } = req.params;
+
+		// Get album to extract image URL
+		const album = await Album.findById(id);
+		if (!album) {
+			return res.status(404).json({ message: "Album not found" });
+		}
+
+		// Get all songs in this album
+		const songs = await Song.find({ albumId: id });
+
+		// Prepare files to delete from Cloudinary
+		const filesToDelete = [];
+
+		// Add all song audio files
+		for (const song of songs) {
+			if (song.audioUrl) {
+				filesToDelete.push({ url: song.audioUrl, resourceType: 'video' });
+			}
+		}
+
+		// Add album image
+		if (album.imageUrl) {
+			filesToDelete.push({ url: album.imageUrl, resourceType: 'image' });
+		}
+
+		// Delete all files from Cloudinary in parallel
+		if (filesToDelete.length > 0) {
+			await deleteMultipleFromCloudinary(filesToDelete);
+		}
+
+		// Delete all songs from database
 		await Song.deleteMany({ albumId: id });
+
+		// Delete album from database
 		await Album.findByIdAndDelete(id);
 
 		// Emit Socket.IO event for realtime update
@@ -624,6 +591,19 @@ export const createTeacher = async (req, res, next) => {
 export const deleteTeacher = async (req, res, next) => {
 	try {
 		const { id } = req.params;
+
+		// Get teacher to extract image URL
+		const teacher = await Teacher.findById(id);
+		if (!teacher) {
+			return res.status(404).json({ message: "Teacher not found" });
+		}
+
+		// Delete teacher image from Cloudinary
+		if (teacher.imageUrl) {
+			await deleteFromCloudinary(teacher.imageUrl, 'image');
+		}
+
+		// Delete teacher from database
 		await Teacher.findByIdAndDelete(id);
 
 		// Emit Socket.IO event for realtime update
@@ -647,6 +627,12 @@ export const updateTeacher = async (req, res, next) => {
 		const { id } = req.params;
 		const { name, bio, specialization, yearsOfExperience } = req.body;
 
+		// Get existing teacher first
+		const existingTeacher = await Teacher.findById(id);
+		if (!existingTeacher) {
+			return res.status(404).json({ message: "Teacher not found" });
+		}
+
 		const updateData = {
 			name,
 			bio,
@@ -654,8 +640,14 @@ export const updateTeacher = async (req, res, next) => {
 			yearsOfExperience: parseInt(yearsOfExperience) || 0,
 		};
 
-		// If new image is uploaded, update imageUrl
+		// If new image is uploaded, update imageUrl and delete old one
 		if (req.files && req.files.imageFile) {
+			// Delete old image from Cloudinary if exists
+			if (existingTeacher.imageUrl) {
+				await deleteFromCloudinary(existingTeacher.imageUrl, 'image');
+			}
+
+			// Upload new image
 			const imageUrl = await uploadToCloudinary(req.files.imageFile);
 			updateData.imageUrl = imageUrl;
 		}
