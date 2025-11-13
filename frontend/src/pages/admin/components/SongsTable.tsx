@@ -2,7 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { getName, getOptimizedImageUrl } from "@/lib/utils";
-import { Calendar, Pencil, Trash2, Search, X } from "lucide-react";
+import { Calendar, Pencil, Trash2, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -34,6 +34,10 @@ const SongsTable = () => {
 	const [selectedTeacher, setSelectedTeacher] = useState<string>("all");
 	const [selectedAlbum, setSelectedAlbum] = useState<string>("all");
 	const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+	// Pagination states
+	const [currentPage, setCurrentPage] = useState(1);
+	const [itemsPerPage, setItemsPerPage] = useState(20);
 
 	// Filter albums based on selected teacher
 	const filteredAlbumsForDropdown = useMemo(() => {
@@ -77,6 +81,14 @@ const SongsTable = () => {
 		});
 	}, [songs, searchQuery, selectedTeacher, selectedAlbum, selectedCategory]);
 
+	// Pagination logic
+	const totalPages = Math.ceil(filteredSongs.length / itemsPerPage);
+	const startIndex = (currentPage - 1) * itemsPerPage;
+	const endIndex = startIndex + itemsPerPage;
+	const paginatedSongs = useMemo(() => {
+		return filteredSongs.slice(startIndex, endIndex);
+	}, [filteredSongs, startIndex, endIndex]);
+
 	const handleDelete = async (songId: string) => {
 		setDeletingSongId(songId);
 		await deleteSong(songId);
@@ -93,6 +105,7 @@ const SongsTable = () => {
 		setSelectedTeacher("all");
 		setSelectedAlbum("all");
 		setSelectedCategory("all");
+		setCurrentPage(1);
 	};
 
 	const hasActiveFilters = searchQuery || selectedTeacher !== "all" || selectedAlbum !== "all" || selectedCategory !== "all";
@@ -244,7 +257,7 @@ const SongsTable = () => {
 							</TableCell>
 						</TableRow>
 					) : (
-						filteredSongs.map((song) => {
+						paginatedSongs.map((song) => {
 							const isCurrentSong = currentSong?._id === song._id;
 							return (
 							<TableRow key={song._id} className='hover:bg-zinc-800/50'>
@@ -315,6 +328,100 @@ const SongsTable = () => {
 					)}
 				</TableBody>
 			</Table>
+
+			{/* Pagination */}
+			{filteredSongs.length > 0 && (
+				<div className='mt-6 flex items-center justify-between'>
+					<div className='flex items-center gap-4'>
+						<div className='text-sm text-zinc-400'>
+							Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredSongs.length)} trong tổng số {filteredSongs.length} bài pháp
+						</div>
+						<Select value={itemsPerPage.toString()} onValueChange={(value) => {
+							setItemsPerPage(Number(value));
+							setCurrentPage(1);
+						}}>
+							<SelectTrigger className='w-[120px] bg-zinc-800 border-zinc-700'>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent className='bg-zinc-800 border-zinc-700'>
+								<SelectItem value='10'>10 / trang</SelectItem>
+								<SelectItem value='20'>20 / trang</SelectItem>
+								<SelectItem value='50'>50 / trang</SelectItem>
+								<SelectItem value='100'>100 / trang</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					<div className='flex items-center gap-2'>
+						<Button
+							variant='outline'
+							size='sm'
+							onClick={() => setCurrentPage(1)}
+							disabled={currentPage === 1}
+							className='bg-zinc-800 border-zinc-700 hover:bg-zinc-700'
+						>
+							Đầu
+						</Button>
+						<Button
+							variant='outline'
+							size='icon'
+							onClick={() => setCurrentPage(currentPage - 1)}
+							disabled={currentPage === 1}
+							className='bg-zinc-800 border-zinc-700 hover:bg-zinc-700'
+						>
+							<ChevronLeft className='h-4 w-4' />
+						</Button>
+						<div className='flex items-center gap-1'>
+							{Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+								let pageNum;
+								if (totalPages <= 5) {
+									pageNum = i + 1;
+								} else if (currentPage <= 3) {
+									pageNum = i + 1;
+								} else if (currentPage >= totalPages - 2) {
+									pageNum = totalPages - 4 + i;
+								} else {
+									pageNum = currentPage - 2 + i;
+								}
+
+								return (
+									<Button
+										key={pageNum}
+										variant={currentPage === pageNum ? 'default' : 'outline'}
+										size='sm'
+										onClick={() => setCurrentPage(pageNum)}
+										className={currentPage === pageNum
+											? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+											: 'bg-zinc-800 border-zinc-700 hover:bg-zinc-700'
+										}
+									>
+										{pageNum}
+									</Button>
+								);
+							})}
+						</div>
+						<Button
+							variant='outline'
+							size='icon'
+							onClick={() => setCurrentPage(currentPage + 1)}
+							disabled={currentPage === totalPages}
+							className='bg-zinc-800 border-zinc-700 hover:bg-zinc-700'
+						>
+							<ChevronRight className='h-4 w-4' />
+						</Button>
+						<Button
+							variant='outline'
+							size='sm'
+							onClick={() => setCurrentPage(totalPages)}
+							disabled={currentPage === totalPages}
+							className='bg-zinc-800 border-zinc-700 hover:bg-zinc-700'
+						>
+							Cuối
+						</Button>
+					</div>
+				</div>
+			)}
+
 			{editingSong && (
 				<EditSongDialog song={editingSong} open={editDialogOpen} onOpenChange={setEditDialogOpen} />
 			)}

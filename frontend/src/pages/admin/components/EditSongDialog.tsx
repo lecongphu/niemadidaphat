@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { axiosInstance } from "@/lib/axios";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { Song } from "@/types";
-import { useRef, useState, useEffect } from "react";
+import { AlertCircle } from "lucide-react";
+import { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import toast from "react-hot-toast";
 
 interface EditSongDialogProps {
@@ -45,6 +46,10 @@ const EditSongDialog = ({ song, open, onOpenChange }: EditSongDialogProps) => {
 
 	const audioInputRef = useRef<HTMLInputElement>(null);
 
+	// Check for duplicate titles and invalid characters
+	const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
+	const [invalidCharsWarning, setInvalidCharsWarning] = useState<string | null>(null);
+
 	// Initialize form with song data
 	useEffect(() => {
 		if (song && open) {
@@ -57,6 +62,84 @@ const EditSongDialog = ({ song, open, onOpenChange }: EditSongDialogProps) => {
 			setAudioDuration(song.duration);
 		}
 	}, [song, open]);
+
+	// Filter albums by selected teacher
+	const filteredAlbums = useMemo(() => {
+		if (!updateSong.teacher) return albums;
+		return albums.filter((album) => {
+			const teacherId = typeof album.teacher === "string" ? album.teacher : album.teacher._id;
+			return teacherId === updateSong.teacher;
+		});
+	}, [albums, updateSong.teacher]);
+
+	// Reset album when teacher changes
+	useEffect(() => {
+		if (updateSong.teacher && updateSong.album) {
+			const albumBelongsToTeacher = filteredAlbums.some((album) => album._id === updateSong.album);
+			if (!albumBelongsToTeacher) {
+				setUpdateSong({ ...updateSong, album: "" });
+			}
+		}
+	}, [updateSong.teacher]);
+
+	// Check for invalid characters in title
+	useEffect(() => {
+		if (!updateSong.title) {
+			setInvalidCharsWarning(null);
+			return;
+		}
+
+		const invalidChars = /[?&#\\%<>+]/;
+		if (invalidChars.test(updateSong.title)) {
+			setInvalidCharsWarning("Tên bài pháp không được chứa các ký tự: ? & # \\ % < > +");
+		} else {
+			setInvalidCharsWarning(null);
+		}
+	}, [updateSong.title]);
+
+	// Function to check for duplicates
+	const checkDuplicate = useCallback(async () => {
+		console.log("🔍 Checking duplicate:", { title: updateSong.title, album: updateSong.album, excludeId: song._id });
+
+		if (!updateSong.title.trim() || !updateSong.album) {
+			console.log("⚠️  Skip check: title or album is empty");
+			setDuplicateWarning(null);
+			return;
+		}
+
+		try {
+			console.log("📡 Calling API /songs/check-duplicate...");
+			const response = await axiosInstance.get("/songs/check-duplicate", {
+				params: {
+					title: updateSong.title.trim(),
+					albumId: updateSong.album,
+					excludeSongId: song._id, // Exclude current song from duplicate check
+				}
+			});
+
+			console.log("✅ API Response:", response.data);
+
+			if (response.data.hasDuplicates) {
+				setDuplicateWarning(`Cảnh báo: Đã tồn tại ${response.data.count} bài pháp cùng tên trong bộ kinh này`);
+			} else {
+				setDuplicateWarning(null);
+			}
+		} catch (error) {
+			console.error("❌ Error checking duplicate:", error);
+			setDuplicateWarning(null);
+		}
+	}, [updateSong.title, updateSong.album, song._id]);
+
+	// Debounced check on title/album change
+	useEffect(() => {
+		const timeoutId = setTimeout(checkDuplicate, 500);
+		return () => clearTimeout(timeoutId);
+	}, [checkDuplicate]);
+
+	// Handle blur event to check duplicate immediately
+	const handleTitleBlur = () => {
+		checkDuplicate();
+	};
 
 	const handleAudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -186,8 +269,21 @@ const EditSongDialog = ({ song, open, onOpenChange }: EditSongDialogProps) => {
 						<Input
 							value={updateSong.title}
 							onChange={(e) => setUpdateSong({ ...updateSong, title: e.target.value })}
-							className="bg-zinc-800 border-zinc-700"
+							onBlur={handleTitleBlur}
+							className={`bg-zinc-800 border-zinc-700 ${invalidCharsWarning ? 'border-red-500/50' : duplicateWarning ? 'border-yellow-500/50' : ''}`}
 						/>
+						{invalidCharsWarning && (
+							<div className='flex items-start gap-2 p-3 rounded-md bg-red-500/10 border border-red-500/20'>
+								<AlertCircle className='h-4 w-4 text-red-500 mt-0.5 flex-shrink-0' />
+								<p className='text-xs text-red-500'>{invalidCharsWarning}</p>
+							</div>
+						)}
+						{duplicateWarning && !invalidCharsWarning && (
+							<div className='flex items-start gap-2 p-3 rounded-md bg-yellow-500/10 border border-yellow-500/20'>
+								<AlertCircle className='h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0' />
+								<p className='text-xs text-yellow-500'>{duplicateWarning}</p>
+							</div>
+						)}
 					</div>
 
 					<div className="space-y-2">
@@ -214,16 +310,23 @@ const EditSongDialog = ({ song, open, onOpenChange }: EditSongDialogProps) => {
 						<Select
 							value={updateSong.album}
 							onValueChange={(value) => setUpdateSong({ ...updateSong, album: value })}
+							disabled={!updateSong.teacher}
 						>
 							<SelectTrigger className="bg-zinc-800 border-zinc-700">
-								<SelectValue placeholder="Chọn bộ kinh" />
+								<SelectValue placeholder={updateSong.teacher ? 'Chọn bộ kinh' : 'Vui lòng chọn pháp sư trước'} />
 							</SelectTrigger>
 							<SelectContent className="bg-zinc-800 border-zinc-700">
-								{albums.map((album) => (
-									<SelectItem key={album._id} value={album._id}>
-										{album.title}
-									</SelectItem>
-								))}
+								{filteredAlbums.length > 0 ? (
+									filteredAlbums.map((album) => (
+										<SelectItem key={album._id} value={album._id}>
+											{album.title}
+										</SelectItem>
+									))
+								) : (
+									<div className='px-2 py-6 text-center text-sm text-zinc-400'>
+										Pháp sư này chưa có bộ kinh nào
+									</div>
+								)}
 							</SelectContent>
 						</Select>
 					</div>
@@ -268,7 +371,7 @@ const EditSongDialog = ({ song, open, onOpenChange }: EditSongDialogProps) => {
 					<Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
 						Hủy
 					</Button>
-					<Button onClick={handleSubmit} disabled={isLoading}>
+					<Button onClick={handleSubmit} disabled={isLoading || !!invalidCharsWarning}>
 						{isLoading ? `Đang cập nhật... ${uploadProgress}%` : "Cập Nhật"}
 					</Button>
 				</DialogFooter>

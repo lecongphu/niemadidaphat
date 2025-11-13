@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { axiosInstance } from "@/lib/axios";
 import { useMusicStore } from "@/stores/useMusicStore";
 import { Plus, AlertCircle } from "lucide-react";
-import { useRef, useState, useMemo, useEffect } from "react";
+import { useRef, useState, useMemo, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 
 interface NewSong {
@@ -82,36 +82,48 @@ const AddSongDialog = () => {
 		}
 	}, [newSong.title]);
 
-	useEffect(() => {
-		const checkDuplicate = async () => {
-			if (!newSong.title.trim() || !newSong.album) {
-				setDuplicateWarning(null);
-				return;
-			}
+	// Function to check for duplicates
+	const checkDuplicate = useCallback(async () => {
+		console.log("🔍 Checking duplicate:", { title: newSong.title, album: newSong.album });
 
-			try {
-				const response = await axiosInstance.get("/songs/check-duplicate", {
-					params: {
-						title: newSong.title.trim(),
-						albumId: newSong.album,
-					}
-				});
+		if (!newSong.title.trim() || !newSong.album) {
+			console.log("⚠️  Skip check: title or album is empty");
+			setDuplicateWarning(null);
+			return;
+		}
 
-				if (response.data.hasDuplicates) {
-					setDuplicateWarning(`Cảnh báo: Đã tồn tại ${response.data.count} bài pháp cùng tên trong bộ kinh này`);
-				} else {
-					setDuplicateWarning(null);
+		try {
+			console.log("📡 Calling API /songs/check-duplicate...");
+			const response = await axiosInstance.get("/songs/check-duplicate", {
+				params: {
+					title: newSong.title.trim(),
+					albumId: newSong.album,
 				}
-			} catch (error) {
-				console.error("Error checking duplicate:", error);
+			});
+
+			console.log("✅ API Response:", response.data);
+
+			if (response.data.hasDuplicates) {
+				setDuplicateWarning(`Cảnh báo: Đã tồn tại ${response.data.count} bài pháp cùng tên trong bộ kinh này`);
+			} else {
 				setDuplicateWarning(null);
 			}
-		};
+		} catch (error) {
+			console.error("❌ Error checking duplicate:", error);
+			setDuplicateWarning(null);
+		}
+	}, [newSong.title, newSong.album]);
 
-		// Debounce the API call
+	// Debounced check on title/album change
+	useEffect(() => {
 		const timeoutId = setTimeout(checkDuplicate, 500);
 		return () => clearTimeout(timeoutId);
-	}, [newSong.title, newSong.album]);
+	}, [checkDuplicate]);
+
+	// Handle blur event to check duplicate immediately
+	const handleTitleBlur = () => {
+		checkDuplicate();
+	};
 
 	const handleAudioChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -267,6 +279,7 @@ const AddSongDialog = () => {
 						<Input
 							value={newSong.title}
 							onChange={(e) => setNewSong({ ...newSong, title: e.target.value })}
+							onBlur={handleTitleBlur}
 							className={`bg-zinc-800 border-zinc-700 ${invalidCharsWarning ? 'border-red-500/50' : duplicateWarning ? 'border-yellow-500/50' : ''}`}
 						/>
 						{invalidCharsWarning && (

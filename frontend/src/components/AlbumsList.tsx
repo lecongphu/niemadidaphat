@@ -113,6 +113,14 @@ const AlbumsList = () => {
 								<p className="text-sm text-zinc-400">
 									Bộ Kinh • {typeof album.teacher === 'string' ? album.teacher : album.teacher.name}
 								</p>
+								<p className="text-xs text-zinc-500">
+									{album.songs?.length || 0} tập • {(() => {
+										const totalSeconds = album.songs?.reduce((acc, song) => acc + (song.duration || 0), 0) || 0;
+										const hours = Math.floor(totalSeconds / 3600);
+										const minutes = Math.floor((totalSeconds % 3600) / 60);
+										return hours > 0 ? `${hours} giờ ${minutes} phút` : `${minutes} phút`;
+									})()}
+								</p>
 							</div>
 						</Link>
 					))}

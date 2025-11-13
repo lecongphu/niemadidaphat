@@ -89,6 +89,38 @@ export const getSongById = async (req, res, next) => {
 	}
 };
 
+export const checkDuplicateSong = async (req, res, next) => {
+	try {
+		const { title, albumId, excludeSongId } = req.query;
+
+		if (!title || !albumId) {
+			return res.status(400).json({ message: "Title and albumId are required" });
+		}
+
+		// Build query to find duplicates
+		const query = {
+			title: { $regex: new RegExp(`^${title.trim()}$`, "i") }, // Case-insensitive exact match
+			albumId: albumId
+		};
+
+		// If excludeSongId is provided (for editing), exclude that song from results
+		if (excludeSongId) {
+			query._id = { $ne: excludeSongId };
+		}
+
+		const duplicates = await Song.find(query).select("_id title");
+
+		res.json({
+			hasDuplicates: duplicates.length > 0,
+			count: duplicates.length,
+			duplicates: duplicates
+		});
+	} catch (error) {
+		console.log("Error in checkDuplicateSong", error);
+		next(error);
+	}
+};
+
 export const searchAll = async (req, res, next) => {
 	try {
 		const { q } = req.query;
