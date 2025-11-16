@@ -1,4 +1,6 @@
 import { usePlayerStore } from "@/stores/usePlayerStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { axiosInstance } from "@/lib/axios";
 import { useEffect, useRef, useCallback } from "react";
 
 const AudioPlayer = () => {
@@ -9,6 +11,7 @@ const AudioPlayer = () => {
 	const MAX_RETRIES = 3;
 
 	const { currentSong, isPlaying, setCurrentTime, volume } = usePlayerStore();
+	const { user } = useAuthStore();
 
 	// Memoized error handler
 	const handlePlayError = useCallback((error: Error) => {
@@ -51,10 +54,10 @@ const AudioPlayer = () => {
 		audio.volume = volume / 100;
 	}, [volume]);
 
-	// Save current time periodically with optimized interval
+	// Save current time to store and database
 	useEffect(() => {
 		const audio = audioRef.current;
-		if (!audio) return;
+		if (!audio || !currentSong) return;
 
 		const saveCurrentTime = () => {
 			if (!isNaN(audio.currentTime)) {
@@ -62,19 +65,45 @@ const AudioPlayer = () => {
 			}
 		};
 
-		// Save time every 1 second when playing, less frequent when paused
-		const interval = setInterval(saveCurrentTime, isPlaying ? 1000 : 5000);
+		// Save to database (only for authenticated users)
+		const saveToDatabase = async () => {
+			if (!user || !currentSong || isNaN(audio.currentTime) || isNaN(audio.duration)) return;
+
+			try {
+				await axiosInstance.post("/progress", {
+					songId: currentSong._id,
+					currentTime: audio.currentTime,
+					duration: audio.duration,
+				});
+			} catch (error) {
+				console.error("Failed to save progress to database:", error);
+			}
+		};
+
+		// Save to localStorage every 1 second when playing
+		const localInterval = setInterval(saveCurrentTime, isPlaying ? 1000 : 5000);
+
+		// Save to database every 5 seconds when playing (less frequent to reduce API calls)
+		const dbInterval = user ? setInterval(saveToDatabase, isPlaying ? 5000 : 0) : null;
 
 		// Also save on pause
-		audio.addEventListener("pause", saveCurrentTime);
+		const handlePause = () => {
+			saveCurrentTime();
+			if (user) {
+				saveToDatabase();
+			}
+		};
+
+		audio.addEventListener("pause", handlePause);
 
 		return () => {
-			clearInterval(interval);
-			audio.removeEventListener("pause", saveCurrentTime);
+			clearInterval(localInterval);
+			if (dbInterval) clearInterval(dbInterval);
+			audio.removeEventListener("pause", handlePause);
 		};
-	}, [setCurrentTime, isPlaying]);
+	}, [setCurrentTime, isPlaying, currentSong, user]);
 
-	// Handle song changes with preloading
+	// Handle song changes with preloading and progress restoration
 	useEffect(() => {
 		if (!audioRef.current || !currentSong) return;
 
@@ -91,24 +120,55 @@ const AudioPlayer = () => {
 			// Preload audio for better UX
 			audio.preload = "auto";
 
-			// Get current stored time for restoration
-			const storedTime = usePlayerStore.getState().currentTime;
+			// Load progress from database if user is authenticated
+			const loadProgressFromDB = async () => {
+				if (!user || !currentSong) return null;
 
-			// Restore saved position on first load or reset to 0 for new song
-			if (!isRestoredRef.current && storedTime > 0) {
+				try {
+					const response = await axiosInstance.get(`/progress/${currentSong._id}`);
+					return response.data.currentTime || 0;
+				} catch (error) {
+					console.error("Failed to load progress from database:", error);
+					return null;
+				}
+			};
+
+			// Restore saved position
+			const restorePosition = async () => {
+				// Try to load from database first (for authenticated users)
+				let timeToRestore = 0;
+
+				if (user) {
+					const dbTime = await loadProgressFromDB();
+					if (dbTime !== null) {
+						timeToRestore = dbTime;
+					}
+				}
+
+				// Fallback to localStorage if no database progress
+				if (timeToRestore === 0) {
+					const storedTime = usePlayerStore.getState().currentTime;
+					if (!isRestoredRef.current && storedTime > 0) {
+						timeToRestore = storedTime;
+					}
+				}
+
 				// Wait for metadata to load before setting time
 				const handleLoadedMetadata = () => {
-					if (audio.duration >= storedTime) {
-						audio.currentTime = storedTime;
+					if (timeToRestore > 0 && audio.duration >= timeToRestore) {
+						audio.currentTime = timeToRestore;
+						setCurrentTime(timeToRestore);
 						isRestoredRef.current = true;
+					} else {
+						audio.currentTime = 0;
+						setCurrentTime(0);
 					}
 				};
 
 				audio.addEventListener("loadedmetadata", handleLoadedMetadata, { once: true });
-			} else {
-				audio.currentTime = 0;
-				setCurrentTime(0);
-			}
+			};
+
+			restorePosition();
 
 			prevSongRef.current = currentSong?.audioUrl;
 
@@ -121,7 +181,7 @@ const AudioPlayer = () => {
 				}
 			}
 		}
-	}, [currentSong, isPlaying, setCurrentTime, handlePlayError]);
+	}, [currentSong, isPlaying, setCurrentTime, handlePlayError, user]);
 
 	// Cleanup on unmount
 	useEffect(() => {

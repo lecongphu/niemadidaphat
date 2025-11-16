@@ -22,6 +22,7 @@ import categoryRoutes from "./routes/category.route.js";
 import playlistRoutes from "./routes/playlist.route.js";
 import sitemapRoutes from "./routes/sitemap.route.js";
 import listeningRoutes from "./routes/listening.route.js";
+import userProgressRoutes from "./routes/userProgress.route.js";
 
 dotenv.config();
 
@@ -97,6 +98,7 @@ app.use("/api/teachers", teacherRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/playlists", playlistRoutes);
 app.use("/api/listening", listeningRoutes);
+app.use("/api/progress", userProgressRoutes);
 
 // SPA fallback - must be AFTER API routes
 if (process.env.NODE_ENV === "production") {
