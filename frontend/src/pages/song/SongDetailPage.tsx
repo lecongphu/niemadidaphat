@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { getName, getOptimizedImageUrl, formatDuration } from "@/lib/utils";
-import { ArrowLeft, Calendar, Clock, Download, ListPlus, Music2, Pause, Play, User } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Download, Home, ListPlus, Music2, Pause, Play, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AddToPlaylistDialog } from "@/pages/playlist/components/AddToPlaylistDialog";
@@ -132,16 +132,25 @@ const SongDetailPage = () => {
 
 					{/* Content */}
 					<div className="relative z-10">
-						{/* Back button */}
-						<div className="p-4 sm:p-6">
+						{/* Navigation buttons */}
+						<div className="flex gap-2 p-4 sm:p-6">
 							<Button
 								variant="ghost"
-								size="sm"
+								size="icon"
 								onClick={() => navigate(-1)}
-								className="text-zinc-400 hover:text-white"
+								className="rounded-full bg-black/40 hover:bg-black/60 text-white hover:scale-105 transition-all"
+								title="Quay lại"
 							>
-								<ArrowLeft className="h-4 w-4 mr-2" />
-								Quay lại
+								<ArrowLeft className="h-5 w-5" />
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={() => navigate('/')}
+								className="rounded-full bg-black/40 hover:bg-black/60 text-white hover:scale-105 transition-all"
+								title="Trang chủ"
+							>
+								<Home className="h-5 w-5" />
 							</Button>
 						</div>
 

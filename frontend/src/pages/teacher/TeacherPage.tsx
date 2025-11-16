@@ -4,15 +4,16 @@ import { useMusicStore } from "@/stores/useMusicStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { getOptimizedImageUrl, formatDuration } from "@/lib/utils";
-import { Clock, ListPlus, Play } from "lucide-react";
+import { Clock, ListPlus, Play, Home, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import PlayingIndicator from "@/components/PlayingIndicator";
 import { AddToPlaylistDialog } from "@/pages/playlist/components/AddToPlaylistDialog";
 import SEO from "@/components/SEO";
 
 const TeacherPage = () => {
 	const { teacherId } = useParams();
+	const navigate = useNavigate();
 	const { fetchTeacherById, currentTeacher, isLoading } = useMusicStore();
 	const { currentSong, isPlaying, playAlbum } = usePlayerStore();
 	const { isAuthenticated } = useAuthStore();
@@ -65,6 +66,28 @@ const TeacherPage = () => {
 
 					{/* Content */}
 					<div className='relative z-10'>
+						{/* Navigation buttons */}
+						<div className='flex gap-2 p-4 sm:p-6 pb-0'>
+							<Button
+								variant='ghost'
+								size='icon'
+								onClick={() => navigate(-1)}
+								className='rounded-full bg-black/40 hover:bg-black/60 text-white hover:scale-105 transition-all'
+								title='Quay lại'
+							>
+								<ArrowLeft className='h-5 w-5' />
+							</Button>
+							<Button
+								variant='ghost'
+								size='icon'
+								onClick={() => navigate('/')}
+								className='rounded-full bg-black/40 hover:bg-black/60 text-white hover:scale-105 transition-all'
+								title='Trang chủ'
+							>
+								<Home className='h-5 w-5' />
+							</Button>
+						</div>
+
 						<div className='flex flex-col sm:flex-row p-4 sm:p-6 gap-4 sm:gap-6 pb-6 sm:pb-8'>
 							<img
 								src={getOptimizedImageUrl(currentTeacher?.imageUrl)}

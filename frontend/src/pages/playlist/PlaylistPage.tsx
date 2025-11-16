@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePlaylistStore } from "@/stores/usePlaylistStore";
 import { usePlayerStore } from "@/stores/usePlayerStore";
 import { getName, getOptimizedImageUrl, formatDuration } from "@/lib/utils";
-import { Clock, Edit, MoreVertical, Pause, Play, Trash2 } from "lucide-react";
+import { Clock, Edit, MoreVertical, Pause, Play, Trash2, Home, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import PlayingIndicator from "@/components/PlayingIndicator";
@@ -82,6 +82,28 @@ const PlaylistPage = () => {
 
 					{/* Content */}
 					<div className='relative z-10'>
+						{/* Navigation buttons */}
+						<div className='flex gap-2 p-4 sm:p-6 pb-0'>
+							<Button
+								variant='ghost'
+								size='icon'
+								onClick={() => navigate(-1)}
+								className='rounded-full bg-black/40 hover:bg-black/60 text-white hover:scale-105 transition-all'
+								title='Quay lại'
+							>
+								<ArrowLeft className='h-5 w-5' />
+							</Button>
+							<Button
+								variant='ghost'
+								size='icon'
+								onClick={() => navigate('/')}
+								className='rounded-full bg-black/40 hover:bg-black/60 text-white hover:scale-105 transition-all'
+								title='Trang chủ'
+							>
+								<Home className='h-5 w-5' />
+							</Button>
+						</div>
+
 						<div className='flex flex-col sm:flex-row p-4 sm:p-6 gap-4 sm:gap-6 pb-6 sm:pb-8'>
 							<img
 								src={getOptimizedImageUrl(currentPlaylist?.imageUrl)}
