@@ -83,8 +83,11 @@ const AudioPlayer = () => {
 		// Save to localStorage every 1 second when playing
 		const localInterval = setInterval(saveCurrentTime, isPlaying ? 1000 : 5000);
 
-		// Save to database every 5 seconds when playing (less frequent to reduce API calls)
-		const dbInterval = user ? setInterval(saveToDatabase, isPlaying ? 5000 : 0) : null;
+		// Save to database every 5 seconds when playing (only when playing!)
+		let dbInterval: NodeJS.Timeout | null = null;
+		if (user && isPlaying) {
+			dbInterval = setInterval(saveToDatabase, 5000);
+		}
 
 		// Also save on pause
 		const handlePause = () => {
